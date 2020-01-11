@@ -7,6 +7,7 @@
 import tushare as ts
 import time
 import sys
+import os
 import watch_limit_main
 from tkinter import messagebox
 from tkinter import ttk
@@ -59,6 +60,7 @@ class PictureView(QMainWindow, watch_limit_main.Ui_MainWindow):
                         # if b1_v / self.b1_v_prev[code] < THRESHOLD:
                         new_text = new_text + code + " 出现开板迹象\n"
                         self.b1_v_prev[code] = b1_v
+                        os.system('say "warning"')
                 else:
                     print(code + " 未封停")
                     new_text = new_text + code + " 已经开板\n"
