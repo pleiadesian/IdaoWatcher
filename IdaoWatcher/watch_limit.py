@@ -17,17 +17,27 @@ from PyQt5.QtWidgets import QApplication, QMainWindow, QGraphicsScene, QGraphics
 from PyQt5.QtGui import QImage, QPixmap
 from PyQt5.QtCore import QTimer
 
-# alert if bid1 amount has decreased more than 10% in 3 second
+# alert if bid1 amount has decreased more than 5% in 3 second
 INTERVAL = 3000
-THRESHOLD = 0.90
+THRESHOLD = 0.95
 
 
-def get_new_a1p(code):
-    return float(ts.get_realtime_quotes(code)['a1_p'].values[0])
+def get_new_a1p(codes):
+    infos = ts.get_realtime_quotes(codes).values
+    a1ps = []
+    for info in infos:
+        # get ask price 1
+        a1ps.append(float(info[21]))
+    return a1ps
 
 
-def get_new_b1v(code):
-    return int(ts.get_realtime_quotes(code)['b1_v'].values[0])
+def get_new_b1v(codes):
+    infos = ts.get_realtime_quotes(codes).values
+    b1vs = []
+    for info in infos:
+        # get bid volume 1
+        b1vs.append(int(info[10]))
+    return b1vs
 
 
 class PictureView(QMainWindow, watch_limit_main.Ui_MainWindow):
@@ -48,10 +58,9 @@ class PictureView(QMainWindow, watch_limit_main.Ui_MainWindow):
         if self.started is True:
             self.label.setText("")
             new_text = ""
-            for code in self.codes:
-                a1_p = get_new_a1p(code)
-                b1_v = get_new_b1v(code)
-
+            a1_ps = get_new_a1p(self.codes)
+            b1_vs = get_new_b1v(self.codes)
+            for code, a1_p, b1_v in zip(self.codes, a1_ps, b1_vs):
                 # use a1_p == 0.00 to judge if limit has been broken
                 if a1_p == 0:
                     # limit keeped, watch its volume
