@@ -4,3 +4,4 @@
 */.vs/
 */Debug/
 venv/
+__pycache__/
