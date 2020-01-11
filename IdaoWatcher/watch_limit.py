@@ -10,11 +10,7 @@ import sys
 import os
 import winsound
 import watch_limit_main
-from tkinter import messagebox
-from tkinter import ttk
-import tkinter as tk
-from PyQt5.QtWidgets import QApplication, QMainWindow, QGraphicsScene, QGraphicsPixmapItem, QFileDialog
-from PyQt5.QtGui import QImage, QPixmap
+from PyQt5.QtWidgets import QApplication, QMainWindow
 from PyQt5.QtCore import QTimer
 
 # alert if bid1 amount has decreased more than 5% in 3 second
@@ -57,26 +53,29 @@ class PictureView(QMainWindow, watch_limit_main.Ui_MainWindow):
     def checkall(self):
         if self.started is True:
             self.label.setText("")
+            self.label_broken.setText("")
             new_text = ""
+            new_text_broken = ""
             a1_ps = get_new_a1p(self.codes)
             b1_vs = get_new_b1v(self.codes)
             for code, a1_p, b1_v in zip(self.codes, a1_ps, b1_vs):
                 # use a1_p == 0.00 to judge if limit has been broken
                 if a1_p == 0:
                     # limit keeped, watch its volume
-                    print(code + " 封停")
+                    # print(code + " 封停")
                     if code not in self.b1_v_prev:
                         self.b1_v_prev[code] = b1_v
                     else:
                         if b1_v / self.b1_v_prev[code] < THRESHOLD:
                             new_text = new_text + code + " 出现开板迹象\n"
-                            self.b1_v_prev[code] = b1_v
                             os.system('say "warning"')
                             winsound.Beep(500, 500)
+                        self.b1_v_prev[code] = b1_v
                 else:
-                    print(code + " 未封停")
-                    new_text = new_text + code + " 已经开板\n"
+                    # print(code + " 未封停")
+                    new_text_broken = new_text_broken + code + " 已经开板\n"
             self.label.setText(new_text)
+            self.label_broken.setText(new_text_broken)
 
     def addcode(self):
         text = self.lineEdit.text()

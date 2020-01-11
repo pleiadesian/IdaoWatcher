@@ -19,7 +19,7 @@
      <rect>
       <x>80</x>
       <y>210</y>
-      <width>1011</width>
+      <width>501</width>
       <height>581</height>
      </rect>
     </property>
@@ -100,6 +100,19 @@
     </property>
     <property name="text">
      <string>开始运行</string>
+    </property>
+   </widget>
+   <widget class="QLabel" name="label_broken">
+    <property name="geometry">
+     <rect>
+      <x>590</x>
+      <y>200</y>
+      <width>581</width>
+      <height>601</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>TextLabel</string>
     </property>
    </widget>
   </widget>
