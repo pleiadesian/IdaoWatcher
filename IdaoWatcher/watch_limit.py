@@ -15,18 +15,17 @@ from PyQt5.QtWidgets import QApplication, QMainWindow, QGraphicsScene, QGraphics
 from PyQt5.QtGui import QImage, QPixmap
 from PyQt5.QtCore import QTimer
 
-CODE = '600075'
-CODE1 = '300541'
-INTERVAL = 5000
+CODES = ['600075', '300541', '002740']
+INTERVAL = 2000
 THRESHOLD = 0.95
 
 
-def get_new_a1p():
-    return float(ts.get_realtime_quotes(CODE)['a1_p'].values[0])
+def get_new_a1p(code):
+    return float(ts.get_realtime_quotes(code)['a1_p'].values[0])
 
 
-def get_new_b1v():
-    return int(ts.get_realtime_quotes(CODE)['b1_v'].values[0])
+def get_new_b1v(code):
+    return int(ts.get_realtime_quotes(code)['b1_v'].values[0])
 
 
 class PictureView(QMainWindow, watch_limit_main.Ui_MainWindow):
@@ -35,28 +34,33 @@ class PictureView(QMainWindow, watch_limit_main.Ui_MainWindow):
         self.setupUi(self)
 
         self.timer = QTimer(self)
-        self.timer.timeout.connect(self.main_loop)
+        self.timer.timeout.connect(self.checkall)
 
         self.i = 0
-        self.b1_v_prev = None
+        self.b1_v_prev = dict()
         self.timer.start(INTERVAL)
 
-    def main_loop(self):
-        a1_p = get_new_a1p()
-        b1_v = get_new_b1v()
+    def checkall(self):
+        self.label.setText("")
+        newText = ""
+        for code in CODES:
+            a1_p = get_new_a1p(code)
+            b1_v = get_new_b1v(code)
 
-        # use a1_p == 0.00 to judge if limit has been broken
-        if a1_p == 0:
-            # limit keeped, watch its volume
-            print("封停")
-            if self.b1_v_prev is None:
-                self.b1_v_prev = b1_v
+            # use a1_p == 0.00 to judge if limit has been broken
+            if a1_p == 0:
+                # limit keeped, watch its volume
+                print(code + " 封停")
+                if code not in self.b1_v_prev:
+                    self.b1_v_prev[code] = b1_v
+                else:
+                    if b1_v / self.b1_v_prev[code] < THRESHOLD:
+                        newText = newText + code + " 出现开板迹象\n"
+                        self.b1_v_prev[code] = b1_v
             else:
-                if b1_v / self.b1_v_prev < THRESHOLD:
-                    self.label.setText(CODE + " 出现开板迹象")
-                    self.b1_v_prev = b1_v
-        else:
-            print("未封停")
+                print(code + " 未封停")
+                newText = newText + code + " 已经开板\n"
+        self.label.setText(newText)
 
 
 if __name__ == '__main__':
