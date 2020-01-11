@@ -15,7 +15,6 @@ from PyQt5.QtWidgets import QApplication, QMainWindow, QGraphicsScene, QGraphics
 from PyQt5.QtGui import QImage, QPixmap
 from PyQt5.QtCore import QTimer
 
-CODES = ['600075', '300541', '002740']
 INTERVAL = 2000
 THRESHOLD = 0.95
 
@@ -38,29 +37,43 @@ class PictureView(QMainWindow, watch_limit_main.Ui_MainWindow):
 
         self.i = 0
         self.b1_v_prev = dict()
+        self.codes = []
         self.timer.start(INTERVAL)
+        self.started = False
 
     def checkall(self):
-        self.label.setText("")
-        newText = ""
-        for code in CODES:
-            a1_p = get_new_a1p(code)
-            b1_v = get_new_b1v(code)
+        if self.started is True:
+            self.label.setText("")
+            new_text = ""
+            for code in self.codes:
+                a1_p = get_new_a1p(code)
+                b1_v = get_new_b1v(code)
 
-            # use a1_p == 0.00 to judge if limit has been broken
-            if a1_p == 0:
-                # limit keeped, watch its volume
-                print(code + " 封停")
-                if code not in self.b1_v_prev:
-                    self.b1_v_prev[code] = b1_v
-                else:
-                    if b1_v / self.b1_v_prev[code] < THRESHOLD:
-                        newText = newText + code + " 出现开板迹象\n"
+                # use a1_p == 0.00 to judge if limit has been broken
+                if a1_p == 0:
+                    # limit keeped, watch its volume
+                    print(code + " 封停")
+                    if code not in self.b1_v_prev:
                         self.b1_v_prev[code] = b1_v
-            else:
-                print(code + " 未封停")
-                newText = newText + code + " 已经开板\n"
-        self.label.setText(newText)
+                    else:
+                        # if b1_v / self.b1_v_prev[code] < THRESHOLD:
+                        new_text = new_text + code + " 出现开板迹象\n"
+                        self.b1_v_prev[code] = b1_v
+                else:
+                    print(code + " 未封停")
+                    new_text = new_text + code + " 已经开板\n"
+            self.label.setText(new_text)
+
+    def addcode(self):
+        text = self.lineEdit.text()
+        self.label_watch.setText(text)
+        self.codes = text.split(' ')
+
+    def startrun(self):
+        self.started = True
+        self.label.setText("正在运行")
+        self.pushButton_2.setEnabled(False)
+        self.pushButton_2.setText("正在运行")
 
 
 if __name__ == '__main__':

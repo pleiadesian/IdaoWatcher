@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>471</width>
-    <height>308</height>
+    <width>680</width>
+    <height>599</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -17,14 +17,89 @@
    <widget class="QLabel" name="label">
     <property name="geometry">
      <rect>
-      <x>60</x>
-      <y>10</y>
-      <width>321</width>
-      <height>201</height>
+      <x>70</x>
+      <y>130</y>
+      <width>501</width>
+      <height>361</height>
      </rect>
     </property>
     <property name="text">
      <string>TextLabel</string>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="pushButton">
+    <property name="geometry">
+     <rect>
+      <x>540</x>
+      <y>40</y>
+      <width>113</width>
+      <height>32</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>确认</string>
+    </property>
+   </widget>
+   <widget class="QLineEdit" name="lineEdit">
+    <property name="geometry">
+     <rect>
+      <x>20</x>
+      <y>40</y>
+      <width>501</width>
+      <height>21</height>
+     </rect>
+    </property>
+   </widget>
+   <widget class="QLabel" name="label_2">
+    <property name="geometry">
+     <rect>
+      <x>20</x>
+      <y>10</y>
+      <width>631</width>
+      <height>16</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>输入您要监视的已涨停股票列表，每个股票代码之间用空格隔开（例如000001 000002 000003)</string>
+    </property>
+   </widget>
+   <widget class="QLabel" name="label_3">
+    <property name="geometry">
+     <rect>
+      <x>30</x>
+      <y>90</y>
+      <width>101</width>
+      <height>16</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>正在监视：</string>
+    </property>
+   </widget>
+   <widget class="QLabel" name="label_watch">
+    <property name="geometry">
+     <rect>
+      <x>160</x>
+      <y>90</y>
+      <width>491</width>
+      <height>16</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>TextLabel</string>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="pushButton_2">
+    <property name="geometry">
+     <rect>
+      <x>270</x>
+      <y>510</y>
+      <width>113</width>
+      <height>32</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>开始运行</string>
     </property>
    </widget>
   </widget>
@@ -33,7 +108,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>471</width>
+     <width>680</width>
      <height>22</height>
     </rect>
    </property>
@@ -41,8 +116,42 @@
   <widget class="QStatusBar" name="statusbar"/>
  </widget>
  <resources/>
- <connections/>
+ <connections>
+  <connection>
+   <sender>pushButton</sender>
+   <signal>clicked()</signal>
+   <receiver>MainWindow</receiver>
+   <slot>addcode()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>618</x>
+     <y>78</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>618</x>
+     <y>106</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>pushButton_2</sender>
+   <signal>clicked()</signal>
+   <receiver>MainWindow</receiver>
+   <slot>startrun()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>328</x>
+     <y>546</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>421</x>
+     <y>547</y>
+    </hint>
+   </hints>
+  </connection>
+ </connections>
  <slots>
-  <slot>main_loop()</slot>
+  <slot>addcode()</slot>
+  <slot>startrun()</slot>
  </slots>
 </ui>
