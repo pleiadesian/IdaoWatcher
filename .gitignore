@@ -1,0 +1,4 @@
+*.dll
+*.sln
+*.vcxproj*
+*.vs/
