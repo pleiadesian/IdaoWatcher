@@ -17,8 +17,9 @@ from PyQt5.QtWidgets import QApplication, QMainWindow, QGraphicsScene, QGraphics
 from PyQt5.QtGui import QImage, QPixmap
 from PyQt5.QtCore import QTimer
 
-INTERVAL = 2000
-THRESHOLD = 0.95
+# alert if bid1 amount has decreased more than 10% in 3 second
+INTERVAL = 3000
+THRESHOLD = 0.90
 
 
 def get_new_a1p(code):
