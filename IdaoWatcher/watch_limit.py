@@ -58,11 +58,11 @@ class PictureView(QMainWindow, watch_limit_main.Ui_MainWindow):
                     if code not in self.b1_v_prev:
                         self.b1_v_prev[code] = b1_v
                     else:
-                        # if b1_v / self.b1_v_prev[code] < THRESHOLD:
-                        new_text = new_text + code + " 出现开板迹象\n"
-                        self.b1_v_prev[code] = b1_v
-                        os.system('say "warning"')
-                        winsound.Beep(500, 500)
+                        if b1_v / self.b1_v_prev[code] < THRESHOLD:
+                            new_text = new_text + code + " 出现开板迹象\n"
+                            self.b1_v_prev[code] = b1_v
+                            os.system('say "warning"')
+                            winsound.Beep(500, 500)
                 else:
                     print(code + " 未封停")
                     new_text = new_text + code + " 已经开板\n"
