@@ -8,9 +8,9 @@ import tushare as ts
 import time
 import sys
 import os
-# import winsound
+import winsound
 import watch_limit_main, watch_limit_warn
-from PyQt5.QtWidgets import QApplication, QMainWindow, QMessageBox, QWidget
+from PyQt5.QtWidgets import QApplication, QMainWindow, QMessageBox, QWidget, QDesktopWidget
 from PyQt5.QtCore import QTimer
 
 # alert if bid1 amount has decreased more than 5% in 3 second
@@ -18,7 +18,7 @@ INTERVAL = 3000
 THRESHOLD = 0.95
 HIGH_THRESHOLD = 0.80
 
-DEBUG = 1
+DEBUG = 0
 
 
 def get_new_a1p(codes):
@@ -43,6 +43,8 @@ class MessageView(QWidget, watch_limit_warn.Ui_Dialog):
     def __init__(self):
         super(MessageView, self).__init__()
         self.setupUi(self)
+        screen = QApplication.desktop()
+        self.move(screen.width() - self.width(), screen.height() - self.height())
 
     def accept(self):
         self.showMinimized()
@@ -101,7 +103,7 @@ class PictureView(QMainWindow, watch_limit_main.Ui_MainWindow):
                                     (code in self.broken_signal and self.broken_signal[code] > 0):
                                 new_text = new_text + code + " 出现开板迹象\n"
                                 os.system('say "warning"')
-                                # winsound.Beep(500, 500)
+                                winsound.Beep(500, 500)
                                 signal = True
                             self.broken_signal[code] = 10
                         if DEBUG == 1:
