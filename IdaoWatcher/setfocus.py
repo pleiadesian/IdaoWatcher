@@ -45,19 +45,24 @@ class setf():
         return hwnds
 
 
-def open_code(code):
+def init_fs():
     screen_width, screen_height = pyautogui.size()
-    sf = setfocus.setf()
+    sf = setf()
+    window_info = [sf, screen_width, screen_height]
+    return window_info
+
+
+def open_code(code, window_info):
+    sf = window_info[0]
+    screen_width = window_info[1]
+    screen_height = window_info[2]
     sf.setfocus()
     pyautogui.moveTo(screen_width / 2, screen_height / 2)
     pyautogui.click(x=None, y=None, clicks=1, interval=0.0, button='left', duration=0.0, tween=pyautogui.linear)
-    pyautogui.typewrite(message='000001', interval=0.01)
+    pyautogui.typewrite(message=code, interval=0.01)
     pyautogui.press('enter')
 
 
 if __name__ == '__main__':
-    sf = setf()
-    try:
-        sf.setfocus()
-    except Exception as e:
-        print(e)
+    window_info0 = init_fs()
+    open_code("600030", window_info0)
