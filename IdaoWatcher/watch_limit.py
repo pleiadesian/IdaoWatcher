@@ -10,7 +10,7 @@ import sys
 import os
 import winsound
 import watch_limit_main
-from PyQt5.QtWidgets import QApplication, QMainWindow
+from PyQt5.QtWidgets import QApplication, QMainWindow, QMessageBox
 from PyQt5.QtCore import QTimer
 
 # alert if bid1 amount has decreased more than 5% in 3 second
@@ -46,6 +46,7 @@ class PictureView(QMainWindow, watch_limit_main.Ui_MainWindow):
 
         self.i = 0
         self.b1_v_prev = dict()
+        self.broken_signal = dict()
         self.codes = []
         self.timer.start(INTERVAL)
         self.started = False
@@ -58,7 +59,17 @@ class PictureView(QMainWindow, watch_limit_main.Ui_MainWindow):
             new_text_broken = ""
             a1_ps = get_new_a1p(self.codes)
             b1_vs = get_new_b1v(self.codes)
+            if len(a1_ps) != len(self.codes) or len(b1_vs) != len(self.codes):
+                QMessageBox.question(self, "警告", "检测到股票代码输入错误，请重新输入",
+                                     QMessageBox.Ok | QMessageBox.Cancel, QMessageBox.Ok)
+                self.lineEdit.setText("")
+                self.started = False
+                self.label.setText("暂停")
+                self.pushButton_2.setEnabled(True)
+                self.pushButton_2.setText("开始运行")
             for code, a1_p, b1_v in zip(self.codes, a1_ps, b1_vs):
+                if code in self.broken_signal and self.broken_signal[code] > 0:
+                    self.broken_signal[code] -= 1
                 # use a1_p == 0.00 to judge if limit has been broken
                 if a1_p == 0:
                     # limit keeped, watch its volume
@@ -67,9 +78,11 @@ class PictureView(QMainWindow, watch_limit_main.Ui_MainWindow):
                         self.b1_v_prev[code] = b1_v
                     else:
                         if b1_v / self.b1_v_prev[code] < THRESHOLD:
-                            new_text = new_text + code + " 出现开板迹象\n"
-                            os.system('say "warning"')
-                            winsound.Beep(500, 500)
+                            if code in self.broken_signal and self.broken_signal[code] > 0:
+                                new_text = new_text + code + " 出现开板迹象\n"
+                                os.system('say "warning"')
+                                winsound.Beep(500, 500)
+                            self.broken_signal[code] = 10
                         self.b1_v_prev[code] = b1_v
                 else:
                     # print(code + " 未封停")
