@@ -2,6 +2,8 @@ import time
 import psutil
 import win32gui, win32process, win32con, win32com.client
 import ctypes
+import pyautogui
+
 
 class setf():
     def __init__(self):
@@ -41,6 +43,16 @@ class setf():
         hwnds = []
         win32gui.EnumWindows(callback, hwnds)
         return hwnds
+
+
+def open_code(code):
+    screen_width, screen_height = pyautogui.size()
+    sf = setfocus.setf()
+    sf.setfocus()
+    pyautogui.moveTo(screen_width / 2, screen_height / 2)
+    pyautogui.click(x=None, y=None, clicks=1, interval=0.0, button='left', duration=0.0, tween=pyautogui.linear)
+    pyautogui.typewrite(message='000001', interval=0.01)
+    pyautogui.press('enter')
 
 
 if __name__ == '__main__':

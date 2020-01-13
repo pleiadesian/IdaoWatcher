@@ -25,12 +25,12 @@ import setfocus
 # a = df
 
 
-screen_width, screen_height = pyautogui.size()
-
-sf = setfocus.setf()
-sf.setfocus()
-
-pyautogui.moveTo(screen_width / 2, screen_height / 2)
-pyautogui.click(x=None, y=None, clicks=1, interval=0.0, button='left', duration=0.0, tween=pyautogui.linear)
-pyautogui.typewrite(message='000001', interval=0.01)
-pyautogui.press('enter')
+# screen_width, screen_height = pyautogui.size()
+#
+# sf = setfocus.setf()
+# sf.setfocus()
+#
+# pyautogui.moveTo(screen_width / 2, screen_height / 2)
+# pyautogui.click(x=None, y=None, clicks=1, interval=0.0, button='left', duration=0.0, tween=pyautogui.linear)
+# pyautogui.typewrite(message='000001', interval=0.01)
+# pyautogui.press('enter')
