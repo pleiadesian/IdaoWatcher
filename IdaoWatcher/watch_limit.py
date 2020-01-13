@@ -9,14 +9,16 @@ import time
 import sys
 import os
 # import winsound
-import watch_limit_main
-from PyQt5.QtWidgets import QApplication, QMainWindow, QMessageBox
+import watch_limit_main, watch_limit_warn
+from PyQt5.QtWidgets import QApplication, QMainWindow, QMessageBox, QWidget
 from PyQt5.QtCore import QTimer
 
 # alert if bid1 amount has decreased more than 5% in 3 second
 INTERVAL = 3000
 THRESHOLD = 0.95
 HIGH_THRESHOLD = 0.80
+
+DEBUG = 1
 
 
 def get_new_a1p(codes):
@@ -37,10 +39,28 @@ def get_new_b1v(codes):
     return b1vs
 
 
+class MessageView(QWidget, watch_limit_warn.Ui_Dialog):
+    def __init__(self):
+        super(MessageView, self).__init__()
+        self.setupUi(self)
+
+    def accept(self):
+        self.showMinimized()
+
+    def reject(self):
+        self.showMinimized()
+
+    def warn(self):
+        self.showNormal()
+
+
 class PictureView(QMainWindow, watch_limit_main.Ui_MainWindow):
     def __init__(self, parent=None):
         super(PictureView, self).__init__(parent)
         self.setupUi(self)
+        self.dlg = MessageView()
+        self.dlg.show()
+        self.dlg.showMinimized()
 
         self.timer = QTimer(self)
         self.timer.timeout.connect(self.checkall)
@@ -62,9 +82,10 @@ class PictureView(QMainWindow, watch_limit_main.Ui_MainWindow):
                 QMessageBox.question(self, "警告", "检测到股票代码输入错误，请重新输入",
                                      QMessageBox.Ok | QMessageBox.Cancel, QMessageBox.Ok)
                 self.started = False
-                self.label.setText("暂停")
+                self.dlg.label.setText("暂停")
                 self.pushButton_2.setEnabled(True)
                 self.pushButton_2.setText("开始运行")
+            signal = False
             for code, a1_p, b1_v in zip(self.codes, a1_ps, b1_vs):
                 if code in self.broken_signal and self.broken_signal[code] > 0:
                     self.broken_signal[code] -= 1
@@ -81,13 +102,25 @@ class PictureView(QMainWindow, watch_limit_main.Ui_MainWindow):
                                 new_text = new_text + code + " 出现开板迹象\n"
                                 os.system('say "warning"')
                                 # winsound.Beep(500, 500)
+                                signal = True
+                            self.broken_signal[code] = 10
+                        if DEBUG == 1:
+                            new_text = new_text + code + " 出现开板迹象\n"
+                            os.system('say "warning"')
+                            # winsound.Beep(500, 500)
+                            signal = True
                             self.broken_signal[code] = 10
                         self.b1_v_prev[code] = b1_v
                 else:
                     # print(code + " 未封停")
                     new_text_broken = new_text_broken + code + " 已经开板\n"
-            self.label.setText(new_text)
-            self.label_broken.setText(new_text_broken)
+                    if DEBUG == 1:
+                        signal = True
+            if signal is True:
+                if self.dlg.isMinimized():
+                    self.dlg.showNormal()
+            self.dlg.label.setText(new_text)
+            self.dlg.label_broken.setText(new_text_broken)
 
     def resetcode(self):
         self.lineEdit.setText(self.label_watch.text())
@@ -99,7 +132,7 @@ class PictureView(QMainWindow, watch_limit_main.Ui_MainWindow):
 
     def startrun(self):
         self.started = True
-        self.label.setText("正在运行")
+        self.dlg.label.setText("正在运行")
         self.pushButton_2.setEnabled(False)
         self.pushButton_2.setText("正在运行")
 
