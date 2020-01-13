@@ -8,7 +8,7 @@ import tushare as ts
 import time
 import sys
 import os
-import winsound
+# import winsound
 import watch_limit_main
 from PyQt5.QtWidgets import QApplication, QMainWindow, QMessageBox
 from PyQt5.QtCore import QTimer
@@ -16,6 +16,7 @@ from PyQt5.QtCore import QTimer
 # alert if bid1 amount has decreased more than 5% in 3 second
 INTERVAL = 3000
 THRESHOLD = 0.95
+HIGH_THRESHOLD = 0.80
 
 
 def get_new_a1p(codes):
@@ -53,8 +54,6 @@ class PictureView(QMainWindow, watch_limit_main.Ui_MainWindow):
 
     def checkall(self):
         if self.started is True:
-            self.label.setText("")
-            self.label_broken.setText("")
             new_text = ""
             new_text_broken = ""
             a1_ps = get_new_a1p(self.codes)
@@ -62,7 +61,6 @@ class PictureView(QMainWindow, watch_limit_main.Ui_MainWindow):
             if len(a1_ps) != len(self.codes) or len(b1_vs) != len(self.codes):
                 QMessageBox.question(self, "警告", "检测到股票代码输入错误，请重新输入",
                                      QMessageBox.Ok | QMessageBox.Cancel, QMessageBox.Ok)
-                self.lineEdit.setText("")
                 self.started = False
                 self.label.setText("暂停")
                 self.pushButton_2.setEnabled(True)
@@ -78,10 +76,11 @@ class PictureView(QMainWindow, watch_limit_main.Ui_MainWindow):
                         self.b1_v_prev[code] = b1_v
                     else:
                         if b1_v / self.b1_v_prev[code] < THRESHOLD:
-                            if code in self.broken_signal and self.broken_signal[code] > 0:
+                            if b1_v / self.b1_v_prev[code] < HIGH_THRESHOLD or \
+                                    (code in self.broken_signal and self.broken_signal[code] > 0):
                                 new_text = new_text + code + " 出现开板迹象\n"
                                 os.system('say "warning"')
-                                winsound.Beep(500, 500)
+                                # winsound.Beep(500, 500)
                             self.broken_signal[code] = 10
                         self.b1_v_prev[code] = b1_v
                 else:
@@ -89,6 +88,9 @@ class PictureView(QMainWindow, watch_limit_main.Ui_MainWindow):
                     new_text_broken = new_text_broken + code + " 已经开板\n"
             self.label.setText(new_text)
             self.label_broken.setText(new_text_broken)
+
+    def resetcode(self):
+        self.lineEdit.setText(self.label_watch.text())
 
     def addcode(self):
         text = self.lineEdit.text()

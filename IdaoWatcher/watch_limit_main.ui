@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>1186</width>
-    <height>933</height>
+    <height>919</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -22,6 +22,11 @@
       <width>501</width>
       <height>581</height>
      </rect>
+    </property>
+    <property name="font">
+     <font>
+      <pointsize>20</pointsize>
+     </font>
     </property>
     <property name="text">
      <string>还未开始运行</string>
@@ -60,7 +65,7 @@
      </rect>
     </property>
     <property name="text">
-     <string>输入您要监视的已涨停股票列表，每个股票代码之间用空格隔开（例如000001 000002 000003)</string>
+     <string>输入您要监视的已涨停股票列表，每个股票代码之间用1个空格隔开（例如000001 000002 000003)</string>
     </property>
    </widget>
    <widget class="QLabel" name="label_3">
@@ -81,12 +86,15 @@
      <rect>
       <x>430</x>
       <y>140</y>
-      <width>671</width>
+      <width>731</width>
       <height>81</height>
      </rect>
     </property>
     <property name="text">
      <string>还未输入</string>
+    </property>
+    <property name="wordWrap">
+     <bool>true</bool>
     </property>
    </widget>
    <widget class="QPushButton" name="pushButton_2">
@@ -112,7 +120,20 @@
      </rect>
     </property>
     <property name="text">
-     <string>TextLabel</string>
+     <string>还未开始运行</string>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="pushButton_3">
+    <property name="geometry">
+     <rect>
+      <x>1060</x>
+      <y>80</y>
+      <width>113</width>
+      <height>61</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>重置输入</string>
     </property>
    </widget>
   </widget>
@@ -137,8 +158,8 @@
    <slot>addcode()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>618</x>
-     <y>78</y>
+     <x>1028</x>
+     <y>118</y>
     </hint>
     <hint type="destinationlabel">
      <x>618</x>
@@ -153,8 +174,8 @@
    <slot>startrun()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>328</x>
-     <y>546</y>
+     <x>528</x>
+     <y>836</y>
     </hint>
     <hint type="destinationlabel">
      <x>421</x>
@@ -162,9 +183,26 @@
     </hint>
    </hints>
   </connection>
+  <connection>
+   <sender>pushButton_3</sender>
+   <signal>clicked()</signal>
+   <receiver>MainWindow</receiver>
+   <slot>resetcode()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>1118</x>
+     <y>134</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>1119</x>
+     <y>66</y>
+    </hint>
+   </hints>
+  </connection>
  </connections>
  <slots>
   <slot>addcode()</slot>
   <slot>startrun()</slot>
+  <slot>resetcode()</slot>
  </slots>
 </ui>
