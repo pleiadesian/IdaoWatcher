@@ -5,6 +5,7 @@
 监听特定股票的封停是否有打开的迹象
 """
 import tushare as ts
+import copy
 import sys
 import os
 import winsound
@@ -20,7 +21,7 @@ HIGH_THRESHOLD = 0.85  # default 0.80
 BUTTON_X = 60
 BUTTON_NONE_X = -200
 
-DEBUG = 1
+DEBUG = 0
 
 
 def get_new_a1p(codes):
@@ -70,8 +71,15 @@ class PictureView(QMainWindow, watch_limit_main.Ui_MainWindow):
         self.dlg.show()
         self.button_list = [self.dlg.pushButton_0, self.dlg.pushButton_1, self.dlg.pushButton_2, self.dlg.pushButton_3,
                             self.dlg.pushButton_4, self.dlg.pushButton_5]
+        self.code_list = ["", "", "", "", "", ""]
         for button in self.button_list:
             button.move(BUTTON_NONE_X, button.y())
+        self.dlg.pushButton_0.clicked.connect(lambda: setfocus.open_code(self.code_list[0], self.window_info))
+        self.dlg.pushButton_1.clicked.connect(lambda: setfocus.open_code(self.code_list[1], self.window_info))
+        self.dlg.pushButton_2.clicked.connect(lambda: setfocus.open_code(self.code_list[2], self.window_info))
+        self.dlg.pushButton_3.clicked.connect(lambda: setfocus.open_code(self.code_list[3], self.window_info))
+        self.dlg.pushButton_4.clicked.connect(lambda: setfocus.open_code(self.code_list[4], self.window_info))
+        self.dlg.pushButton_5.clicked.connect(lambda: setfocus.open_code(self.code_list[5], self.window_info))
         self.window_info = setfocus.init_fs()
 
         self.timer = QTimer(self)
@@ -116,14 +124,14 @@ class PictureView(QMainWindow, watch_limit_main.Ui_MainWindow):
                                     (code in self.broken_signal and self.broken_signal[code] > 0):
                                 # new_text = new_text + code + " 出现开板迹象\n"
                                 new_text.append(code)
-                                os.system('say "warning"')
+                                # os.system('say "warning"')
                                 winsound.Beep(500, 500)
                                 signal = True
                             self.broken_signal[code] = 10
                         if DEBUG == 1:
                             # new_text = new_text + code + " 出现开板迹象\n"
                             new_text.append(code)
-                            os.system('say "warning"')
+                            # os.system('say "warning"')
                             winsound.Beep(500, 500)
                             signal = True
                             self.broken_signal[code] = 10
@@ -138,11 +146,10 @@ class PictureView(QMainWindow, watch_limit_main.Ui_MainWindow):
                 self.dlg.warn()
             # assign alert code to buttons
             QApplication.processEvents()
+            self.code_list = new_text
             for button, text in zip(self.button_list, new_text):
                 button.setText(text)
                 button.move(BUTTON_X, button.y())
-                button.disconnect()
-                button.clicked.connect(lambda: setfocus.open_code(text, self.window_info))
             # button remained should be evicted
             alert_codes = len(new_text)
             for button in self.button_list:
@@ -150,7 +157,6 @@ class PictureView(QMainWindow, watch_limit_main.Ui_MainWindow):
                 if alert_codes < 0:
                     button.setText("none")
                     button.move(BUTTON_NONE_X, button.y())
-            # self.dlg.label.setText(new_text)
             self.dlg.label_broken.setText(new_text_broken)
 
     def resetcode(self):
