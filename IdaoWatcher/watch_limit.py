@@ -10,14 +10,14 @@ import os
 import winsound
 import watch_limit_main, watch_limit_warn
 from PyQt5.QtWidgets import QApplication, QMainWindow, QMessageBox, QWidget, QDesktopWidget
-from PyQt5.QtCore import QTimer
+from PyQt5.QtCore import QTimer, Qt
 
 # alert if bid1 amount has decreased more than 5% in 3 second
 INTERVAL = 3000
 THRESHOLD = 0.95
 HIGH_THRESHOLD = 0.80
 
-DEBUG = 0
+DEBUG = 1
 
 
 def get_new_a1p(codes):
@@ -43,16 +43,20 @@ class MessageView(QWidget, watch_limit_warn.Ui_Dialog):
         super(MessageView, self).__init__()
         self.setupUi(self)
         screen = QApplication.desktop()
-        self.move(screen.width() - self.width(), screen.height() - self.height())
+        self.move(screen.width() - self.width(), screen.height() - self.height() - 100)
+        self.setWindowFlags(Qt.WindowStaysOnTopHint)
 
     def accept(self):
-        self.showMinimized()
+        # self.showMinimized()
+        self.move(2000, 2000)
 
     def reject(self):
         self.showMinimized()
 
     def warn(self):
-        self.showNormal()
+        # self.showNormal()
+        screen = QApplication.desktop()
+        self.move(screen.width() - self.width(), screen.height() - self.height() - 100)
 
 
 class PictureView(QMainWindow, watch_limit_main.Ui_MainWindow):
@@ -61,7 +65,6 @@ class PictureView(QMainWindow, watch_limit_main.Ui_MainWindow):
         self.setupUi(self)
         self.dlg = MessageView()
         self.dlg.show()
-        self.dlg.showMinimized()
 
         self.timer = QTimer(self)
         self.timer.timeout.connect(self.checkall)
@@ -119,8 +122,7 @@ class PictureView(QMainWindow, watch_limit_main.Ui_MainWindow):
                     if DEBUG == 1:
                         signal = True
             if signal is True:
-                if self.dlg.isMinimized():
-                    self.dlg.showNormal()
+                self.dlg.warn()
             self.dlg.label.setText(new_text)
             self.dlg.label_broken.setText(new_text_broken)
 
