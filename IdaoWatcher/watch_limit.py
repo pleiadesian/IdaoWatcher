@@ -5,7 +5,6 @@
 监听特定股票的封停是否有打开的迹象
 """
 import tushare as ts
-import time
 import sys
 import os
 import winsound
@@ -78,6 +77,7 @@ class PictureView(QMainWindow, watch_limit_main.Ui_MainWindow):
         if self.started is True:
             new_text = ""
             new_text_broken = ""
+            QApplication.processEvents()
             a1_ps = get_new_a1p(self.codes)
             b1_vs = get_new_b1v(self.codes)
             if len(a1_ps) != len(self.codes) or len(b1_vs) != len(self.codes):
@@ -125,6 +125,7 @@ class PictureView(QMainWindow, watch_limit_main.Ui_MainWindow):
             self.dlg.label_broken.setText(new_text_broken)
 
     def resetcode(self):
+        self.dlg.showMinimized()
         self.lineEdit.setText(self.label_watch.text())
 
     def addcode(self):
