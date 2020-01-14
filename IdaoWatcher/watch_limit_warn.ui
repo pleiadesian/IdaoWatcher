@@ -37,15 +37,15 @@
   <widget class="QLabel" name="label_broken">
    <property name="geometry">
     <rect>
-     <x>260</x>
-     <y>10</y>
-     <width>171</width>
+     <x>190</x>
+     <y>30</y>
+     <width>191</width>
      <height>171</height>
     </rect>
    </property>
    <property name="font">
     <font>
-     <pointsize>16</pointsize>
+     <pointsize>15</pointsize>
     </font>
    </property>
    <property name="text">
