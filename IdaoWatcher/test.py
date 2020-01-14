@@ -5,7 +5,6 @@
 """
 import tushare as ts
 import pyautogui
-import setfocus
 
 # ts.set_token('dd8f916cd8c513589798cd4578639a341d6f8eee8fa926e6a9e986b0')
 #
@@ -34,3 +33,8 @@ import setfocus
 # pyautogui.click(x=None, y=None, clicks=1, interval=0.0, button='left', duration=0.0, tween=pyautogui.linear)
 # pyautogui.typewrite(message='000001', interval=0.01)
 # pyautogui.press('enter')
+
+# list0 = [1, 2, 3, 4, 5]
+# list1 = ["A", "B", "C"]
+# for num, alpha in zip(list0, list1):
+#     print(str(num) + alpha)
