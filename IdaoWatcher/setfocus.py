@@ -10,11 +10,11 @@ class setf():
         self.gamename = 'TdxW.exe'
         self.shell = win32com.client.Dispatch("WScript.Shell")
         self.dll = ctypes.CDLL("user32.dll")
+        self.pid = self.get_pid_for_pname(self.gamename)
 
     def setfocus(self):
-        pid = self.get_pid_for_pname(self.gamename)
-        if pid:
-            for hwnd in self.get_hwnds_for_pid(pid):
+        if self.pid:
+            for hwnd in self.get_hwnds_for_pid(self.pid):
                 self.shell.SendKeys('%')
                 self.dll.LockSetForegroundWindow(2)
                 if self.dll.IsIconic(hwnd):
@@ -57,9 +57,10 @@ def open_code(code, window_info):
     screen_width = window_info[1]
     screen_height = window_info[2]
     sf.setfocus()
-    pyautogui.moveTo(screen_width / 2, screen_height / 2)
-    pyautogui.click(x=None, y=None, clicks=1, interval=0.0, button='left', duration=0.0, tween=pyautogui.linear)
-    pyautogui.typewrite(message=code, interval=0.01)
+    # pyautogui.moveTo(screen_width / 2, screen_height / 2)
+    # pyautogui.click(x=None, y=None, clicks=1, interval=0.0, button='left', duration=0.0, tween=pyautogui.linear)
+    code = '0'+code
+    pyautogui.typewrite(message=code, interval=0.03)
     pyautogui.press('enter')
 
 

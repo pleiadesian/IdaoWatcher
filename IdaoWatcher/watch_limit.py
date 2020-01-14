@@ -20,7 +20,7 @@ HIGH_THRESHOLD = 0.85  # default 0.80
 BUTTON_X = 60
 BUTTON_NONE_X = -200
 
-DEBUG = 0
+DEBUG = 1
 
 
 def get_new_a1p(codes):
@@ -56,9 +56,8 @@ class MessageView(QWidget, watch_limit_warn.Ui_Dialog):
         self.move(3000, 3000)
 
     def warn(self):
-        # self.showNormal()
-        self.setWindowFlags(Qt.CustomizeWindowHint | Qt.WindowStaysOnTopHint)
-        self.show()
+        # self.setWindowFlags(Qt.CustomizeWindowHint | Qt.WindowStaysOnTopHint)
+        # self.show()
         screen = QApplication.desktop()
         self.move(screen.width() - self.width(), screen.height() - self.height() - 50)
 
@@ -73,7 +72,7 @@ class PictureView(QMainWindow, watch_limit_main.Ui_MainWindow):
                             self.dlg.pushButton_4, self.dlg.pushButton_5]
         for button in self.button_list:
             button.move(BUTTON_NONE_X, button.y())
-        self.windowinfo = setfocus.init_fs()
+        self.window_info = setfocus.init_fs()
 
         self.timer = QTimer(self)
         self.timer.timeout.connect(self.checkall)
@@ -142,7 +141,8 @@ class PictureView(QMainWindow, watch_limit_main.Ui_MainWindow):
             for button, text in zip(self.button_list, new_text):
                 button.setText(text)
                 button.move(BUTTON_X, button.y())
-                button.clicked.connect(setfocus.open_code, args=(text, self.window_info, ))
+                button.disconnect()
+                button.clicked.connect(lambda: setfocus.open_code(text, self.window_info))
             # button remained should be evicted
             alert_codes = len(new_text)
             for button in self.button_list:
@@ -150,7 +150,6 @@ class PictureView(QMainWindow, watch_limit_main.Ui_MainWindow):
                 if alert_codes < 0:
                     button.setText("none")
                     button.move(BUTTON_NONE_X, button.y())
-                    button.clicked.connect(None)
             # self.dlg.label.setText(new_text)
             self.dlg.label_broken.setText(new_text_broken)
 
