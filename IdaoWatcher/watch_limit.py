@@ -17,7 +17,7 @@ INTERVAL = 3000
 THRESHOLD = 0.95
 HIGH_THRESHOLD = 0.80
 
-DEBUG = 1
+DEBUG = 0
 
 
 def get_new_a1p(codes):
@@ -44,19 +44,22 @@ class MessageView(QWidget, watch_limit_warn.Ui_Dialog):
         self.setupUi(self)
         screen = QApplication.desktop()
         self.move(screen.width() - self.width(), screen.height() - self.height() - 100)
-        self.setWindowFlags(Qt.WindowStaysOnTopHint)
+        self.setWindowFlags(Qt.CustomizeWindowHint | Qt.WindowStaysOnTopHint)
 
     def accept(self):
         # self.showMinimized()
-        self.move(2000, 2000)
+        self.move(3000, 3000)
 
     def reject(self):
-        self.showMinimized()
+        self.move(3000, 3000)
 
     def warn(self):
         # self.showNormal()
+        self.setWindowFlags(Qt.CustomizeWindowHint | Qt.WindowStaysOnTopHint)
+        self.show()
         screen = QApplication.desktop()
         self.move(screen.width() - self.width(), screen.height() - self.height() - 100)
+
 
 
 class PictureView(QMainWindow, watch_limit_main.Ui_MainWindow):
@@ -65,6 +68,7 @@ class PictureView(QMainWindow, watch_limit_main.Ui_MainWindow):
         self.setupUi(self)
         self.dlg = MessageView()
         self.dlg.show()
+
 
         self.timer = QTimer(self)
         self.timer.timeout.connect(self.checkall)
@@ -112,7 +116,7 @@ class PictureView(QMainWindow, watch_limit_main.Ui_MainWindow):
                         if DEBUG == 1:
                             new_text = new_text + code + " 出现开板迹象\n"
                             os.system('say "warning"')
-                            # winsound.Beep(500, 500)
+                            winsound.Beep(500, 500)
                             signal = True
                             self.broken_signal[code] = 10
                         self.b1_v_prev[code] = b1_v
