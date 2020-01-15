@@ -21,7 +21,7 @@ HIGH_THRESHOLD = 0.85  # default 0.80
 BUTTON_X = 60
 BUTTON_NONE_X = -200
 
-DEBUG = 0
+DEBUG = 1
 
 
 def get_new_a1p(codes):
@@ -49,6 +49,9 @@ class MessageView(QWidget, watch_limit_warn.Ui_Dialog):
         screen = QApplication.desktop()
         self.move(screen.width() - self.width(), screen.height() - self.height() - 50)
         self.setWindowFlags(Qt.CustomizeWindowHint | Qt.WindowStaysOnTopHint)
+        screen = QApplication.desktop()
+        self.screen_width = screen.width()
+        self.screen_height = screen.height()
 
     def accept(self):
         self.move(3000, 3000)
@@ -57,10 +60,7 @@ class MessageView(QWidget, watch_limit_warn.Ui_Dialog):
         self.move(3000, 3000)
 
     def warn(self):
-        # self.setWindowFlags(Qt.CustomizeWindowHint | Qt.WindowStaysOnTopHint)
-        # self.show()
-        screen = QApplication.desktop()
-        self.move(screen.width() - self.width(), screen.height() - self.height() - 50)
+        self.move(self.screen_width - self.width(), self.screen_height - self.height() - 50)
 
 
 class PictureView(QMainWindow, watch_limit_main.Ui_MainWindow):
@@ -158,6 +158,9 @@ class PictureView(QMainWindow, watch_limit_main.Ui_MainWindow):
                     button.setText("none")
                     button.move(BUTTON_NONE_X, button.y())
             self.dlg.label_broken.setText(new_text_broken)
+            if DEBUG == 1:
+                self.lineEdit.setText(str(self.dlg.x()) + ' ' + str(self.dlg.y()) + ' ' +
+                                      str(self.dlg.screen_width) + ' ' + str(self.dlg.screen_height))
 
     def resetcode(self):
         self.dlg.showMinimized()
