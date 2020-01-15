@@ -52,7 +52,7 @@ def init_fs():
     return window_info
 
 
-def open_code(code, window_info):
+def open_code(code, window_info, origin_window=None):
     sf = window_info[0]
     screen_width = window_info[1]
     screen_height = window_info[2]
@@ -62,6 +62,9 @@ def open_code(code, window_info):
     # code = '0'+code  # why huawei matebook need padding?
     pyautogui.typewrite(message=code, interval=0.03)
     pyautogui.press('enter')
+    if origin_window is not None:
+        origin_window.raise_()
+        origin_window.activateWindow()
 
 
 if __name__ == '__main__':

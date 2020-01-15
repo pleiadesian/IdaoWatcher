@@ -50,8 +50,20 @@ class MessageView(QWidget, watch_limit_warn.Ui_Dialog):
         self.move(screen.width() - self.width(), screen.height() - self.height() - 50)
         self.setWindowFlags(Qt.CustomizeWindowHint | Qt.WindowStaysOnTopHint)
         screen = QApplication.desktop()
-        self.screen_width = screen.width()
-        self.screen_height = screen.height()
+        screen_count = QApplication.desktop().screenCount()
+        if screen_count > 1:
+            # for 3-screen setting
+            self.screen_rect0 = QApplication.desktop().screenGeometry(0)
+            self.screen_rect1 = QApplication.desktop().screenGeometry(1)
+            self.screen_rect2 = QApplication.desktop().screenGeometry(2)
+            max_width = max(self.screen_rect0.width(), self.screen_rect1.width(), self.screen_rect2.width())
+            max_height = max(self.screen_rect0.height(), self.screen_rect1.height(), self.screen_rect2.height())
+            self.screen_width = max_width * 2
+            self.screen_height = max_height
+        else:
+            self.screen_width = screen.width()
+            self.screen_height = screen.height()
+        self.move(self.screen_width - self.width(), self.screen_height - self.height() - 50)
 
     def accept(self):
         self.move(3000, 3000)
@@ -60,7 +72,9 @@ class MessageView(QWidget, watch_limit_warn.Ui_Dialog):
         self.move(3000, 3000)
 
     def warn(self):
-        self.move(self.screen_width - self.width(), self.screen_height - self.height() - 50)
+        QApplication.processEvents()
+        if self.x() != self.screen_width - self.width() or self.y() != self.screen_height - self.height() - 50:
+            self.move(self.screen_width - self.width(), self.screen_height - self.height() - 50)
 
 
 class PictureView(QMainWindow, watch_limit_main.Ui_MainWindow):
@@ -74,12 +88,12 @@ class PictureView(QMainWindow, watch_limit_main.Ui_MainWindow):
         self.code_list = ["", "", "", "", "", ""]
         for button in self.button_list:
             button.move(BUTTON_NONE_X, button.y())
-        self.dlg.pushButton_0.clicked.connect(lambda: setfocus.open_code(self.code_list[0], self.window_info))
-        self.dlg.pushButton_1.clicked.connect(lambda: setfocus.open_code(self.code_list[1], self.window_info))
-        self.dlg.pushButton_2.clicked.connect(lambda: setfocus.open_code(self.code_list[2], self.window_info))
-        self.dlg.pushButton_3.clicked.connect(lambda: setfocus.open_code(self.code_list[3], self.window_info))
-        self.dlg.pushButton_4.clicked.connect(lambda: setfocus.open_code(self.code_list[4], self.window_info))
-        self.dlg.pushButton_5.clicked.connect(lambda: setfocus.open_code(self.code_list[5], self.window_info))
+        self.dlg.pushButton_0.clicked.connect(lambda: setfocus.open_code(self.code_list[0], self.window_info, self.dlg))
+        self.dlg.pushButton_1.clicked.connect(lambda: setfocus.open_code(self.code_list[1], self.window_info, self.dlg))
+        self.dlg.pushButton_2.clicked.connect(lambda: setfocus.open_code(self.code_list[2], self.window_info, self.dlg))
+        self.dlg.pushButton_3.clicked.connect(lambda: setfocus.open_code(self.code_list[3], self.window_info, self.dlg))
+        self.dlg.pushButton_4.clicked.connect(lambda: setfocus.open_code(self.code_list[4], self.window_info, self.dlg))
+        self.dlg.pushButton_5.clicked.connect(lambda: setfocus.open_code(self.code_list[5], self.window_info, self.dlg))
         self.window_info = setfocus.init_fs()
 
         self.timer = QTimer(self)
@@ -163,7 +177,14 @@ class PictureView(QMainWindow, watch_limit_main.Ui_MainWindow):
                                       str(self.dlg.screen_width) + ' ' + str(self.dlg.screen_height))
 
     def resetcode(self):
-        self.dlg.showMinimized()
+        if DEBUG == 1:
+            self.label_watch.setText(str(self.x()) + ' ' + str(self.y()) + ' ' +
+                                  str(self.dlg.screen_width) + ' ' + str(self.dlg.screen_height))
+            # self.label_watch.setText(str(self.dlg.screen_rect0.x()) + ' ' + str(self.dlg.screen_rect0.y()) +
+            #                          ' ' + str(self.dlg.screen_rect0.width()) + ' '+ str(self.dlg.screen_rect0.height())
+            #                         + '  ' + str(self.dlg.screen_rect1.x()) + ' ' + str(self.dlg.screen_rect1.y()) +' '
+            #                                    + str(self.dlg.screen_rect1.width()) + ' '+ str(self.dlg.screen_rect1.height()))
+        # self.dlg.showMinimized()
         self.lineEdit.setText(self.label_watch.text())
 
     def addcode(self):
