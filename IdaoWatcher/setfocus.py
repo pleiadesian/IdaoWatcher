@@ -59,7 +59,7 @@ def open_code(code, window_info):
     sf.setfocus()
     # pyautogui.moveTo(screen_width / 2, screen_height / 2)
     # pyautogui.click(x=None, y=None, clicks=1, interval=0.0, button='left', duration=0.0, tween=pyautogui.linear)
-    code = '0'+code
+    # code = '0'+code  # why huawei matebook need padding?
     pyautogui.typewrite(message=code, interval=0.03)
     pyautogui.press('enter')
 
