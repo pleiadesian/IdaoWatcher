@@ -21,6 +21,7 @@ HIGH_THRESHOLD = 0.85  # default 0.80
 BUTTON_X = 60
 BUTTON_NONE_X = -200
 
+
 DEBUG = 0
 
 
@@ -115,7 +116,16 @@ class PictureView(QMainWindow, watch_limit_main.Ui_MainWindow):
             a1_ps = get_new_a1p(self.codes)
             b1_vs = get_new_b1v(self.codes)
             if len(a1_ps) != len(self.codes) or len(b1_vs) != len(self.codes):
-                QMessageBox.question(self, "警告", "检测到股票代码输入错误，请重新输入",
+                if DEBUG == 1:
+                    get_code = self.codes
+                    append_code = ""
+                    for codee in get_code:
+                        append_code = append_code + ' ' + codee
+                    for a1pss in self.a1_ps:
+                        append_code = append_code + ' ' + a1pss
+                    for b1vss in self.b1_vs:
+                        append_code = append_code + ' ' + b1vss
+                QMessageBox.question(self, "警告", "检测到股票代码输入错误，请重新输入" + append_code,
                                      QMessageBox.Ok | QMessageBox.Cancel, QMessageBox.Ok)
                 self.started = False
                 self.dlg.label.setText("暂停")
