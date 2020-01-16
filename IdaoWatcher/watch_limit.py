@@ -21,7 +21,7 @@ HIGH_THRESHOLD = 0.85  # default 0.80
 BUTTON_X = 60
 BUTTON_NONE_X = -200
 
-DEBUG = 1
+DEBUG = 0
 
 
 def get_new_a1p(codes):
@@ -58,7 +58,7 @@ class MessageView(QWidget, watch_limit_warn.Ui_Dialog):
             self.screen_rect2 = QApplication.desktop().screenGeometry(2)
             max_width = max(self.screen_rect0.width(), self.screen_rect1.width(), self.screen_rect2.width())
             max_height = max(self.screen_rect0.height(), self.screen_rect1.height(), self.screen_rect2.height())
-            self.screen_width = max_width * 2
+            self.screen_width = max_width
             self.screen_height = max_height
         else:
             self.screen_width = screen.width()
