@@ -1,7 +1,17 @@
-# TdxPlugin
-code for tdx plugin. Generate dlls to carry out my trading strategy.
+# IdaoWatcher
+### TODO
+* 使用多线程优化匹配的性能
+* 个股分时放量检测
+* 个股分时上穿均价线检测
 
-## Plugin_function编程规范
+### 正在测试的功能
+* 监听封板股，若出现开板迹象则发出警告
+
+
+# TdxPlugin
+以下是通达信插件编程规范的说明。因为目前通达信接口所能提供的实时信息太少，暂时不考虑使用通达信插件实现交易策略。
+
+### Plugin_function编程规范
 * PluginTCal用于生成tdx中可以调用的函数
 ---
 
@@ -55,7 +65,7 @@ BOOL RegisterTdxFunc(PluginTCalcFuncInfo** pFun)
   * 函数参数分别是(数据个数,输出,输入a,输入b,输入c),参数的计算是基于长度为DataLen 的float类型数组
   * RegisterTdxFunc函数为注册函数，用户的函数全部都放入PluginTCalcFuncInfo结构的全局数组g_CalcFuncSets中
   
-## Plugin_select编程规范
+### Plugin_select编程规范
 * MyPlugin用于生成tdx中调用筛选的插件
 ---
 * 插件信息注册函数
@@ -91,7 +101,7 @@ DataType,void * pData,short nDataNum,NTime,NTime,BYTE nTQ,unsigned long);
 	* 应考虑判断申请到的数据个数
 	* 函数编写应注意判断数据的有效性，系统对{0xF8,0xF8,0xF8,0xF8}定义为无效数，对无效数应加以判断不参与计算
 	
-## 模块
+### 模块
 * standOnDailyLimit
 * yesterdaySafe
 * yesterdayOnNeck
