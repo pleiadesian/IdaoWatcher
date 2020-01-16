@@ -189,11 +189,11 @@ class PictureView(QMainWindow, watch_limit_main.Ui_MainWindow):
     def resetcode(self):
         if DEBUG == 1:
             self.label_watch.setText(str(self.x()) + ' ' + str(self.y()) + ' ' +
-                                  str(self.dlg.screen_width) + ' ' + str(self.dlg.screen_height))
-            # self.label_watch.setText(str(self.dlg.screen_rect0.x()) + ' ' + str(self.dlg.screen_rect0.y()) +
-            #                          ' ' + str(self.dlg.screen_rect0.width()) + ' '+ str(self.dlg.screen_rect0.height())
-            #                         + '  ' + str(self.dlg.screen_rect1.x()) + ' ' + str(self.dlg.screen_rect1.y()) +' '
-            #                                    + str(self.dlg.screen_rect1.width()) + ' '+ str(self.dlg.screen_rect1.height()))
+                                     str(self.dlg.screen_width) + ' ' + str(self.dlg.screen_height))
+            self.label_watch.setText(str(self.dlg.screen_rect0.x()) + ' ' + str(self.dlg.screen_rect0.y()) + ' ' +
+                                     str(self.dlg.screen_rect0.width()) + ' ' + str(self.dlg.screen_rect0.height()) +
+                                     '  ' + str(self.dlg.screen_rect1.x()) + ' ' + str(self.dlg.screen_rect1.y()) + ' '
+                                     + str(self.dlg.screen_rect1.width()) + ' ' + str(self.dlg.screen_rect1.height()))
         # self.dlg.showMinimized()
         self.lineEdit.setText(self.label_watch.text())
 
