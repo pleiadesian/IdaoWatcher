@@ -1,8 +1,9 @@
 *.dll
 *.idea/
 *.sln
+*.spec
 *.vcxproj*
-*/.vs/
+*.vs/
 */Debug/
 venv/
 __pycache__/
