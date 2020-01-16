@@ -8,39 +8,77 @@
 昨日九价和:REF(SUM(CLOSE,9),1);
 ```
 
-##### 分爆预警（已废弃）
+##### 分爆预警
 ```
 INPUT:开幅上限(3,-9,9),开幅下限(-2,-9,9),冲高至多(5,-9,9),下砸底限(-3,-9,9),间隔分钟至少(30,2,230),单分手数少(1000,500,9000),流值小于(100,5,900);
-收价:=CLOSE;
-五均:=(CLOSE+"分爆引用.昨日四价和#DAY")/5;  # close是动态更新的，是否会遇到5均线止损一样的问题
-十均:=(CLOSE+"分爆引用.昨日九价和#DAY")/10;
-踏上双线:=CLOSE>五均 AND CLOSE>十均;
 开幅:=(DYNAINFO(4)-DYNAINFO(3))/DYNAINFO(3)*100;
 涨跌:=(CLOSE-DYNAINFO(3))/DYNAINFO(3)*100;
 开冲砸:=开幅<=开幅上限 AND 开幅>=开幅下限 AND REF(HHV(涨跌,0)<=冲高至多 AND LLV(涨跌,0)>=下砸底限,1);
 高距今:=REF(HHVBARS(CLOSE,0),1)+1;
 前高价:=REF(CLOSE,高距今);
-TTT:=SUM(VOL,0)/"分爆引用.昨日四价和#DAY";
-量返回:=IF(TIME/100>=931 AND TIME/100<=1000,TTT>=0.25,IF(TIME/100>1000 AND TIME/100<=1129,TTT>=0.33,IF(TIME/100>=1301 AND TIME/100<=1457,TTT>=0.67,0)));
-突破:=TTT AND 踏上双线 AND VOL>=单分手数少 AND 涨跌>=1 AND CLOSE>前高价*1.001 AND 高距今>=间隔分钟至少 AND 开冲砸 AND CAPITAL/1000000*CLOSE<=流值小于;
+突破:=VOL>=单分手数少 AND 涨跌>=1 AND CLOSE>前高价*1.001 AND 高距今>=间隔分钟至少 AND 开冲砸 AND CAPITAL/1000000*CLOSE<=流值小于;
 有过突:COUNT(突破,0);
 ```
 
-##### 分时爆点(投入使用中）
+##### 分时爆点（已废弃）
 ```
 INPUT:开幅上限(3,-9,9),开幅下限(-2,-9,9),冲高至多(5,-9,9),下砸底限(-3,-9,9),间隔分钟至少(30,2,230),单分手数少(1000,500,9000);  # 1分钟手数至少？
 收价:CLOSE,COLORWHITE,LINETHICK2,PRECIS2;  # 赋予变量的同时，在图上画出线
-五均:(CLOSE+"分爆引用.昨日四价和#DAY")/5,COLORWHITE,DOTLINE;
+五均:(CLOSE+"分爆引用.昨日四价和#DAY")/5,COLORWHITE,DOTLINE;  # close是动态更新的，是否会遇到5均线止损一样的问题
 十均:(CLOSE+"分爆引用.昨日九价和#DAY")/10,COLORFF00FF,DOTLINE;
 踏上双线:=CLOSE>五均 AND CLOSE>十均;
-开幅:=(DYNAINFO(4)-DYNAINFO(3))/DYNAINFO(3)*100;  # 今开相对于昨收
+开幅:=(DYNAINFO(4)-DYNAINFO(3))/DYNAINFO(3)*100;  # 今开相对于昨收，注意百分比的百分号是不计入的
 涨跌:=(CLOSE-DYNAINFO(3))/DYNAINFO(3)*100;  # 当前价相对于昨收，CLOSE会动态变化
-开冲砸:开幅<=开幅上限 AND 开幅>=开幅下限 AND REF(HHV(涨跌,0)<=冲高至多 AND LLV(涨跌,0)>=下砸底限,1),LINETHICK0,PRECIS0;
-高距今:REF(HHVBARS(CLOSE,0),1)+1,LINETHICK0,PRECIS0;
-前高价:REF(CLOSE,高距今),LINETHICK0,PRECIS2;
-TTT:=SUM(VOL,0)/"分爆引用.昨日四价和#DAY";
+开冲砸:开幅<=开幅上限 AND 开幅>=开幅下限 AND REF(HHV(涨跌,0)<=冲高至多 AND LLV(涨跌,0)>=下砸底限,1),LINETHICK0,PRECIS0;  # HHV统计的是什么范围里的
+高距今:REF(HHVBARS(CLOSE,0),1)+1,LINETHICK0,PRECIS0;  # 最高点到现在的天数
+前高价:REF(CLOSE,高距今),LINETHICK0,PRECIS2;  # 取出最高点的价格
+TTT:=SUM(VOL,0)/"分爆引用.昨日四价和#DAY";  # 为什么用成交量除以均价，是否为了估算量比？单位为vol/price是否合理？（考虑高价小盘股和低价大盘股）
+# 注意TIME是时分秒，例如093135
+# 对量比的要求：
+# * 在前半个小时，要检查TTT是否大于25%
+# * 在10点后到11点半前，要检查TTT是否大于33%
+# * 在下午，要检查TTT是否大于67%
 量返回:IF(TIME/100>=931 AND TIME/100<=1000,TTT>=0.25,IF(TIME/100>1000 AND TIME/100<=1129,TTT>=0.33,IF(TIME/100>=1301 AND TIME/100<=1457,TTT>=0.67,0))),LINETHICK0,PRECIS0;
+# 突破的核心逻辑：
+# * 量比达到要求（TTT是当前成交量除以近5分钟均价，为什么第一个条件不是“量返回”）
+#       * 在前半个小时，要检查TTT是否大于25%
+#       * 在10点后到11点半前，要检查TTT是否大于33%
+#       * 在下午，要检查TTT是否大于67%
+# * 一分钟的量超过阈值（分时的VOL是一分钟的VOL，还是3秒更新的VOL？）
+# * 当天涨幅超过1%
+# * 当前价格已经突破今天分高头的0.1%
+# * 前高头离现在必须要大于30分钟
+# * 当天开盘必须在（-2%,3%）的范围里，最高价必须低于%5，最低价必须高于-3%
 突破:TTT AND 踏上双线 AND VOL>=单分手数少 AND 涨跌>=1 AND CLOSE>前高价*1.001 AND 高距今>=间隔分钟至少 AND 开冲砸,LINETHICK0,PRECIS0;
+# 标出突破股票
+有过突:COUNT(突破,0),LINETHICK0,PRECIS0;
+DRAWTEXT(突破,CLOSE*1.008,'突'),COLORYELLOW,LINETHICK2;
+{9:30-10：00 成交量是昨天的4分之一以上 
+10：00- 11：30 成交量是昨天的 3分之一 以上 
+1:00-3：00 成交量是昨天的3分之2以上};
+```
+
+##### 分时爆点（使用中）
+```
+INPUT:开幅上限(3,-9,9),开幅下限(-2,-9,9),冲高至多(5,-9,9),下砸底限(-3,-9,9),间隔分钟至少(30,2,230),单分万元上(100,1,9000)
+收价:CLOSE,COLORWHITE,LINETHICK2,PRECIS2;  # 赋予变量的同时，在图上画出线
+开幅:=(DYNAINFO(4)-DYNAINFO(3))/DYNAINFO(3)*100;  # 今开相对于昨收，注意百分比的百分号是不计入的
+涨跌:=(CLOSE-DYNAINFO(3))/DYNAINFO(3)*100;  # 当前价相对于昨收，CLOSE会动态变化
+开冲砸:开幅<=开幅上限 AND 开幅>=开幅下限 AND REF(HHV(涨跌,0)<=冲高至多 AND LLV(涨跌,0)>=下砸底限,1),LINETHICK0,PRECIS0;  # HHV统计的是什么范围里的
+高距今:REF(HHVBARS(CLOSE,0),1)+1,LINETHICK0,PRECIS0;  # 最高点到现在的天数
+前高价:REF(CLOSE,高距今),LINETHICK0,PRECIS2;  # 取出最高点的价格
+# 突破的核心逻辑：
+# * 量比达到要求（TTT是当前成交量除以近5分钟均价，为什么第一个条件不是“量返回”）
+#       * 在前半个小时，要检查TTT是否大于25%
+#       * 在10点后到11点半前，要检查TTT是否大于33%
+#       * 在下午，要检查TTT是否大于67%
+# * 一分钟的量超过阈值（分时的VOL是一分钟的VOL，还是3秒更新的VOL？）
+# * 当天涨幅超过1%
+# * 当前价格已经突破今天分高头的0.1%
+# * 前高头离现在必须要大于30分钟
+# * 当天开盘必须在（-2%,3%）的范围里，最高价必须低于%5，最低价必须高于-3%
+突破:AMOUNT/10000>=单分万元上 AND 涨跌>=1.58 AND CLOSE>前高价*1.000 AND 高距今>=间隔分钟至少 AND SUM(VOL,0)/CAPITAL*100>=0.6 AND (SUM(VOL,0)*240/DYNAINFO(38)/BARSCOUNT(c))>=0.6 AND 开冲砸,LINETHICK0,PRECIS0;
+# 标出突破股票
 有过突:COUNT(突破,0),LINETHICK0,PRECIS0;
 DRAWTEXT(突破,CLOSE*1.008,'突'),COLORYELLOW,LINETHICK2;
 {9:30-10：00 成交量是昨天的4分之一以上 
