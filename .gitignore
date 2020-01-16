@@ -1,4 +1,10 @@
 *.dll
+*.idea/
 *.sln
 *.vcxproj*
-*.vs/
+*/.vs/
+*/Debug/
+venv/
+__pycache__/
+dist/
+build/

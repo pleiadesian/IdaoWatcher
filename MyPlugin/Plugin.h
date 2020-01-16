@@ -18,9 +18,12 @@
 //vector
 typedef struct vector
 {
-	float price[200];
+	float price[200] = {0};           // save all price
+	float neck_price[200] = {0};      // possible neck price
+	int neck_price_amount[200] = {0}; // corresponding neck price amount
 	int index = 0;
 }Neckline;
+
 
 typedef struct tag_PluginPara	//参数信息的结构定义
 {
