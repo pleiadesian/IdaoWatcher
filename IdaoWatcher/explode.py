@@ -2,6 +2,7 @@
 @ File:     explode.py
 @ Author:   pleiadesian
 @ Datetime: 2020-01-16 20:51
+@ Desc:     time share exploding detection
 """
 
 import datetime
@@ -25,13 +26,12 @@ EXPLODE_RISE_RATIO_THRESHOLD = 0.0158
 def timeshare_explode(code, high_to_curr):
     assert(isinstance(code, list) is False)
     pro = ts.pro_api()
-    infos = ts.get_realtime_quotes(code).values
+    info = ts.get_realtime_quotes(code).values[0]
     basic_infos = pro.daily_basic(ts_code=api.ts_map.ts_mapping[code],
                                   trade_date=datetime.datetime.now().strftime('%Y%m%d'),
-                                  fields='turnover_rate,volume_ratio').values  # should we use turnover_f?
-    turnover_rate = basic_infos[0][0]
-    volume_ratio = basic_infos[0][1]
-    info = infos[0]
+                                  fields='turnover_rate,volume_ratio').values[0]  # should we use turnover_f?
+    turnover_rate = basic_infos[0]
+    volume_ratio = basic_infos[1]
     today_open = info[1]
     pre_close = info[2]
     price = info[3]
@@ -42,7 +42,7 @@ def timeshare_explode(code, high_to_curr):
     time = datetime.datetime.strptime(time, "%H:%M:%S")
     if datetime.datetime.strptime('09:30:00', "%H:%M:%S") <= time < datetime.datetime.strptime('09:50:00', "%H:%M:%S"):
         high_to_curr_threshold = 3
-    elif datetime.datetime.strptime('09:50:00', "%H:%M:%S") <= time <= datetime.datetime.strptime('10:30:00', "%H:%M:%S"):
+    elif datetime.datetime.strptime('09:50:00', "%H:%M:%S") <= time < datetime.datetime.strptime('10:30:00', "%H:%M:%S"):
         high_to_curr_threshold = 15
     else:
         high_to_curr_threshold = 60
@@ -50,7 +50,6 @@ def timeshare_explode(code, high_to_curr):
     rise_ratio = (price - pre_close) / pre_close
     rush_not_broken = OPEN_LOWER_LIMIT <= open_ratio <= OPEN_UPPER_LIMIT and high <= RUSH_UPPER_LIMIT \
                       and low >= RUSH_LOWER_LIMIT
-    # TODO: Turnover Rate and quantity relative ratio based on local db
     exploded = amount / 10000 and rise_ratio >= EXPLODE_RISE_RATIO_THRESHOLD and price > high and \
                high_to_curr >= high_to_curr_threshold and turnover_rate >= 6 and volume_ratio > 0.6 and rush_not_broken
     return exploded
