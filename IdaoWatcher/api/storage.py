@@ -79,6 +79,14 @@ class Storage:
         """
         return self.realtime_quotes
 
+    def get_realtime_storage_single(self, code):
+        """
+        :param code: stock code
+        :return: realtime data for code
+        """
+        assert self.realtime_quotes
+        return self.realtime_quotes.loc['code':code]
+
     def update_daily_storage(self):
         """
         scratch daily data and store it locally

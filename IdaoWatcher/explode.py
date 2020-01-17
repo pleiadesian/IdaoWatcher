@@ -23,7 +23,7 @@ EXPLODE_RISE_RATIO_THRESHOLD = 0.0158
 
 # TODO: outer scope should provide high_to_curr
 # TODO: scale to 30 codes
-def timeshare_explode(code, high_to_curr):
+def detect_timeshare_explode(code, high_to_curr):
     assert(isinstance(code, list) is False)
     pro = ts.pro_api()
     info = ts.get_realtime_quotes(code).values[0]
@@ -56,7 +56,7 @@ def timeshare_explode(code, high_to_curr):
 
 
 if __name__ == '__main__':
-    exploded0 = timeshare_explode('600230', 29)
-    print(exploded0)
+    exploded = detect_timeshare_explode('600230', 29)
+    print(exploded)
 
 
