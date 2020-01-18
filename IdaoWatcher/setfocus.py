@@ -10,11 +10,11 @@ class setf():
         self.gamename = 'TdxW.exe'
         self.shell = win32com.client.Dispatch("WScript.Shell")
         self.dll = ctypes.CDLL("user32.dll")
+        self.pid = self.get_pid_for_pname(self.gamename)
 
     def setfocus(self):
-        pid = self.get_pid_for_pname(self.gamename)
-        if pid:
-            for hwnd in self.get_hwnds_for_pid(pid):
+        if self.pid:
+            for hwnd in self.get_hwnds_for_pid(self.pid):
                 self.shell.SendKeys('%')
                 self.dll.LockSetForegroundWindow(2)
                 if self.dll.IsIconic(hwnd):
@@ -52,15 +52,19 @@ def init_fs():
     return window_info
 
 
-def open_code(code, window_info):
+def open_code(code, window_info, origin_window=None):
     sf = window_info[0]
     screen_width = window_info[1]
     screen_height = window_info[2]
     sf.setfocus()
-    pyautogui.moveTo(screen_width / 2, screen_height / 2)
-    pyautogui.click(x=None, y=None, clicks=1, interval=0.0, button='left', duration=0.0, tween=pyautogui.linear)
-    pyautogui.typewrite(message=code, interval=0.01)
+    # pyautogui.moveTo(screen_width / 2, screen_height / 2)
+    # pyautogui.click(x=None, y=None, clicks=1, interval=0.0, button='left', duration=0.0, tween=pyautogui.linear)
+    # code = '0'+code  # why huawei matebook need padding?
+    pyautogui.typewrite(message=code, interval=0.03)
     pyautogui.press('enter')
+    if origin_window is not None:
+        origin_window.raise_()
+        origin_window.activateWindow()
 
 
 if __name__ == '__main__':
