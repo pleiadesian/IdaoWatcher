@@ -19,26 +19,28 @@ class NeckLine:
         :param code: stock code
         """
         info = self.storage.get_realtime_storage_single(code)
-        price = info[3]
-        high = info[4]
+        price = float(info[3])
+        high = float(info[4])
         time = info[31]
         if price == high:
             self.neckline[code] = time
 
     def high_to_curr(self, code):
-        curr_time = self.storage.get_realtime_storage_single(code)[31]
+        curr_time_str = self.storage.get_realtime_storage_single(code)[31]
+        curr_time = curr_time_str.split(':')
         if code not in self.neckline:
-            self.neckline[code] = curr_time
-        high_time = self.neckline[code].split(':')
+            self.neckline[code] = curr_time_str
+        high_time_str = self.neckline[code]
+        high_time = high_time_str.split(':')
         if (9 <= int(high_time[0]) <= 11 and 9 <= int(curr_time[0]) <= 11) or \
-                (13 <= (high_time[0]) <= 15 and 13 <= int(curr_time[0]) <= 15):
-            return (datetime.datetime.strptime(curr_time[:5], "%H:%M") -
-                    datetime.datetime.strptime(high_time[:5], "%H:%M")).seconds / 60
+                (13 <= int(high_time[0]) <= 15 and 13 <= int(curr_time[0]) <= 15):
+            return (datetime.datetime.strptime(curr_time_str[:5], "%H:%M") -
+                    datetime.datetime.strptime(high_time_str[:5], "%H:%M")).seconds / 60
         else:
-            return (datetime.datetime.strptime(curr_time[:5], "%H:%M") -
+            return (datetime.datetime.strptime(curr_time_str[:5], "%H:%M") -
                     datetime.datetime.strptime('13:00', "%H:%M")).seconds / 60 + \
                    (datetime.datetime.strptime('11:30', "%H:%M") -
-                    datetime.datetime.strptime(high_time[:5], "%H:%M")).seconds / 60
+                    datetime.datetime.strptime(high_time_str[:5], "%H:%M")).seconds / 60
 
 
 if __name__ == '__main__':

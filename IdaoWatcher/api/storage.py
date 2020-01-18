@@ -6,13 +6,13 @@
 """
 import re
 import time
+import requests
 import pandas as pd
 from random import randint
 from multiprocessing.pool import ThreadPool
 from urllib.request import urlopen, Request
-import requests
-import urllib
-import api.ts_map
+import tushare as ts
+import api.ts_map as tm
 
 DEBUG = 0
 
@@ -35,15 +35,13 @@ def process_plaintext(index, reg, reg_sym):
     :return: data frame for a bunch of stock
     """
     # TODO: add index on code column
-    request = Request('%shq.%s/rn=%s&list=%s' % ('http://', 'sinajs.cn',
-                                                 random(), api.ts_map.code_list[index]))
     resp = None
     not_get = True
     while not_get:
         try:
             # text = urlopen(request, timeout=1).read()
             resp = requests.get('%shq.%s/rn=%s&list=%s' % ('http://', 'sinajs.cn',
-                                random(), api.ts_map.code_list[index]), timeout=3)
+                                random(), tm.code_list[index]), timeout=3)
             not_get = False
             if resp is None:
                 not_get = True
@@ -70,8 +68,12 @@ def process_plaintext(index, reg, reg_sym):
         df[txt] = df[txt].map(lambda x: x[:-2])
     return df
 
+
 class Storage:
     def __init__(self):
+        with open('token/token.txt', "r") as f:  # 设置文件对象
+            token = f.read()
+        ts.set_token(token)
         self.realtime_quotes = None
         self.stock_daily = None
         self.reg = re.compile(r'\="(.*?)\";')
@@ -94,17 +96,12 @@ class Storage:
             args_remain.append((i, self.reg, self.reg_sym))
         df_list_remain = p.starmap(process_plaintext, args_remain)
         df_curr = pd.concat(df_list + df_list_remain)
+        df_curr = df_curr.set_index('code')
+        self.realtime_quotes = df_curr
         if DEBUG == 1:
             end_time = time.time()
             print(end_time - start_time)
-            for i in range(0, 5):
-                print(df_list[i][0])
-                print(df_list[i][1][:50])
-            for i in range(0, 3):
-                print(df_list_remain[i][0])
-                print(df_list_remain[i][1][:50])
             print('\n')
-        self.realtime_quotes = df_curr
 
     def get_realtime_storage(self):
         """
@@ -117,13 +114,23 @@ class Storage:
         :param code: stock code
         :return: realtime data for code
         """
-        assert self.realtime_quotes
-        return self.realtime_quotes.loc['code':code]
+        assert self.realtime_quotes is not None
+        return self.realtime_quotes.loc[code]
 
     def update_daily_storage(self):
         """
         scratch daily data and store it locally
         """
+
+    def update_neckline_storage(self):
+        """
+        initialize neckline in time share chart
+        """
+        curr_date = self.get_realtime_storage_single('000001')[30]
+        curr_date = ''.join(curr_date.split('-'))
+        for ts_code in tm.ts_mapping.values():
+            df = ts.pro_bar(ts_code='000001.SH,399365.SZ', freq='1min', start_date=curr_date)
+            print(df)
 
 
 if __name__ == '__main__':
@@ -131,4 +138,5 @@ if __name__ == '__main__':
     while True:
         time.sleep(2)
         storage.update_realtime_storage()
+        storage.update_neckline_storage()
         print(storage.get_realtime_storage())

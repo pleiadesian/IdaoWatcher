@@ -36,7 +36,7 @@ class Main:
         """
         while True:
             time.sleep(SLEEP_INTERVAL)
-            self.storage.get_realtime_storage()
+            self.storage.update_realtime_storage()
             codes = self.matching()
             print(str(datetime.datetime.now()) + '\t' + ' '.join(codes) + " 出现分时攻击")
 
