@@ -1,6 +1,9 @@
 import time
 import psutil
-import win32gui, win32process, win32con, win32com.client
+import win32gui
+import win32process
+import win32con
+import win32com.client
 import ctypes
 import pyautogui
 
@@ -18,7 +21,8 @@ class setf():
                 self.shell.SendKeys('%')
                 self.dll.LockSetForegroundWindow(2)
                 if self.dll.IsIconic(hwnd):
-                    win32gui.SendMessage(hwnd, win32con.WM_SYSCOMMAND, win32con.SC_RESTORE, 0)
+                    win32gui.SendMessage(
+                        hwnd, win32con.WM_SYSCOMMAND, win32con.SC_RESTORE, 0)
                 self.dll.SetWindowPos(hwnd, win32con.HWND_TOPMOST, 0, 0, 0, 0,
                                       win32con.SWP_NOSIZE | win32con.SWP_NOMOVE)
                 self.dll.SetForegroundWindow(hwnd)
@@ -58,7 +62,8 @@ def open_code(code, window_info):
     screen_height = window_info[2]
     sf.setfocus()
     pyautogui.moveTo(screen_width / 2, screen_height / 2)
-    pyautogui.click(x=None, y=None, clicks=1, interval=0.0, button='left', duration=0.0, tween=pyautogui.linear)
+    pyautogui.click(x=None, y=None, clicks=1, interval=0.0,
+                    button='left', duration=0.0, tween=pyautogui.linear)
     pyautogui.typewrite(message=code, interval=0.01)
     pyautogui.press('enter')
 
