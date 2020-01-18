@@ -10,9 +10,9 @@ import datetime
 #    :return: the number of rising K60
 #    """
 hzsunmoon_num = 0  # 初始化阳线根数为0
-stock_ticker='000049'
+stock_ticker='300617'
 now_time=datetime.datetime.now().strftime('%Y-%m-%d') #今天的日期（年-月-日）
-past_time=(datetime.datetime.now()-datetime.timedelta(days=3)).strftime('%Y-%m-%d') #认为不可能连着12根阳线，只往前推3天
+past_time=(datetime.datetime.now()-datetime.timedelta(days=4)).strftime('%Y-%m-%d') #认为不可能连着16根阳线，只往前推4天
 
 
 all_info=ts.get_hist_data(stock_ticker,start=past_time,end=now_time,ktype='60')
@@ -21,10 +21,11 @@ high_price=all_info['high']
 close_price=all_info['close']
 low_price=all_info['low']
 
-#目前只考虑连续两天涨停的情况
+print(all_info)
 limit_1_before=round(close_price[4]*1.1,2) #昨天的涨停limit
 limit_2_before=round(close_price[8]*1.1,2) #前天的涨停limit
-limit_set=[limit_1_before,limit_2_before]
+limit_3_before=round(close_price[12]*1.1,2) #大前天的涨停limit
+limit_set=[limit_1_before,limit_2_before,limit_3_before]
 #判断十字星
 def judge_doji(i,open,high,close,low):
     if(abs(open[i]-close[i])<=(high[i]-low[i])*0.1)and(open[i]>low[i]+0.02)and(open[i]<high[i]-0.02)and(close[i]>low[i]+0.02)and(close[i]<high[i]-0.02):
