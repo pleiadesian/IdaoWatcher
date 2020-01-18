@@ -14,7 +14,7 @@ from urllib.request import urlopen, Request
 import tushare as ts
 import api.ts_map as tm
 
-DEBUG = 0
+DEBUG = 1
 
 DATA_COLS = ['name', 'open', 'pre_close', 'price', 'high', 'low', 'bid', 'ask', 'volume', 'amount', 'b1_v', 'b1_p',
              'b2_v', 'b2_p', 'b3_v', 'b3_p', 'b4_v', 'b4_p', 'b5_v', 'b5_p', 'a1_v', 'a1_p', 'a2_v', 'a2_p', 'a3_v',
@@ -69,15 +69,48 @@ def process_plaintext(index, reg, reg_sym):
     return df
 
 
+def process(codes):
+    if len(codes) >300:
+        a = 1
+    i = 0
+    for code in tm.detail_code_list:
+        if DEBUG == 1:
+            start_time = time.time()
+        url = '%sapi.finance.%s/akmin?scode=%s&type=%s' % ('http://', 'ifeng.com', code, '5')
+        not_get = True
+        resp = None
+        while not_get:
+            try:
+                resp = requests.get(url, timeout=3)
+                not_get = False
+                if resp is None:
+                    not_get = True
+            except requests.exceptions.RequestException as e:
+                time.sleep(1)
+                not_get = True
+        resp = resp.text
+        if DEBUG == 1:
+            end_time = time.time()
+            print(end_time - start_time)
+            i += 1
+            print(str(i) + ' finished')
+
+
 class Storage:
     def __init__(self):
-        with open('token/token.txt', "r") as f:  # 设置文件对象
-            token = f.read()
+        if __name__ == '__main__':
+            with open('token/token.txt', "r") as f:  # 设置文件对象
+                token = f.read()
+        else:
+            with open('api/token/token.txt', "r") as f:  # 设置文件对象
+                token = f.read()
         ts.set_token(token)
         self.realtime_quotes = None
         self.stock_daily = None
         self.reg = re.compile(r'\="(.*?)\";')
         self.reg_sym = re.compile(r'(?:sh|sz)(.*?)\=')
+
+        self.init_neckline_storage()
 
     def update_realtime_storage(self):
         """
@@ -122,21 +155,36 @@ class Storage:
         scratch daily data and store it locally
         """
 
-    def update_neckline_storage(self):
+    def init_neckline_storage(self):
         """
         initialize neckline in time share chart
         """
-        curr_date = self.get_realtime_storage_single('000001')[30]
-        curr_date = ''.join(curr_date.split('-'))
-        for ts_code in tm.ts_mapping.values():
-            df = ts.pro_bar(ts_code='000001.SH,399365.SZ', freq='1min', start_date=curr_date)
-            print(df)
+        # TODO: check if this api get current data
+        # TODO: use pro_bar or more efficient api to get time share chart
+        if DEBUG == 1:
+            start_time = time.time()
+        args = []
+        step = int(len(tm.detail_code_list) / 36)
+        for i in range(0, 36):
+            if step * (i+1) > len(tm.detail_code_list):
+                args.append(tm.detail_code_list[step * i:])
+            else:
+                args.append(tm.detail_code_list[step * i:step * (i+1)])
+        p = ThreadPool()
+        p.map(process, args)
+        if DEBUG == 1:
+            end_time = time.time()
+            print(end_time - start_time)
+        # curr_date = self.get_realtime_storage_single('000001')[30]
+        # curr_date = ''.join(curr_date.split('-'))
+        # for ts_code in tm.ts_mapping.values():
+        #     df = ts.pro_bar(ts_code='000001.SH,399365.SZ', freq='1min', start_date=curr_date)
+        #     print(df)
 
 
 if __name__ == '__main__':
     storage = Storage()
-    while True:
-        time.sleep(2)
-        storage.update_realtime_storage()
-        storage.update_neckline_storage()
-        print(storage.get_realtime_storage())
+    # while True:
+    #     time.sleep(2)
+    #     storage.update_realtime_storage()
+    #     print(storage.get_realtime_storage())
