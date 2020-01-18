@@ -1,4 +1,5 @@
 *.dll
+*.ipynb
 *.idea/
 *.sln
 *.spec
@@ -9,3 +10,5 @@ venv/
 __pycache__/
 dist/
 build/
+.ipynb_checkpoints/
+token/
