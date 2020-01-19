@@ -10,5 +10,5 @@ venv/
 __pycache__/
 dist/
 build/
-token/
 .ipynb_checkpoints/
+token/
