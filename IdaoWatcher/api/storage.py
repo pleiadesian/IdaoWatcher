@@ -73,7 +73,7 @@ def process(codes):
     if len(codes) >300:
         a = 1
     i = 0
-    for code in tm.detail_code_list:
+    for code in codes:
         if DEBUG == 1:
             start_time = time.time()
         url = '%sapi.finance.%s/akmin?scode=%s&type=%s' % ('http://', 'ifeng.com', code, '5')
@@ -184,7 +184,7 @@ class Storage:
 
 if __name__ == '__main__':
     storage = Storage()
-    # while True:
-    #     time.sleep(2)
-    #     storage.update_realtime_storage()
-    #     print(storage.get_realtime_storage())
+    while True:
+        time.sleep(2)
+        storage.update_realtime_storage()
+        print(storage.get_realtime_storage())
