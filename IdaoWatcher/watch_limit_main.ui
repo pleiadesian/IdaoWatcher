@@ -23,6 +23,11 @@
       <height>61</height>
      </rect>
     </property>
+    <property name="font">
+     <font>
+      <pointsize>16</pointsize>
+     </font>
+    </property>
     <property name="text">
      <string>确认</string>
     </property>
@@ -36,6 +41,11 @@
       <height>51</height>
      </rect>
     </property>
+    <property name="font">
+     <font>
+      <pointsize>16</pointsize>
+     </font>
+    </property>
    </widget>
    <widget class="QLabel" name="label_2">
     <property name="geometry">
@@ -46,6 +56,11 @@
       <height>61</height>
      </rect>
     </property>
+    <property name="font">
+     <font>
+      <pointsize>17</pointsize>
+     </font>
+    </property>
     <property name="text">
      <string>输入您要监视的已涨停股票列表，每个股票代码之间用1个空格隔开（例如000001 000002 000003)</string>
     </property>
@@ -54,10 +69,15 @@
     <property name="geometry">
      <rect>
       <x>30</x>
-      <y>130</y>
-      <width>401</width>
+      <y>150</y>
+      <width>131</width>
       <height>71</height>
      </rect>
+    </property>
+    <property name="font">
+     <font>
+      <pointsize>16</pointsize>
+     </font>
     </property>
     <property name="text">
      <string>正在监视：</string>
@@ -66,11 +86,16 @@
    <widget class="QLabel" name="label_watch">
     <property name="geometry">
      <rect>
-      <x>430</x>
+      <x>180</x>
       <y>140</y>
-      <width>731</width>
-      <height>81</height>
+      <width>961</width>
+      <height>111</height>
      </rect>
+    </property>
+    <property name="font">
+     <font>
+      <pointsize>16</pointsize>
+     </font>
     </property>
     <property name="text">
      <string>还未输入</string>
@@ -88,6 +113,11 @@
       <height>71</height>
      </rect>
     </property>
+    <property name="font">
+     <font>
+      <pointsize>16</pointsize>
+     </font>
+    </property>
     <property name="text">
      <string>开始运行</string>
     </property>
@@ -100,6 +130,11 @@
       <width>113</width>
       <height>61</height>
      </rect>
+    </property>
+    <property name="font">
+     <font>
+      <pointsize>16</pointsize>
+     </font>
     </property>
     <property name="text">
      <string>重置输入</string>
@@ -143,12 +178,12 @@
    <slot>startrun()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>528</x>
-     <y>836</y>
+     <x>518</x>
+     <y>326</y>
     </hint>
     <hint type="destinationlabel">
      <x>421</x>
-     <y>547</y>
+     <y>463</y>
     </hint>
    </hints>
   </connection>
