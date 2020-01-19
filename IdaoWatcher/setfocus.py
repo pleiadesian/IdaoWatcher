@@ -29,7 +29,11 @@ class setf():
         for pid in pids:  # 对所有PID进行循环
             p = psutil.Process(pid)  # 实例化进程对象
             if p.name() == processName:  # 判断实例进程名与输入的进程名是否一致（判断进程是否存活）
-                return pid  # 返回
+                for hwnd in self.get_hwnds_for_pid(pid):
+                    a = win32gui.GetWindowText(hwnd)
+                    if win32gui.GetWindowText(hwnd)[:2] == '中信':
+                        return pid  # 返回
+                    print(win32gui.GetWindowText(hwnd))
         return 0
 
     def get_hwnds_for_pid(self, pid):
