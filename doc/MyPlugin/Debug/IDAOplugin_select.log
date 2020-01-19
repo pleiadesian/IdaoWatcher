@@ -1,0 +1,28 @@
+﻿  MyPlugin.cpp
+Z:\towh\TdxPlugin\MyPlugin\MyPlugin.cpp(31): warning C4273: “RegisterDataInterface”: dll 链接不一致
+  Z:\towh\TdxPlugin\MyPlugin\plugin.h(52): note: 参见“RegisterDataInterface”的前一个定义
+Z:\towh\TdxPlugin\MyPlugin\MyPlugin.cpp(39): warning C4273: “GetCopyRightInfo”: dll 链接不一致
+  Z:\towh\TdxPlugin\MyPlugin\plugin.h(54): note: 参见“GetCopyRightInfo”的前一个定义
+Z:\towh\TdxPlugin\MyPlugin\MyPlugin.cpp(41): warning C4996: 'strcpy': This function or variable may be unsafe. Consider using strcpy_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+  C:\Program Files (x86)\Windows Kits\10\Include\10.0.17763.0\ucrt\string.h(133): note: 参见“strcpy”的声明
+Z:\towh\TdxPlugin\MyPlugin\MyPlugin.cpp(42): warning C4996: 'strcpy': This function or variable may be unsafe. Consider using strcpy_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+  C:\Program Files (x86)\Windows Kits\10\Include\10.0.17763.0\ucrt\string.h(133): note: 参见“strcpy”的声明
+Z:\towh\TdxPlugin\MyPlugin\MyPlugin.cpp(43): warning C4996: 'strcpy': This function or variable may be unsafe. Consider using strcpy_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+  C:\Program Files (x86)\Windows Kits\10\Include\10.0.17763.0\ucrt\string.h(133): note: 参见“strcpy”的声明
+Z:\towh\TdxPlugin\MyPlugin\MyPlugin.cpp(44): warning C4996: 'strcpy': This function or variable may be unsafe. Consider using strcpy_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+  C:\Program Files (x86)\Windows Kits\10\Include\10.0.17763.0\ucrt\string.h(133): note: 参见“strcpy”的声明
+Z:\towh\TdxPlugin\MyPlugin\MyPlugin.cpp(45): warning C4996: 'strcpy': This function or variable may be unsafe. Consider using strcpy_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+  C:\Program Files (x86)\Windows Kits\10\Include\10.0.17763.0\ucrt\string.h(133): note: 参见“strcpy”的声明
+Z:\towh\TdxPlugin\MyPlugin\MyPlugin.cpp(46): warning C4996: 'strcpy': This function or variable may be unsafe. Consider using strcpy_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+  C:\Program Files (x86)\Windows Kits\10\Include\10.0.17763.0\ucrt\string.h(133): note: 参见“strcpy”的声明
+Z:\towh\TdxPlugin\MyPlugin\MyPlugin.cpp(50): warning C4996: 'strcpy': This function or variable may be unsafe. Consider using strcpy_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+  C:\Program Files (x86)\Windows Kits\10\Include\10.0.17763.0\ucrt\string.h(133): note: 参见“strcpy”的声明
+Z:\towh\TdxPlugin\MyPlugin\MyPlugin.cpp(79): warning C4804: “<”: 在操作中使用类型“bool”不安全
+Z:\towh\TdxPlugin\MyPlugin\MyPlugin.cpp(123): warning C4244: “初始化”: 从“double”转换到“float”，可能丢失数据
+Z:\towh\TdxPlugin\MyPlugin\MyPlugin.cpp(124): warning C4244: “初始化”: 从“double”转换到“float”，可能丢失数据
+Z:\towh\TdxPlugin\MyPlugin\MyPlugin.cpp(150): warning C4273: “InputInfoThenCalc1”: dll 链接不一致
+  Z:\towh\TdxPlugin\MyPlugin\plugin.h(56): note: 参见“InputInfoThenCalc1”的前一个定义
+  StdAfx.cpp
+  正在生成代码...
+    正在创建库 Z:\towh\TdxPlugin\MyPlugin\Debug\IDAOplugin_select.lib 和对象 Z:\towh\TdxPlugin\MyPlugin\Debug\IDAOplugin_select.exp
+  IDAOplugin_select.vcxproj -> Z:\towh\TdxPlugin\MyPlugin\Debug\IDAOplugin_select.dll
