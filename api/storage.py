@@ -6,6 +6,7 @@
 """
 import re
 import time
+import json
 import requests
 import pandas as pd
 from random import randint
@@ -69,7 +70,7 @@ def process_plaintext(index, reg, reg_sym):
     return df
 
 
-def process(codes):
+def process_json(codes):
     if len(codes) >300:
         a = 1
     i = 0
@@ -83,17 +84,35 @@ def process(codes):
             try:
                 resp = requests.get(url, timeout=3)
                 not_get = False
-                if resp is None:
+                if resp is None or len(resp.text) == 0:
                     not_get = True
             except requests.exceptions.RequestException as e:
                 time.sleep(1)
                 not_get = True
-        resp = resp.text
+                ts.get_hist_data()
+        if DEBUG == 1:
+            mid_time = time.time()
+        text = resp.text
+        js = json.loads(text)
+        cols = ['date', 'open', 'high', 'close', 'low', 'volume', 'price_change', 'p_change', 'ma5', 'ma10', 'ma20',
+                'v_ma5', 'v_ma10', 'v_ma20', 'turnover']
+        df = pd.DataFrame(js['record'], columns=cols)
+        for col in cols[1:]:
+            df[col] = df[col].astype(float)
+        curr_date = df['date'].values[-1][0:10]
+        df = df[df.date >= curr_date]
+        df = df.drop('turnover', axis=1)
+        df = df.set_index('date')
+        df = df.sort_index(ascending=False)
+        # TODO: calc the peak
+
         if DEBUG == 1:
             end_time = time.time()
-            print(end_time - start_time)
+            print("mid" + str(mid_time - start_time))
+            print("final" + str(end_time - mid_time))
             i += 1
             print(str(i) + ' finished')
+        return df
 
 
 class Storage:
@@ -171,7 +190,7 @@ class Storage:
             else:
                 args.append(tm.detail_code_list[step * i:step * (i+1)])
         p = ThreadPool()
-        p.map(process, args)
+        df_list = p.map(process_json, args)
         if DEBUG == 1:
             end_time = time.time()
             print(end_time - start_time)

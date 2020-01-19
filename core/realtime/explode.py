@@ -28,6 +28,7 @@ def detect_timeshare_explode(code, high_to_curr):
     pro = ts.pro_api()
     info = ts.get_realtime_quotes(code).values[0]
     # TODO: daily_basic prefetch at boot time
+    # TODO: turnover rate and volume should based on realtime volume
     if DEBUG == 1:
         basic_infos = pro.daily_basic(ts_code=api.ts_map.ts_mapping[code],
                                       trade_date=datetime.datetime.now().strftime('20200117'),
