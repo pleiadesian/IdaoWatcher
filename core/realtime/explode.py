@@ -7,7 +7,8 @@
 
 import datetime
 import tushare as ts
-import api.ts_map
+import api.ts_map as tm
+import api.storage as st
 
 DEBUG = 0
 
@@ -23,11 +24,12 @@ EXPLODE_RISE_RATIO_THRESHOLD = 0.0158
 
 
 # TODO: scale to 30 codes
-def detect_timeshare_explode(code, high_to_curr):
+def detect_timeshare_explode(storage, code, high_to_curr):
     assert(isinstance(code, list) is False)
-    pro = ts.pro_api()
-    info = ts.get_realtime_quotes(code)
-    info = info.values[0]
+    # info = ts.get_realtime_quotes(code)
+    info = storage.get_realtime_storage_single(code)
+    # info = info.values[0]
+    # info = info.values
     # TODO: daily_basic prefetch at boot time
     # TODO: turnover rate and volume should based on realtime volume
     # TODO: should we use turnover_rate_f?
@@ -41,19 +43,23 @@ def detect_timeshare_explode(code, high_to_curr):
     #                                   fields='turnover_rate,volume_ratio').values[0]
     # turnover_rate = float(basic_infos[0])
     # volume_ratio = float(basic_infos[1])
-    not_get = True
-    hist_data = None
-    basic_infos = None
-    while not_get:
-        basic_infos = pro.daily_basic(ts_code=api.ts_map.ts_mapping[code],
-                                      trade_date=datetime.datetime.now().strftime('20200117'))
-        hist_data = ts.get_hist_data(code)
-        if hist_data is None or basic_infos is None:
-            continue
-        not_get = False
+    # not_get = True
+    # hist_data = None
+    # basic_infos = None
+    # while not_get:
+        # basic_infos = pro.daily_basic(ts_code=tm.ts_mapping[code],
+        #                               trade_date=datetime.datetime.now().strftime('%Y%m%d'))
+        # hist_data = ts.get_hist_data(code)
+        # if hist_data is None or basic_infos is None:
+        #     continue
+        # not_get = False
+
+    basic_infos = storage.get_basicinfo_single(tm.ts_mapping[code])
+    hist_data = storage.get_histdata_single(tm.ts_mapping[code])
 
     volume = float(info[8])
-    volume_ma5 = float(hist_data['v_ma5'][0])
+
+    volume_ma5 = sum([serie['vol'] for serie in hist_data]) / len(hist_data)
     today_open = float(info[1])
     pre_close = float(info[2])
     price = float(info[3])
@@ -74,7 +80,7 @@ def detect_timeshare_explode(code, high_to_curr):
     else:
         high_to_curr_threshold = 60
 
-    float_share = basic_infos['float_share'][0]
+    float_share = basic_infos['float_share']
     turnover_rate = volume / float_share / 100
     volume_ratio = volume * 240 / volume_ma5 / minutes_lapse / 100
 
@@ -96,7 +102,9 @@ def detect_timeshare_explode(code, high_to_curr):
 
 
 if __name__ == '__main__':
-    exploded = detect_timeshare_explode('300496', 29)
+    storage = st.Storage()
+    storage.update_realtime_storage()
+    exploded = detect_timeshare_explode(storage, '000792', 29)
     print(exploded)
 
 

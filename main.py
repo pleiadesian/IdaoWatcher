@@ -10,7 +10,9 @@ import core.realtime.explode as ex
 import api.storage as st
 import api.ts_map as tm
 
-SLEEP_INTERVAL = 2
+SLEEP_INTERVAL = 1
+
+DEBUG = 1
 
 
 class Main:
@@ -24,13 +26,12 @@ class Main:
         :return: matched codes
         """
         matched = []
-        start = time.time()
         for code in tm.ts_mapping:
-            if ex.detect_timeshare_explode(code, self.neckline.high_to_curr(code)):
+            # TODO: add ST and sci-tech filtering here
+            # TODO: implement neckline detection
+            if ex.detect_timeshare_explode(self.storage, code, None):
                 matched.append(code)
             self.neckline.detect_neckline(code)
-        end = time.time()
-        print("main:" + str(end - start))
         return matched
 
     def mainloop(self):
@@ -39,9 +40,15 @@ class Main:
         """
         while True:
             time.sleep(SLEEP_INTERVAL)
+            if DEBUG == 1:
+                start = time.time()
             self.storage.update_realtime_storage()
             codes = self.matching()
-            print(str(datetime.datetime.now()) + '\t' + ' '.join(codes) + " 出现分时攻击")
+            if len(codes) > 0:
+                print(str(datetime.datetime.now()) + '     ' + ' '.join(codes) + " 出现分时攻击")
+            if DEBUG == 1:
+                end = time.time()
+                print("main:" + str(end - start))
 
 
 if __name__ == '__main__':
