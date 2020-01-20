@@ -45,5 +45,7 @@ class NeckLine:
 
 if __name__ == '__main__':
     storage = st.Storage()
+    storage.update_realtime_storage()
     neckline = NeckLine(storage)
     neckline.detect_neckline('000001')
+    neckline.high_to_curr('000001')

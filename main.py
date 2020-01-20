@@ -24,10 +24,13 @@ class Main:
         :return: matched codes
         """
         matched = []
+        start = time.time()
         for code in tm.ts_mapping:
             if ex.detect_timeshare_explode(code, self.neckline.high_to_curr(code)):
                 matched.append(code)
             self.neckline.detect_neckline(code)
+        end = time.time()
+        print("main:" + str(end - start))
         return matched
 
     def mainloop(self):

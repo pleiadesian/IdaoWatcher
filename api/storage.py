@@ -7,6 +7,7 @@
 import re
 import time
 import json
+import datetime
 import requests
 import pandas as pd
 from random import randint
@@ -74,20 +75,27 @@ def process_peak(df):
     """
     find the peak in the time share chart
     :param df: time share data frame
-    :return: peak, high_to_curr
+    :return: peak, peak time
     """
     if DEBUG == 1:
         start = time.time()
     df_sorted = df.sort_values(by=['high'])
-    df_high = df[df_sorted[len(df_sorted) - 1]['high']]
+    df_high = df[df.high == df_sorted.high[-1]]
+    df_selected = df_high.sort_index()
+
     if DEBUG == 1:
         end = time.time()
         print(end - start)
-    a = 1
+    peak = df_selected['high'].values[0]
+    peak_time = df_selected.index.values[0][-8:]
+    rounddown_peak_time = (datetime.datetime.strptime(peak_time, "%H:%M:%S") - datetime.timedelta(minutes=5))\
+        .strftime("%H:%M:%S")
+    return peak, rounddown_peak_time
 
 
 def process_json(codes):
     i = 0
+    peak_info = dict()
     for code in codes:
         if DEBUG == 1:
             start_time = time.time()
@@ -99,6 +107,7 @@ def process_json(codes):
                 resp = requests.get(url, timeout=3)
                 not_get = False
                 if resp is None or len(resp.text) == 0:
+                    time.sleep(1)
                     not_get = True
             except requests.exceptions.RequestException as e:
                 time.sleep(1)
@@ -119,15 +128,15 @@ def process_json(codes):
         df = df.set_index('date')
         df = df.sort_index(ascending=False)
         # TODO: calc the peak
-        peak = process_peak(df)
-
+        peak, peak_time = process_peak(df)
+        peak_info[code[2:]] = (peak, peak_time)
         if DEBUG == 1:
             end_time = time.time()
             print("mid" + str(mid_time - start_time))
             print("final" + str(end_time - mid_time))
             i += 1
             print(str(i) + ' finished')
-        return df
+    return peak_info
 
 
 class Storage:
@@ -143,8 +152,9 @@ class Storage:
         self.stock_daily = None
         self.reg = re.compile(r'\="(.*?)\";')
         self.reg_sym = re.compile(r'(?:sh|sz)(.*?)\=')
+        self.peak_info = dict()
 
-        self.init_neckline_storage()
+        # self.init_neckline_storage()
 
     def update_realtime_storage(self):
         """
@@ -198,14 +208,22 @@ class Storage:
         if DEBUG == 1:
             start_time = time.time()
         args = []
-        step = int(len(tm.detail_code_list) / 36)
-        for i in range(0, 36):
+        step = int(len(tm.detail_code_list) / 12)
+        for i in range(0, 12):
             if step * (i+1) > len(tm.detail_code_list):
                 args.append(tm.detail_code_list[step * i:])
             else:
                 args.append(tm.detail_code_list[step * i:step * (i+1)])
         p = ThreadPool()
-        df_list = p.map(process_json, args)
+        peak_infos = p.map(process_json, args)
+        start = time.time()
+        # TODO: k-v coalease
+        # coalesced_peak_info = dict()
+        # for peak_info in peak_infos:
+        #     coalesced_peak_info = {**coalesced_peak_info, **peak_info}
+        self.peak_info = {k:v for dic in peak_infos for k,v in dic.items()}
+        end = time.time()
+        print("timelapse:" + str(end - start))
         if DEBUG == 1:
             end_time = time.time()
             print(end_time - start_time)
