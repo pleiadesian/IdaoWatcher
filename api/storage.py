@@ -70,9 +70,23 @@ def process_plaintext(index, reg, reg_sym):
     return df
 
 
+def process_peak(df):
+    """
+    find the peak in the time share chart
+    :param df: time share data frame
+    :return: peak, high_to_curr
+    """
+    if DEBUG == 1:
+        start = time.time()
+    df_sorted = df.sort_values(by=['high'])
+    df_high = df[df_sorted[len(df_sorted) - 1]['high']]
+    if DEBUG == 1:
+        end = time.time()
+        print(end - start)
+    a = 1
+
+
 def process_json(codes):
-    if len(codes) >300:
-        a = 1
     i = 0
     for code in codes:
         if DEBUG == 1:
@@ -105,6 +119,7 @@ def process_json(codes):
         df = df.set_index('date')
         df = df.sort_index(ascending=False)
         # TODO: calc the peak
+        peak = process_peak(df)
 
         if DEBUG == 1:
             end_time = time.time()
