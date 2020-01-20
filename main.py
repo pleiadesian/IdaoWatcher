@@ -12,7 +12,7 @@ import api.ts_map as tm
 
 SLEEP_INTERVAL = 1
 
-DEBUG = 1
+DEBUG = 0
 
 
 class Main:
@@ -46,6 +46,8 @@ class Main:
             codes = self.matching()
             if len(codes) > 0:
                 print(str(datetime.datetime.now()) + '     ' + ' '.join(codes) + " 出现分时攻击")
+                with open('stock.log', 'a') as f:
+                    f.write(str(datetime.datetime.now()) + '     ' + ' '.join(codes) + " 出现分时攻击"+'\n')
             if DEBUG == 1:
                 end = time.time()
                 print("main:" + str(end - start))

@@ -16,7 +16,7 @@ from urllib.request import urlopen, Request
 import tushare as ts
 import api.ts_map as tm
 
-DEBUG = 1
+DEBUG = 0
 
 DATA_COLS = ['name', 'open', 'pre_close', 'price', 'high', 'low', 'bid', 'ask', 'volume', 'amount', 'b1_v', 'b1_p',
              'b2_v', 'b2_p', 'b3_v', 'b3_p', 'b4_v', 'b4_p', 'b5_v', 'b5_p', 'a1_v', 'a1_p', 'a2_v', 'a2_p', 'a3_v',
@@ -169,7 +169,7 @@ class Storage:
             with open('token/token.txt', "r") as f:  # 设置文件对象
                 token = f.read()
         elif __name__ == 'api.storage':
-            with open('api/token/token.txt', "r") as f:  # 设置文件对象
+            with open('token/token.txt', "r") as f:  # 设置文件对象
                 token = f.read()
         else:
             with open('api/token/token.txt', "r") as f:  # 设置文件对象
