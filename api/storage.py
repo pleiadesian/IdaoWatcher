@@ -169,7 +169,7 @@ class Storage:
             with open('token/token.txt', "r") as f:  # 设置文件对象
                 token = f.read()
         elif __name__ == 'api.storage':
-            with open('token/token.txt', "r") as f:  # 设置文件对象
+            with open('api/token/token.txt', "r") as f:  # 设置文件对象
                 token = f.read()
         else:
             with open('api/token/token.txt', "r") as f:  # 设置文件对象

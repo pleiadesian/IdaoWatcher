@@ -12,7 +12,7 @@ import api.ts_map as tm
 
 SLEEP_INTERVAL = 1
 
-DEBUG = 0
+DEBUG = 1
 
 
 class Main:
@@ -27,7 +27,6 @@ class Main:
         """
         matched = []
         for code in tm.ts_mapping:
-            # TODO: add ST and sci-tech filtering here
             # TODO: implement neckline detection
             if ex.detect_timeshare_explode(self.storage, code, None):
                 matched.append(code)

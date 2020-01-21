@@ -93,7 +93,7 @@ def detect_timeshare_explode(storage, code, high_to_curr):
 
     exploded = amount / 10000 > MINUTE_LIMIT_THRESHOLD
     exploded = exploded and rise_ratio >= EXPLODE_RISE_RATIO_THRESHOLD
-    exploded = exploded and price > high
+    exploded = exploded and price >= high
     # exploded = exploded and high_to_curr >= high_to_curr_threshold
     exploded = exploded and turnover_rate >= 0.6
     exploded = exploded and volume_ratio > 0.6
