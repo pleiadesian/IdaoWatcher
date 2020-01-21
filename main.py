@@ -19,6 +19,7 @@ class Main:
     def __init__(self):
         self.storage = st.Storage()
         self.neckline = nl.NeckLine(self.storage)
+        self.time_share_explosion = ex.TimeShareExplosion()
 
     def matching(self):
         """
@@ -28,7 +29,7 @@ class Main:
         matched = []
         for code in tm.ts_mapping:
             # TODO: implement neckline detection
-            if ex.detect_timeshare_explode(self.storage, code, None):
+            if self.time_share_explosion.detect_timeshare_explode(self.storage, code, None):
                 matched.append(code)
             self.neckline.detect_neckline(code)
         return matched
