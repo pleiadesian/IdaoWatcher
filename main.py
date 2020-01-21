@@ -10,9 +10,7 @@ import core.realtime.explode as ex
 import api.storage as st
 import api.ts_map as tm
 
-SLEEP_INTERVAL = 1
-
-DEBUG = 1
+SLEEP_INTERVAL = 3
 
 
 class Main:
@@ -38,19 +36,20 @@ class Main:
         """
         start main loop
         """
+        start = 0
+        end = 3
         while True:
-            time.sleep(SLEEP_INTERVAL)
-            if DEBUG == 1:
-                start = time.time()
+            if end - start < 3:
+                time.sleep(SLEEP_INTERVAL - (end - start))
             self.storage.update_realtime_storage()
+            start = time.time()
             codes = self.matching()
             if len(codes) > 0:
                 print(str(datetime.datetime.now()) + '     ' + ' '.join(codes) + " 出现分时攻击")
                 with open('stock.log', 'a') as f:
                     f.write(str(datetime.datetime.now()) + '     ' + ' '.join(codes) + " 出现分时攻击"+'\n')
-            if DEBUG == 1:
-                end = time.time()
-                print("main:" + str(end - start))
+            end = time.time()
+            print("main:" + str(end - start))
 
 
 if __name__ == '__main__':
