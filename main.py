@@ -27,14 +27,18 @@ class Main:
         """
         matched = []
         final_matched = []
+        boomed = []
         for code in tm.ts_mapping:
-            if self.time_share_explosion.detect_timeshare_explode(self.storage, code):
+            ret = self.time_share_explosion.detect_timeshare_explode(self.storage, code)
+            if ret:
+                if ret > 1:
+                    boomed.append(code)
                 matched.append(code)
         if len(matched) > 0:
             print(str(datetime.datetime.now()) + '     ' + ' '.join(matched) + " 颈线检测前")
             final_matched = self.neckline.detect_neckline(matched)
         # final_matched = matched
-        return final_matched
+        return final_matched + boomed
 
     def mainloop(self):
         """

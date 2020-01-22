@@ -22,7 +22,8 @@ TURNOVER_THRESHOLD = 2.5  # turnover rate 2.5%, default %0.6
 VOLUME_RATIO_THRESHOLD = 0.6
 
 EXPLODE_RISE_RATIO_THRESHOLD = 0.0158
-ACCER_THRESHOLD = 0.01
+ACCER_THRESHOLD = 0.01  # ￥0.01
+LARGE_ACCER_THRESHOLD = 0.03  # %2
 
 RELATIVE_LARGE_VOLUME_THRESHOLD = 50  # default 58
 ABSOLUTE_LARGE_VOLUME_THRESHOLD = 1.27  # default 127%
@@ -65,6 +66,7 @@ class TimeShareExplosion:
         # in case of time delta
         curr_deal_volume = (volume - self.deal_volume[code][0]) / sec_delta * 3
         curr_deal_accer = (price - self.deal_price[code]) / sec_delta * 3
+        curr_deal_accer_percent = (price - self.deal_price[code]) / sec_delta * 3 / pre_close
         if time <= datetime.datetime.strptime('11:30:00', "%H:%M:%S"):
             minutes_elapse = (time - datetime.datetime.strptime('9:30:00', "%H:%M:%S")).seconds / 60
         else:
@@ -99,13 +101,18 @@ class TimeShareExplosion:
 
         exploded &= rush_not_broken
         exploded &= rise_ratio >= EXPLODE_RISE_RATIO_THRESHOLD
-        exploded &= curr_deal_accer >= ACCER_THRESHOLD
-        exploded &= (relative_large_volume or absolute_large_volume)
+        exploded &= (curr_deal_accer >= ACCER_THRESHOLD or
+                     curr_deal_accer_percent >= LARGE_ACCER_THRESHOLD)
+        exploded &= relative_large_volume
         # if code == '000955':
         #     print(str(time) + ' '+str(curr_deal_volume))
 
         self.deal_volume[code] = (volume, time)
         self.deal_price[code] = price
+
+        # in case of booming
+        if curr_deal_accer_percent >= LARGE_ACCER_THRESHOLD:
+            return 2
         return exploded
 
 
