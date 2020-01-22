@@ -15,24 +15,31 @@ OPEN_UPPER_LIMIT = 0.1  # default 0.03
 OPEN_LOWER_LIMIT = -0.03  # default -0.02
 
 # RUSH_UPPER_LIMIT = 0.09  # default 0.05
-RUSH_LOWER_LIMIT = -0.03
+RUSH_LOWER_LIMIT = -0.05  # default -0.03
 
-MINUTE_LIMIT_THRESHOLD = 100  # 1,000,000 volume of transaction
+AMOUNT_THRESHOLD = 100  # 1,000,000 volume of transaction
+TURNOVER_THRESHOLD = 2.5  # turnover rate 2.5%, default %0.6
+VOLUME_RATIO_THRESHOLD = 0.6
 
 EXPLODE_RISE_RATIO_THRESHOLD = 0.0158
+ACCER_THRESHOLD = 0.01
 
-RELATIVE_LARGE_VOLUME_THRESHOLD = 58
-ABSOLUTE_LARGE_VOLUME_THRESHOLD = 1.27
+RELATIVE_LARGE_VOLUME_THRESHOLD = 50  # default 58
+ABSOLUTE_LARGE_VOLUME_THRESHOLD = 1.27  # default 127%
+SMALL_ABSOLUTE_LARGE_VOLUME_THRESHOLD = 3.5
+BIG_ABSOLUTE_LARGE_VOLUME_THRESHOLD = 0.6
 
 
 class TimeShareExplosion:
     def __init__(self):
         self.deal_volume = dict()
+        self.deal_price = dict()
         for code in tm.ts_mapping:
             self.deal_volume[code] = (0.0, datetime.datetime.now())
+            self.deal_price[code] = 0.0
 
     # TODO: scale to 30 codes
-    def detect_timeshare_explode(self, storage, code, high_to_curr):
+    def detect_timeshare_explode(self, storage, code):
         assert(isinstance(code, list) is False)
         basic_infos = storage.get_basicinfo_single(tm.ts_mapping[code])
         hist_data = storage.get_histdata_single(tm.ts_mapping[code])
@@ -57,13 +64,14 @@ class TimeShareExplosion:
             return False
         # in case of time delta
         curr_deal_volume = (volume - self.deal_volume[code][0]) / sec_delta * 3
+        curr_deal_accer = (price - self.deal_price[code]) / sec_delta * 3
         if time <= datetime.datetime.strptime('11:30:00', "%H:%M:%S"):
             minutes_elapse = (time - datetime.datetime.strptime('9:30:00', "%H:%M:%S")).seconds / 60
         else:
             minutes_elapse = 120 + (time - datetime.datetime.strptime('13:00:00', "%H:%M:%S")).seconds / 60
 
-        turnover_rate = volume / free_share / 100
-        volume_ratio = volume * 240 / volume_ma5 / minutes_elapse / 100
+        turnover_rate = volume * 240 / free_share / minutes_elapse  # customized turnover_rate
+        volume_ratio = volume * 240 / volume_ma5 / minutes_elapse
         deal_volume_ratio = curr_deal_volume / volume_ma5_deal
         deal_turnover_rate = curr_deal_volume * 20 * 240 / free_share / 100
 
@@ -77,20 +85,27 @@ class TimeShareExplosion:
         rush_not_broken &= low_ratio >= RUSH_LOWER_LIMIT
 
         relative_large_volume = deal_volume_ratio > RELATIVE_LARGE_VOLUME_THRESHOLD
-        absolute_large_volume = deal_turnover_rate > ABSOLUTE_LARGE_VOLUME_THRESHOLD
+        if free_share < 11500:
+            absolute_large_volume = deal_turnover_rate > SMALL_ABSOLUTE_LARGE_VOLUME_THRESHOLD
+        elif free_share < 80000:
+            absolute_large_volume = deal_turnover_rate > ABSOLUTE_LARGE_VOLUME_THRESHOLD
+        else:
+            absolute_large_volume = deal_turnover_rate > BIG_ABSOLUTE_LARGE_VOLUME_THRESHOLD
 
-        exploded = amount / 10000 > MINUTE_LIMIT_THRESHOLD
+        exploded = amount / 10000 > AMOUNT_THRESHOLD
         # exploded = exploded and price >= high
-        exploded &= turnover_rate >= 0.6
-        exploded &= volume_ratio > 0.6
+        exploded &= turnover_rate >= TURNOVER_THRESHOLD
+        exploded &= volume_ratio > VOLUME_RATIO_THRESHOLD
 
         exploded &= rush_not_broken
         exploded &= rise_ratio >= EXPLODE_RISE_RATIO_THRESHOLD
+        exploded &= curr_deal_accer >= ACCER_THRESHOLD
         exploded &= (relative_large_volume or absolute_large_volume)
         # if code == '000955':
         #     print(str(time) + ' '+str(curr_deal_volume))
 
         self.deal_volume[code] = (volume, time)
+        self.deal_price[code] = price
         return exploded
 
 
@@ -98,7 +113,7 @@ if __name__ == '__main__':
     storage = st.Storage()
     storage.update_realtime_storage()
     time_share_explotion = TimeShareExplosion()
-    ret = time_share_explotion.detect_timeshare_explode(storage, '000792', 29)
+    ret = time_share_explotion.detect_timeshare_explode(storage, '000792')
     print(ret)
 
 

@@ -1,3 +1,4 @@
+*.dat
 *.log
 *.dll
 *.ipynb

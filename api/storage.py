@@ -5,8 +5,10 @@
 @ Desc:     Scratching, cleaning and storing data
 """
 import re
+import os
 import time
 import json
+import pickle
 import datetime
 import requests
 import pandas as pd
@@ -16,11 +18,18 @@ from urllib.request import urlopen, Request
 import tushare as ts
 import api.ts_map as tm
 
-DEBUG = 0
+DEBUG = 1
+RELOAD = 0
 
 DATA_COLS = ['name', 'open', 'pre_close', 'price', 'high', 'low', 'bid', 'ask', 'volume', 'amount', 'b1_v', 'b1_p',
              'b2_v', 'b2_p', 'b3_v', 'b3_p', 'b4_v', 'b4_p', 'b5_v', 'b5_p', 'a1_v', 'a1_p', 'a2_v', 'a2_p', 'a3_v',
              'a3_p', 'a4_v', 'a4_p', 'a5_v', 'a5_p', 'date', 'time', 's']
+
+with open('../../api/token/token.txt', "r") as f:
+    token = f.read()
+# with open('api/token/token.txt', "r") as f:
+#     token = f.read()
+pro = ts.pro_api(token)
 
 
 def random(n=13):
@@ -73,31 +82,30 @@ def process_plaintext(index, reg, reg_sym):
     return realtime_info
 
 
-def process_peak(df):
-    """
-    find the peak in the time share chart
-    :param df: time share data frame
-    :return: peak, peak time
-    """
-    if DEBUG == 1:
-        start = time.time()
-    df_sorted = df.sort_values(by=['high'])
-    df_high = df[df.high == df_sorted.high[-1]]
-    df_selected = df_high.sort_index()
-
-    if DEBUG == 1:
-        end = time.time()
-        print(end - start)
-    peak = df_selected['high'].values[0]
-    peak_time = df_selected.index.values[0][-8:]
-    rounddown_peak_time = (datetime.datetime.strptime(peak_time, "%H:%M:%S") - datetime.timedelta(minutes=5))\
-        .strftime("%H:%M:%S")
-    return peak, rounddown_peak_time
+# def process_peak(df):
+#     """
+#     find the peak in the time share chart
+#     :param df: time share data frame
+#     :return: peak, peak time
+#     """
+#     if DEBUG == 1:
+#         start = time.time()
+#     df_sorted = df.sort_values(by=['high'])
+#     df_high = df[df.high == df_sorted.high[-1]]
+#     df_selected = df_high.sort_index()
+#
+#     if DEBUG == 1:
+#         end = time.time()
+#         print(end - start)
+#     peak = df_selected['high'].values[0]
+#     peak_time = df_selected.index.values[0][-8:]
+#     rounddown_peak_time = (datetime.datetime.strptime(peak_time, "%H:%M:%S") - datetime.timedelta(minutes=5))\
+#         .strftime("%H:%M:%S")
+#     return peak, rounddown_peak_time
 
 
 def process_json(codes):
     i = 0
-    pro = ts.pro_api()
     df_date = pro.trade_cal(exchange='SSE', start_date=datetime.datetime.now().strftime('%Y') + '0101', is_open=1)
     pretrade_df = df_date[df_date.cal_date < datetime.datetime.now().strftime('%Y%m%d')]
     if len(pretrade_df) == 0:
@@ -115,8 +123,8 @@ def process_json(codes):
             'ma5', 'ma10', 'ma20', 'v_ma5', 'v_ma10', 'v_ma20']  # only for daily
     df_curr = pd.DataFrame(columns=cols)
     for code in codes:
-        if DEBUG == 1:
-            start_time = time.time()
+        # if DEBUG == 1:
+        #     start_time = time.time()
         # url = '%sapi.finance.%s/akmin?scode=%s&type=%s' % ('http://', 'ifeng.com', code, '5')
         url = '%sapi.finance.%s/%s/?code=%s&type=last' % ('http://', 'ifeng.com', 'akdaily', code)
         not_get = True
@@ -131,8 +139,8 @@ def process_json(codes):
             except requests.exceptions.RequestException as e:
                 time.sleep(1)
                 not_get = True
-        if DEBUG == 1:
-            mid_time = time.time()
+        # if DEBUG == 1:
+        #     mid_time = time.time()
         text = resp.text
         js = json.loads(text)
         df = pd.DataFrame(js['record'], columns=cols)
@@ -154,26 +162,46 @@ def process_json(codes):
         # # TODO: calc the peak
         # peak, peak_time = process_peak(df)
         # peak_info[code[2:]] = (peak, peak_time)
-        if DEBUG == 1:
-            end_time = time.time()
-            print("mid" + str(mid_time - start_time))
-            print("final" + str(end_time - mid_time))
-            i += 1
-            print(str(i) + ' finished')
+        # if DEBUG == 1:
+        #     end_time = time.time()
+        #     print("mid" + str(mid_time - start_time))
+        #     print("final" + str(end_time - mid_time))
+        #     i += 1
+        #     print(str(i) + ' finished')
     return df_curr
+
+
+def process_json_realtime(code):
+    cols = ['day', 'open', 'high', 'low', 'close', 'volume']
+    url = 'https://quotes.sina.cn/cn/api/json_v2.php/' \
+          'CN_MarketDataService.getKLineData?symbol=%s&scale=1&ma=no&datalen=242' % code
+    not_get = True
+    resp = None
+    while not_get:
+        try:
+            resp = requests.get(url, timeout=3)
+            not_get = False
+            if resp is None or len(resp.text) == 0:
+                time.sleep(1)
+                not_get = True
+        except requests.exceptions.RequestException as e:
+            time.sleep(1)
+            not_get = True
+    text = resp.text
+    js = json.loads(text)
+    df = pd.DataFrame(js, columns=cols)
+    df = df[df.day >= js[0]['day'][:10] + ' 15:00:00']
+    for col in cols[1:]:
+        df[col] = df[col].astype(float)
+    df.insert(0, 'code', code[2:])
+    df['code'] = code[2:]
+    # df = df.set_index('day')
+    # df = df.sort_index(ascending=False)
+    return df
 
 
 class Storage:
     def __init__(self):
-        if __name__ == '__main__':
-            with open('token/token.txt', "r") as f:  # 设置文件对象
-                token = f.read()
-        elif __name__ == 'api.storage':
-            with open('api/token/token.txt', "r") as f:  # 设置文件对象
-                token = f.read()
-        else:
-            with open('api/token/token.txt', "r") as f:  # 设置文件对象
-                token = f.read()
         self.pro = ts.pro_api(token)
         self.realtime_quotes = None
         self.stock_daily = None
@@ -186,15 +214,32 @@ class Storage:
         self.hist_data = dict()
 
         # self.init_neckline_storage()
-        self.init_basicinfo()
-        self.init_histdata()
+        if DEBUG == 1:
+            target_bi = 'basicinfo.dat'
+            target_hd = 'histdata.dat'
+            if os.path.getsize(target_bi) > 0 and os.path.getsize(target_hd) > 0:
+                with open(target_bi, "rb") as f:
+                    unpickler = pickle.Unpickler(f)
+                    self.basic_info = unpickler.load()
+                with open(target_hd, "rb") as f:
+                    unpickler = pickle.Unpickler(f)
+                    self.hist_data = unpickler.load()
+        else:
+            self.init_basicinfo()
+            self.init_histdata()
+            if RELOAD == 1:
+                with open('basicinfo.dat', 'wb') as f:
+                    pickle.dump(self.basic_info, f)
+                with open('histdata.dat', 'wb') as f:
+                    pickle.dump(self.hist_data, f)
+
 
     def update_realtime_storage(self):
         """
         scratch realtime data and store it locally
         """
-        if DEBUG == 1:
-            start_time = time.time()
+        # if DEBUG == 1:
+        #     start_time = time.time()
         args = []
         for i in range(0, 5):
             args.append((i, self.reg, self.reg_sym))
@@ -213,14 +258,24 @@ class Storage:
         dict_curr_remain = {k:v for dic in dict_list_remain for k,v in dic.items()}
         # self.realtime_quotes = df_curr
         self.realtime_quotes = {**dict_curr, **dict_curr_remain}
-        if DEBUG == 1:
-            end_time = time.time()
-            print("update_realtime_storage: "+str(end_time - start_time))
+        # if DEBUG == 1:
+        #     end_time = time.time()
+        #     print("update_realtime_storage: "+str(end_time - start_time))
 
     def update_daily_storage(self):
         """
         scratch daily data and store it locally
         """
+
+    def get_realtime_chart(self, code_list):
+        """
+        :param code_list: stock code_list
+        :return: stock realtime chart list in this day
+        """
+        ts_code_list = [tm.ts_lower_mapping[k] for k in code_list]
+        p = ThreadPool()
+        df_list = p.map(process_json_realtime, ts_code_list)
+        return df_list
 
     def get_realtime_storage(self):
         """
@@ -268,7 +323,7 @@ class Storage:
     def get_histdata_single(self, ts_code):
         """
         :param ts_code: stock ts code
-        :return:
+        :return: stock history data
         """
         assert self.hist_data is not None
         # return self.hist_data.loc[ts_code]

@@ -16,6 +16,7 @@ SLEEP_INTERVAL = 3
 class Main:
     def __init__(self):
         self.storage = st.Storage()
+        self.storage.update_realtime_storage()
         self.neckline = nl.NeckLine(self.storage)
         self.time_share_explosion = ex.TimeShareExplosion()
 
@@ -25,12 +26,15 @@ class Main:
         :return: matched codes
         """
         matched = []
+        final_matched = []
         for code in tm.ts_mapping:
-            # TODO: implement neckline detection
-            if self.time_share_explosion.detect_timeshare_explode(self.storage, code, None):
+            if self.time_share_explosion.detect_timeshare_explode(self.storage, code):
                 matched.append(code)
-            self.neckline.detect_neckline(code)
-        return matched
+        if len(matched) > 0:
+            print(str(datetime.datetime.now()) + '     ' + ' '.join(matched) + " 颈线检测前")
+            final_matched = self.neckline.detect_neckline(matched)
+        # final_matched = matched
+        return final_matched
 
     def mainloop(self):
         """
@@ -41,15 +45,19 @@ class Main:
         while True:
             if end - start < 3:
                 time.sleep(SLEEP_INTERVAL - (end - start))
+            start = time.time()  # update too fast?
             self.storage.update_realtime_storage()
-            start = time.time()
             codes = self.matching()
             if len(codes) > 0:
                 print(str(datetime.datetime.now()) + '     ' + ' '.join(codes) + " 出现分时攻击")
                 with open('stock.log', 'a') as f:
                     f.write(str(datetime.datetime.now()) + '     ' + ' '.join(codes) + " 出现分时攻击"+'\n')
+            else:
+                print(str(datetime.datetime.now()))
+                with open('stock.log', 'a') as f:
+                    f.write(str(datetime.datetime.now()) + '\n')
             end = time.time()
-            print("main:" + str(end - start))
+            # print("main:" + str(end - start))
 
 
 if __name__ == '__main__':
