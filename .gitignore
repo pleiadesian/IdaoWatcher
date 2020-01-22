@@ -1,3 +1,5 @@
+*.dat
+*.log
 *.dll
 *.ipynb
 *.idea/
