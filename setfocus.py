@@ -68,5 +68,5 @@ def open_code(code, window_info, origin_window=None):
 
 
 if __name__ == '__main__':
-    window_info0 = init_fs()
-    open_code("600030", window_info0)
+    window_info = init_fs()
+    open_code("600030", window_info)
