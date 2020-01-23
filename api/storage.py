@@ -18,17 +18,18 @@ from urllib.request import urlopen, Request
 import tushare as ts
 import api.ts_map as tm
 
-DEBUG = 1
+DEBUG = 0
 RELOAD = 0
 
 DATA_COLS = ['name', 'open', 'pre_close', 'price', 'high', 'low', 'bid', 'ask', 'volume', 'amount', 'b1_v', 'b1_p',
              'b2_v', 'b2_p', 'b3_v', 'b3_p', 'b4_v', 'b4_p', 'b5_v', 'b5_p', 'a1_v', 'a1_p', 'a2_v', 'a2_p', 'a3_v',
              'a3_p', 'a4_v', 'a4_p', 'a5_v', 'a5_p', 'date', 'time', 's']
 
-with open('../../api/token/token.txt', "r") as f:
-    token = f.read()
-# with open('api/token/token.txt', "r") as f:
+# with open('../../api/token/token.txt', "r") as f:
 #     token = f.read()
+with open('api/token/token.txt', "r") as f:
+    token = f.read()
+ts.set_token(token)
 pro = ts.pro_api(token)
 
 
@@ -233,7 +234,6 @@ class Storage:
                 with open('histdata.dat', 'wb') as f:
                     pickle.dump(self.hist_data, f)
 
-
     def update_realtime_storage(self):
         """
         scratch realtime data and store it locally
@@ -243,9 +243,18 @@ class Storage:
         args = []
         for i in range(0, 5):
             args.append((i, self.reg, self.reg_sym))
-        p = ThreadPool()
+        not_create = True
+        while not_create:
+            try:
+                p = ThreadPool()
+                not_create = False
+            except RuntimeError as e:
+                time.sleep(3)
+                not_create = True
+
         # df_list = p.starmap(process_plaintext, args)
         dict_list = p.starmap(process_plaintext, args)
+
 
         args_remain = []
         for i in range(5, 8):
@@ -375,6 +384,7 @@ class Storage:
             while not_get:
                 try:
                     df = self.pro.daily(ts_code='', start_date=pretrade_date[i], end_date=pretrade_date[i])
+
                     df_list.append(df)
                     not_get = False
                 except requests.exceptions.RequestException as e:

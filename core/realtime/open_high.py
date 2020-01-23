@@ -4,6 +4,9 @@
 @ Desc:     本模块用于在9：15~9：25集合竞价期间对高开股票进行检测
 @ Author:   pleiadesian
 """
+import pandas as pd
+import api.ts_map as tm
+import api.storage as st
 import tushare as ts
 import datetime
 
@@ -39,9 +42,10 @@ def calc_peak(code):
     return peak_value, peak_day
 
 
-def detect_high_open(code):
+def detect_high_open(storage, code):
     """
     检测到股票当前开在近RECENT_PEAK天的极值之上
+    :param storage: 本地缓存
     :param code: 股票代码
     :return: 检测到发生高开（True or False）
     """
@@ -55,17 +59,21 @@ def detect_high_open(code):
     #     past_time_1 = (datetime.datetime.strptime(now_time_1, '%Y-%m-%d') - datetime.timedelta(days=delta)).strftime(
     #         '%Y-%m-%d')  # 遇到跨双休日、节假日的情况，持续往前推，直到获得3天的数据
     #     df_hist = ts.get_hist_data(code, start=past_time_1, end=now_time_1, ktype='D')
-    df_hist = ts.get_hist_data(code, ktype='D')
+
+    # df_hist = ts.get_hist_data(code, ktype='D')
+    df_hist = pd.DataFrame([serie for serie in storage.get_histdata_single(tm.ts_mapping[code])])
     df_recent = df_hist.iloc[:RECENT_PEAK].reset_index().sort_values(by=['high'])
     df_high = df_recent.iloc[-1]
     peak_value_1 = df_high['high']
     # peak_value_1 = max(df_recent['high'])
-    df_rt = ts.get_realtime_quotes(code)
-    price_now = float(df_rt.values[0][3])
-    pre_close = float(df_rt['pre_close'][0])
+    # df_rt = ts.get_realtime_quotes(code)
+    df_rt = storage.get_realtime_storage_single(code)
+    # price_now = float(df_rt.values[0][3])
+    price_now = float(df_rt[6])  # current bid price
+    pre_close = float(df_rt[2])
     open_ratio = (price_now - pre_close) / pre_close
 
-    return price_now > peak_value_1 and open_ratio > 1.03
+    return price_now > peak_value_1 and open_ratio > 0.03
     # if price_now > peak_value_1:
     #     return True
     # else:
@@ -73,5 +81,7 @@ def detect_high_open(code):
 
 
 if __name__ == '__main__':
-    print(detect_high_open('300703'))
+    storage = st.Storage()
+    storage.update_realtime_storage()
+    print(detect_high_open(storage, '300703'))
     # calc_peak('300703')

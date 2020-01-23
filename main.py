@@ -7,10 +7,16 @@ import time
 import datetime
 import core.realtime.neckline as nl
 import core.realtime.explode as ex
+import core.realtime.open_high as oh
+import core.daily.up_num as un
 import api.storage as st
 import api.ts_map as tm
 
 SLEEP_INTERVAL = 3
+
+TEST_HIGHOPEN = 0
+TEST_NECKLINE = 1
+TIMEING = 0
 
 
 class Main:
@@ -25,20 +31,28 @@ class Main:
         matching in an interval
         :return: matched codes
         """
-        matched = []
-        final_matched = []
-        boomed = []
-        for code in tm.ts_mapping:
-            ret = self.time_share_explosion.detect_timeshare_explode(self.storage, code)
-            if ret:
-                if ret > 1:
-                    boomed.append(code)
-                matched.append(code)
-        if len(matched) > 0:
-            print(str(datetime.datetime.now()) + '     ' + ' '.join(matched) + " 颈线检测前")
-            final_matched = self.neckline.detect_neckline(matched)
-        # final_matched = matched
-        return final_matched + boomed
+        if TEST_HIGHOPEN == 1:
+            matched = []
+            for code in tm.ts_mapping:
+                if oh.detect_high_open(self.storage, code):
+                    matched.append(code)
+            return matched
+        else:
+            matched = []
+            final_matched = []
+            boomed = []
+            for code in tm.ts_mapping:
+                ret = self.time_share_explosion.detect_timeshare_explode(self.storage, code)
+                if ret:
+                    if ret > 1:
+                        boomed.append(code)
+                    matched.append(code)
+            if len(matched) > 0:
+                print(str(datetime.datetime.now()) + '     ' + ' '.join(final_matched) + " 颈线检测前")
+                final_matched = self.neckline.detect_neckline(matched)
+            if TEST_NECKLINE == 0:
+                final_matched = matched
+            return final_matched + boomed
 
     def mainloop(self):
         """
