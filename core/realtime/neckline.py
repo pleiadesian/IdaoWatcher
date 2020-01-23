@@ -77,8 +77,8 @@ class NeckLine:
                         if (highest - lowest) / open < 0.03:
                             neckline_select.append((i-1, sum(df_temp_last['volume'])))
                 df_temp_last = df_temp
-            neckline_select.sort(key=take_second)
-            neckline_select = neckline_select[-3:]
+            # neckline_select.sort(key=take_second)
+            # neckline_select = neckline_select[-3:]
             print([neckline_list[k[0]] for k in neckline_select])
             for neckline in neckline_select:
                 if neckline_list[neckline[0]] * 0.98 <= close <= neckline_list[neckline[0]] * 1.015:
