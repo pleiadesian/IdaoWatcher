@@ -23,12 +23,15 @@ VOLUME_RATIO_THRESHOLD = 0.6
 
 EXPLODE_RISE_RATIO_THRESHOLD = 0.0158
 ACCER_THRESHOLD = 0.01  # ￥0.01
-LARGE_ACCER_THRESHOLD = 0.03  # %2
+LARGE_ACCER_THRESHOLD = 0.01  # %2
 
 RELATIVE_LARGE_VOLUME_THRESHOLD = 50  # default 58
-ABSOLUTE_LARGE_VOLUME_THRESHOLD = 1.27  # default 127%
 SMALL_ABSOLUTE_LARGE_VOLUME_THRESHOLD = 3.5
-BIG_ABSOLUTE_LARGE_VOLUME_THRESHOLD = 0.6
+ABSOLUTE_LARGE_VOLUME_THRESHOLD = 1.27  # default 127%
+BIG_ABSOLUTE_LARGE_VOLUME_THRESHOLD = 0.5
+
+SMALL_FREE_SHARE = 12000
+LARGE_FREE_SHARE = 60000
 
 
 class TimeShareExplosion:
@@ -87,9 +90,9 @@ class TimeShareExplosion:
         rush_not_broken &= low_ratio >= RUSH_LOWER_LIMIT
 
         relative_large_volume = deal_volume_ratio > RELATIVE_LARGE_VOLUME_THRESHOLD
-        if free_share < 11500:
+        if free_share < SMALL_FREE_SHARE:
             absolute_large_volume = deal_turnover_rate > SMALL_ABSOLUTE_LARGE_VOLUME_THRESHOLD
-        elif free_share < 80000:
+        elif free_share < LARGE_FREE_SHARE:
             absolute_large_volume = deal_turnover_rate > ABSOLUTE_LARGE_VOLUME_THRESHOLD
         else:
             absolute_large_volume = deal_turnover_rate > BIG_ABSOLUTE_LARGE_VOLUME_THRESHOLD
@@ -102,7 +105,8 @@ class TimeShareExplosion:
         exploded &= rush_not_broken
         exploded &= rise_ratio >= EXPLODE_RISE_RATIO_THRESHOLD
         exploded &= (curr_deal_accer >= ACCER_THRESHOLD or
-                     curr_deal_accer_percent >= LARGE_ACCER_THRESHOLD)
+                     curr_deal_accer_percent >= LARGE_ACCER_THRESHOLD or
+                     (free_share >= LARGE_FREE_SHARE and curr_deal_accer >= 0.0))
         exploded &= relative_large_volume
         # if code == '000955':
         #     print(str(time) + ' '+str(curr_deal_volume))
@@ -111,7 +115,7 @@ class TimeShareExplosion:
         self.deal_price[code] = price
 
         # in case of booming
-        if curr_deal_accer_percent >= LARGE_ACCER_THRESHOLD:
+        if curr_deal_accer_percent >= LARGE_ACCER_THRESHOLD and rise_ratio >= EXPLODE_RISE_RATIO_THRESHOLD:
             return 2
         return exploded
 
@@ -120,7 +124,7 @@ if __name__ == '__main__':
     storage = st.Storage()
     storage.update_realtime_storage()
     time_share_explotion = TimeShareExplosion()
-    ret = time_share_explotion.detect_timeshare_explode(storage, '000792')
+    ret = time_share_explotion.detect_timeshare_explode(storage, '300303')
     print(ret)
 
 

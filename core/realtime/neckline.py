@@ -12,52 +12,34 @@ import api.ts_map as tm
 
 class NeckLine:
     def __init__(self, storage):
-        self.neckline = dict()
         self.storage = storage
-        for code in tm.ts_mapping:
-            info = self.storage.get_realtime_storage_single(code)
-            high = float(info[4])
-            self.neckline[code] = [high]
 
-    # def detect_neckline(self, code):
-    #     """
-    #     update the state of neckline
-    #     :param code: stock code
-    #     """
-    #     info = self.storage.get_realtime_storage_single(code)
-    #     price = float(info[3])
-    #     high = float(info[4])
-    #     time = info[31]
-    #     if price == high:
-    #         self.neckline[code] = time
-    def detect_neckline(self, matched):
+    def detect_neckline(self, matched, boomed):
         """
         NB: ONLY used after 10:30
         :param matched: matched list by time share explosion filter
+        :param boomed: high speed rising
         :return: filtered matched list by neckline detection
         """
         # TODO: deal with first 1 hour
         start = time.time()
-        df_list = self.storage.get_realtime_chart(matched)
+        df_list = self.storage.get_realtime_chart(matched + boomed)
         selected = []
 
         def take_second(elem):
             return elem[1]
         for df in df_list:
-            open = df.iloc[0]['close']
+            open_price = df.iloc[0]['close']
             close = df.iloc[-1]['close']
             code = df.iloc[0]['code']
 
             minus_step = 10
             step = 20
-            neckline_list = [open * (1 + ratio * 0.1 / step) for ratio in range(-minus_step, step)]
+            neckline_list = [open_price * (1 + ratio * 0.1 / step) for ratio in range(-minus_step, step)]
             neckline_select = []
             df = df.iloc[:-10]
             df = df.set_index('high')
             df = df.sort_index()
-            # df_power = df[df.index <= open]
-            # if len(df_power) > int(len(df) / 2):
-            #     continue
             df_temp_last = None
             for i in range(1, step+minus_step):
                 # df_temp = df.iloc[float(neckline_list[i - 1]):float(neckline_list[i])]
@@ -73,46 +55,68 @@ class NeckLine:
                         df_area = df.loc[(df['day'] > min(time_array).strftime('%Y-%m-%d %H:%M:%S'))
                                          & (df['day'] < max(time_array).strftime('%Y-%m-%d %H:%M:%S'))]
                         lowest = min(df_area['low'].values)
-                        highest = neckline_list[i - 1]
-                        if (highest - lowest) / open < 0.03:
-                            neckline_select.append((i-1, sum(df_temp_last['volume'])))
+                        highest = max(df_area.index.values)
+                        neck_price = neckline_list[i - 1]
+                        df_area_high = df_area[df_area.index > neck_price]
+                        if (neck_price - lowest) / open_price < 0.03 and (highest - neck_price) / open_price < 0.03:
+                            neckline_select.append((i - 1, code))
+                            df_temp_last = df_temp
+                            continue
+                        # fallback when neckline is at a high price
+                        if (neck_price - open_price) / open_price < 0.03:
+                            df_temp_last = df_temp
+                            continue
+                        df_area_first_half = df_area.sort_values(by=['day']).iloc[:int(len(df_area)/2)]
+                        lowest_first = min(df_area_first_half['low'].values)
+                        highest_first = max(df_area_first_half.index.values)
+                        df_area_second_half = df_area.sort_values(by=['day']).iloc[int(len(df_area)/2):]
+                        lowest_second = min(df_area_second_half['low'].values)
+                        highest_second = max(df_area_second_half.index.values)
+                        # recent price should agree on neckline
+                        df_area_second_half_high = df_area_second_half[df_area_second_half.index > neck_price]
+                        if len(df_area_second_half_high) * 2 / len(df_area) > 0.8:
+                            df_temp_last = df_temp
+                            continue
+                        if ((neck_price - lowest_first) / open_price < 0.03 and
+                            (highest_first - neck_price) / open_price < 0.03) \
+                                or ((neck_price - lowest_second) / open_price < 0.03 and
+                                    (highest_second - neck_price) / open_price < 0.03):
+                            neckline_select.append((i - 1, code))
+                            df_temp_last = df_temp
+                            continue
                 df_temp_last = df_temp
             # neckline_select.sort(key=take_second)
             # neckline_select = neckline_select[-3:]
-            print([neckline_list[k[0]] for k in neckline_select])
+            print([k[1] + ': '+str(neckline_list[k[0]]) for k in neckline_select])
+            with open('../../stock.log', 'a') as f:
+                f.write(str([k[1] + ': '+str(neckline_list[k[0]]) for k in neckline_select]) + '\n')
+            # boomed stock is over neckline
+            if code in boomed and len(neckline_select) > 0:
+                selected.append(code)
+                break
+            # normal stock is around neckline
             for neckline in neckline_select:
                 if neckline_list[neckline[0]] * 0.98 <= close <= neckline_list[neckline[0]] * 1.015:
                     selected.append(code)
                     break
         end = time.time()
-        print("neckline:" + str(end -start))
+        print("neckline:" + str(end-start))
         return selected
-
-
-    # def high_to_curr(self, code):
-    #     curr_time_str = self.storage.get_realtime_storage_single(code)[31]
-    #     curr_time = curr_time_str.split(':')
-    #     if code not in self.neckline:
-    #         self.neckline[code] = curr_time_str
-    #     high_time_str = self.neckline[code]
-    #     high_time = high_time_str.split(':')
-    #     if (9 <= int(high_time[0]) <= 11 and 9 <= int(curr_time[0]) <= 11) or \
-    #             (13 <= int(high_time[0]) <= 15 and 13 <= int(curr_time[0]) <= 15):
-    #         return (datetime.datetime.strptime(curr_time_str[:5], "%H:%M") -
-    #                 datetime.datetime.strptime(high_time_str[:5], "%H:%M")).seconds / 60
-    #     else:
-    #         return (datetime.datetime.strptime(curr_time_str[:5], "%H:%M") -
-    #                 datetime.datetime.strptime('13:00', "%H:%M")).seconds / 60 + \
-    #                (datetime.datetime.strptime('11:30', "%H:%M") -
-    #                 datetime.datetime.strptime(high_time_str[:5], "%H:%M")).seconds / 60
 
 
 if __name__ == '__main__':
     storage = st.Storage()
     storage.update_realtime_storage()
     neckline = NeckLine(storage)
-    neckline.detect_neckline(['600200'])
+    # neckline.detect_neckline(['000700', '300662'],[])
+    # neckline.detect_neckline(['300662'],[])
     # neckline.detect_neckline(['300088','300623','300373','300453'])
     # neckline.detect_neckline(['603337', '300560', '600885', '300115', '002449'])
     # neckline.detect_neckline(['300721','600171','600866','601066','300513','603938','300671'])
+    # neckline.detect_neckline(['600789', '000078', '300342', '603022', '601999', '000700', '000518'], [])
+    # neckline.detect_neckline(['603825', '300030', '300123', '600200', '002022', '002156', '002223'], [])
+    code_list = []
+    for code in tm.ts_mapping:
+        code_list.append(code)
+    neckline.detect_neckline(code_list, [])
     # neckline.high_to_curr('000001')

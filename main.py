@@ -46,13 +46,16 @@ class Main:
                 if ret:
                     if ret > 1:
                         boomed.append(code)
-                    matched.append(code)
-            if len(matched) > 0:
-                print(str(datetime.datetime.now()) + '     ' + ' '.join(final_matched) + " 颈线检测前")
-                final_matched = self.neckline.detect_neckline(matched)
+                    else:
+                        matched.append(code)
+            if len(matched) > 0 or len(boomed) > 0:
+                print(str(datetime.datetime.now()) + '     ' + ' '.join(matched) + " | " + ' '.join(boomed) + " 颈线检测前")
+                with open('stock.log', 'a') as f:
+                    f.write(str(datetime.datetime.now()) + '     ' + ' '.join(matched) + " | " + ' '.join(boomed) + " 颈线检测前"+'\n')
+                final_matched = self.neckline.detect_neckline(matched, boomed)
             if TEST_NECKLINE == 0:
                 final_matched = matched
-            return final_matched + boomed
+            return final_matched
 
     def mainloop(self):
         """

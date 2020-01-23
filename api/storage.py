@@ -18,17 +18,19 @@ from urllib.request import urlopen, Request
 import tushare as ts
 import api.ts_map as tm
 
-DEBUG = 0
+DEBUG = 1
 RELOAD = 0
 
 DATA_COLS = ['name', 'open', 'pre_close', 'price', 'high', 'low', 'bid', 'ask', 'volume', 'amount', 'b1_v', 'b1_p',
              'b2_v', 'b2_p', 'b3_v', 'b3_p', 'b4_v', 'b4_p', 'b5_v', 'b5_p', 'a1_v', 'a1_p', 'a2_v', 'a2_p', 'a3_v',
              'a3_p', 'a4_v', 'a4_p', 'a5_v', 'a5_p', 'date', 'time', 's']
 
-# with open('../../api/token/token.txt', "r") as f:
+# with open('token/token.txt', "r") as f:
 #     token = f.read()
-with open('api/token/token.txt', "r") as f:
+with open('../../api/token/token.txt', "r") as f:
     token = f.read()
+# with open('api/token/token.txt', "r") as f:
+#     token = f.read()
 ts.set_token(token)
 pro = ts.pro_api(token)
 

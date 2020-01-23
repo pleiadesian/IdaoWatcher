@@ -60,6 +60,7 @@ def detect_high_open(storage, code):
     #         '%Y-%m-%d')  # 遇到跨双休日、节假日的情况，持续往前推，直到获得3天的数据
     #     df_hist = ts.get_hist_data(code, start=past_time_1, end=now_time_1, ktype='D')
 
+    # TODO: high open specific for blue-chip
     # df_hist = ts.get_hist_data(code, ktype='D')
     df_hist = pd.DataFrame([serie for serie in storage.get_histdata_single(tm.ts_mapping[code])])
     df_recent = df_hist.iloc[:RECENT_PEAK].reset_index().sort_values(by=['high'])
