@@ -6,10 +6,8 @@
 """
 import tushare as ts
 import datetime
-RECENT_PEAK = 3  # 往前计算，直到3天前
 
-
-
+RECENT_PEAK = 5  # 往前计算，直到3天前
 
 
 def calc_peak(code):
@@ -18,12 +16,12 @@ def calc_peak(code):
     :param code: 股票代码
     :return: 最高价，出现在几天前
     """
-
     now_time = ts.get_realtime_quotes(code).values[0][30]  # 今天的日期（年-月-日）
     past_time = (datetime.datetime.strptime(now_time, '%Y-%m-%d') - datetime.timedelta(days=RECENT_PEAK)).strftime(
         '%Y-%m-%d')
 
     all_info = ts.get_hist_data(code, start=past_time, end=now_time, ktype='D')
+    delta = 0
     while all_info is None or len(all_info) < 3:
         delta += 1
         past_time = (datetime.datetime.strptime(now_time, '%Y-%m-%d') - datetime.timedelta(days=delta)).strftime(
@@ -38,41 +36,42 @@ def calc_peak(code):
             peak_value=high_price[i]
             peak_day=i+1
 
-    return(peak_value,',',peak_day)
+    return peak_value, peak_day
+
+
 def detect_high_open(code):
     """
     检测到股票当前开在近RECENT_PEAK天的极值之上
     :param code: 股票代码
     :return: 检测到发生高开（True or False）
     """
-    # TODO: 调用接口获得对应数据
-
-    now_time_1 = ts.get_realtime_quotes(code).values[0][30]  # 今天的日期（年-月-日）
-    past_time_1 = (datetime.datetime.strptime(now_time_1, '%Y-%m-%d') - datetime.timedelta(days=RECENT_PEAK)).strftime(
-        '%Y-%m-%d')
-
-    df_hist = ts.get_hist_data(code, start=past_time_1, end=now_time_1, ktype='D')
-    while df_hist is None or len(df_hist) < 3:
-        delta += 1
-        past_time_1 = (datetime.datetime.strptime(now_time_1, '%Y-%m-%d') - datetime.timedelta(days=delta)).strftime(
-            '%Y-%m-%d')  # 遇到跨双休日、节假日的情况，持续往前推，直到获得3天的数据
-        df_hist = ts.get_hist_data(code, start=past_time_1, end=now_time_1, ktype='D')
-    high_price_1 = df_hist['high']
-    peak_value_1=max(high_price_1)
+    # now_time_1 = ts.get_realtime_quotes(code).values[0][30]  # 今天的日期（年-月-日）
+    # past_time_1 = (datetime.datetime.strptime(now_time_1, '%Y-%m-%d') - datetime.timedelta(days=RECENT_PEAK)).strftime(
+    #     '%Y-%m-%d')
+    #
+    # df_hist = ts.get_hist_data(code, start=past_time_1, end=now_time_1, ktype='D')
+    # while df_hist is None or len(df_hist) < 3:
+    #     delta += 1
+    #     past_time_1 = (datetime.datetime.strptime(now_time_1, '%Y-%m-%d') - datetime.timedelta(days=delta)).strftime(
+    #         '%Y-%m-%d')  # 遇到跨双休日、节假日的情况，持续往前推，直到获得3天的数据
+    #     df_hist = ts.get_hist_data(code, start=past_time_1, end=now_time_1, ktype='D')
+    df_hist = ts.get_hist_data(code, ktype='D')
+    df_recent = df_hist.iloc[:RECENT_PEAK].reset_index().sort_values(by=['high'])
+    df_high = df_recent.iloc[-1]
+    peak_value_1 = df_high['high']
+    # peak_value_1 = max(df_recent['high'])
     df_rt = ts.get_realtime_quotes(code)
-    price_now=float(df_rt.values[0][3])
+    price_now = float(df_rt.values[0][3])
+    pre_close = float(df_rt['pre_close'][0])
+    open_ratio = (price_now - pre_close) / pre_close
 
-    if(price_now>peak_value_1):
-        return(True)
-    else: return(False)
-
-    # TODO: 核心逻辑判断部分
-
-    # TODO: 返回结果
+    return price_now > peak_value_1 and open_ratio > 1.03
+    # if price_now > peak_value_1:
+    #     return True
+    # else:
+    #     return False
 
 
 if __name__ == '__main__':
-    # 运行本文件时，会执行的代码
-    # 输入的股票代码可以修改，便于跑出来结果和实际情况对比
-    detect_high_open('300703')
-    calc_peak('300703')
+    print(detect_high_open('300703'))
+    # calc_peak('300703')
