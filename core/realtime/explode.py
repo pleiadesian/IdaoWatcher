@@ -14,14 +14,13 @@ DEBUG = 0
 OPEN_UPPER_LIMIT = 0.1  # default 0.03
 OPEN_LOWER_LIMIT = -0.03  # default -0.02
 
-# RUSH_UPPER_LIMIT = 0.09  # default 0.05
 RUSH_LOWER_LIMIT = -0.05  # default -0.03
 
 AMOUNT_THRESHOLD = 100  # 1,000,000 volume of transaction
 TURNOVER_THRESHOLD = 2.5  # turnover rate 2.5%, default %0.6
 VOLUME_RATIO_THRESHOLD = 0.6
 
-EXPLODE_RISE_RATIO_THRESHOLD = 0.0158
+# EXPLODE_RISE_RATIO_THRESHOLD = 0.0158
 ACCER_THRESHOLD = 0.01  # ￥0.01
 LARGE_ACCER_THRESHOLD = 0.01  # %2
 
@@ -86,7 +85,6 @@ class TimeShareExplosion:
         low_ratio = (low - pre_close) / pre_close
 
         rush_not_broken = OPEN_LOWER_LIMIT <= open_ratio <= OPEN_UPPER_LIMIT
-        # rush_not_broken &= high_ratio <= RUSH_UPPER_LIMIT
         rush_not_broken &= low_ratio >= RUSH_LOWER_LIMIT
 
         relative_large_volume = deal_volume_ratio > RELATIVE_LARGE_VOLUME_THRESHOLD
@@ -98,12 +96,11 @@ class TimeShareExplosion:
             absolute_large_volume = deal_turnover_rate > BIG_ABSOLUTE_LARGE_VOLUME_THRESHOLD
 
         exploded = amount / 10000 > AMOUNT_THRESHOLD
-        # exploded = exploded and price >= high
         exploded &= turnover_rate >= TURNOVER_THRESHOLD
         exploded &= volume_ratio > VOLUME_RATIO_THRESHOLD
 
         exploded &= rush_not_broken
-        exploded &= rise_ratio >= EXPLODE_RISE_RATIO_THRESHOLD
+        # exploded &= rise_ratio >= EXPLODE_RISE_RATIO_THRESHOLD
         exploded &= (curr_deal_accer >= ACCER_THRESHOLD or
                      curr_deal_accer_percent >= LARGE_ACCER_THRESHOLD or
                      (free_share >= LARGE_FREE_SHARE and curr_deal_accer >= 0.0))
