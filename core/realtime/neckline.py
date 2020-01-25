@@ -166,6 +166,22 @@ class NeckLine:
 
             close = df.iloc[-1]['close']
             df = df.iloc[1:]  # exclude yesterday data
+
+            # average price line can be an neckline for current price
+            info = storage.get_realtime_storage_single(code)
+            amount = float(info[9])
+            volume = float(info[8])
+            avl = amount / volume
+            if code in boomed:
+                lower_bound = BOOM_LOWER_BOUND
+                upper_bound = BOOM_UPPER_BOUND
+            else:
+                lower_bound = NORMAL_LOWER_BOUND
+                upper_bound = NORMAL_UPPER_BOUND
+            if avl * lower_bound <= close <= avl * upper_bound:
+                selected.append(code)
+                continue
+
             # find every peak point
             highs = df['high'].values
             neckline[int(((highs[0] - open_price) / open_price) / 0.005)+1] += 1
@@ -178,20 +194,12 @@ class NeckLine:
                     print(code + ":" + str(neckline_price))
                     with open('../../stock.log', 'a') as f:
                         f.write(code + ":" + str(neckline_price) + "\n")
-                    if code in boomed:
-                        if neckline_price * BOOM_LOWER_BOUND <= close <= neckline_price * BOOM_UPPER_BOUND:
-                            selected.append(code)
-                            if DEBUG == 1:
-                                continue
-                            else:
-                                break
-                    else:
-                        if neckline_price * NORMAL_LOWER_BOUND <= close <= neckline_price * NORMAL_UPPER_BOUND:
-                            selected.append(code)
-                            if DEBUG == 1:
-                                continue
-                            else:
-                                break
+                    if neckline_price * lower_bound <= close <= neckline_price * upper_bound:
+                        selected.append(code)
+                        if DEBUG == 1:
+                            continue
+                        else:
+                            break
         return selected
 
     def detect_neckline(self, matched, boomed):
@@ -209,8 +217,8 @@ if __name__ == '__main__':
     storage = st.Storage()
     storage.update_realtime_storage()
     neckline = NeckLine(storage)
-    # neckline.detect_neckline(['601999'],[])
-    neckline.detect_neckline(['600789', '000078', '300342', '601999', '000700', '300030'], [])
+    neckline.detect_neckline([],['603301'])
+    # neckline.detect_neckline(['600789', '000078', '300342', '601999', '000700', '300030'], [])
     # neckline.detect_neckline(['603315', '600988', '002352', '600332', '000570'], [])
     # code_list = []
     # for code in tm.ts_mapping:
