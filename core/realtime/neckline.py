@@ -21,9 +21,9 @@ BOOM_UPPER_BOUND = 1.03
 NORMAL_LOWER_BOUND = 0.98
 NORMAL_UPPER_BOUND = 1.015
 
-NORMAL_OPEN_HIGH_THRESHOLD = 0.025
+NORMAL_OPEN_HIGH_THRESHOLD = 0.02
 LARGE_OPEN_HIGH_THRESHOLD = 0.005
-LARGE_FREE_SHARE = 60000
+LARGE_FREE_SHARE = 50000
 
 MINUTE_ABSOLUTE_VOLUME_THRESHOLD = 1.12  # default 112%
 
@@ -224,9 +224,10 @@ class NeckLine:
             else:
                 lower_bound = NORMAL_LOWER_BOUND
                 upper_bound = NORMAL_UPPER_BOUND
-            if avl * lower_bound <= close <= avl * upper_bound:
-                selected.append(code)
-                continue
+            if DEBUG == 0:
+                if avl * lower_bound <= close <= avl * upper_bound:
+                    selected.append(code)
+                    continue
 
             # find every peak point
             highs = df['high'].values
@@ -267,7 +268,7 @@ if __name__ == '__main__':
     storage = st.Storage()
     storage.update_realtime_storage()
     neckline = NeckLine(storage)
-    neckline.detect_neckline(['603880'],[])
+    neckline.detect_neckline(['300009'],[])
     # neckline.detect_neckline(['600789', '000078', '300342', '601999', '000700', '300030'], [])
     # neckline.detect_neckline(['603315', '600988', '002352', '600332', '000570'], [])
     code_list = []
