@@ -12,6 +12,7 @@ import datetime
 
 RECENT_PEAK = 5  # 往前计算，直到3天前
 
+# TODO: 注意高开必须9：25伴随放量
 
 def calc_peak(code):
     """
