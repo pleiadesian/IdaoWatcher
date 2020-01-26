@@ -16,13 +16,13 @@ from PyQt5.QtCore import QTimer, Qt
 
 # alert if bid1 amount has decreased more than 5% in 3 second
 INTERVAL = 3000
-THRESHOLD = 0.98  # default 0.95
+THRESHOLD = 0.95  # default 0.95
 HIGH_THRESHOLD = 0.85  # default 0.80
 BUTTON_X = 60
 BUTTON_NONE_X = -200
 
 
-DEBUG = 1
+DEBUG = 0
 
 
 def get_new_a1p(codes):
