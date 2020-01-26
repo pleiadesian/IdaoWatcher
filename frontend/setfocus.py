@@ -31,8 +31,11 @@ class setf():
             if p.name() == processName:  # 判断实例进程名与输入的进程名是否一致（判断进程是否存活）
                 for hwnd in self.get_hwnds_for_pid(pid):
                     a = win32gui.GetWindowText(hwnd)
+                    # TODO: HIGH RISK! DO NOT input code to '闪电买入' and '闪电卖出'
                     if win32gui.GetWindowText(hwnd)[:2] == '中信':
                         return pid  # 返回
+                        # print(win32gui.GetWindowText(hwnd))
+                    # print(win32gui.GetWindowText(hwnd))
         return 0
 
     def get_hwnds_for_pid(self, pid):
