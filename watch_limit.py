@@ -22,7 +22,7 @@ BUTTON_X = 60
 BUTTON_NONE_X = -200
 
 
-DEBUG = 0
+DEBUG = 1
 
 
 def get_new_a1p(codes):
@@ -182,18 +182,18 @@ class PictureView(QMainWindow, watch_limit_main.Ui_MainWindow):
                     button.setText("none")
                     button.move(BUTTON_NONE_X, button.y())
             self.dlg.label_broken.setText(new_text_broken)
-            if DEBUG == 1:
-                self.lineEdit.setText(str(self.dlg.x()) + ' ' + str(self.dlg.y()) + ' ' +
-                                      str(self.dlg.screen_width) + ' ' + str(self.dlg.screen_height))
+            # if DEBUG == 1:
+            #     self.lineEdit.setText(str(self.dlg.x()) + ' ' + str(self.dlg.y()) + ' ' +
+            #                           str(self.dlg.screen_width) + ' ' + str(self.dlg.screen_height))
 
     def resetcode(self):
-        if DEBUG == 1:
-            self.label_watch.setText(str(self.x()) + ' ' + str(self.y()) + ' ' +
-                                     str(self.dlg.screen_width) + ' ' + str(self.dlg.screen_height))
-            self.label_watch.setText(str(self.dlg.screen_rect0.x()) + ' ' + str(self.dlg.screen_rect0.y()) + ' ' +
-                                     str(self.dlg.screen_rect0.width()) + ' ' + str(self.dlg.screen_rect0.height()) +
-                                     '  ' + str(self.dlg.screen_rect1.x()) + ' ' + str(self.dlg.screen_rect1.y()) + ' '
-                                     + str(self.dlg.screen_rect1.width()) + ' ' + str(self.dlg.screen_rect1.height()))
+        # if DEBUG == 1:
+        #     self.label_watch.setText(str(self.x()) + ' ' + str(self.y()) + ' ' +
+        #                           str(self.dlg.screen_width) + ' ' + str(self.dlg.screen_height))
+        # self.label_watch.setText(str(self.dlg.screen_rect0.x()) + ' ' + str(self.dlg.screen_rect0.y()) +
+        #                          ' ' + str(self.dlg.screen_rect0.width()) + ' '+ str(self.dlg.screen_rect0.height())
+        #                         + '  ' + str(self.dlg.screen_rect1.x()) + ' ' + str(self.dlg.screen_rect1.y()) +' '
+        #                           + str(self.dlg.screen_rect1.width()) + ' '+ str(self.dlg.screen_rect1.height()))
         # self.dlg.showMinimized()
         self.lineEdit.setText(self.label_watch.text())
 

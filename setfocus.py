@@ -29,7 +29,10 @@ class setf():
         for pid in pids:  # 对所有PID进行循环
             p = psutil.Process(pid)  # 实例化进程对象
             if p.name() == processName:  # 判断实例进程名与输入的进程名是否一致（判断进程是否存活）
-                return pid  # 返回
+                for hwnd in self.get_hwnds_for_pid(pid):
+                    a = win32gui.GetWindowText(hwnd)
+                    if win32gui.GetWindowText(hwnd)[:2] == '中信':
+                        return pid  # 返回
         return 0
 
     def get_hwnds_for_pid(self, pid):
@@ -59,8 +62,8 @@ def open_code(code, window_info, origin_window=None):
     sf.setfocus()
     # pyautogui.moveTo(screen_width / 2, screen_height / 2)
     # pyautogui.click(x=None, y=None, clicks=1, interval=0.0, button='left', duration=0.0, tween=pyautogui.linear)
-    # code = '0'+code  # why huawei matebook need padding?
-    pyautogui.typewrite(message=code, interval=0.03)
+    code = '0'+code  # why huawei matebook need padding?
+    pyautogui.typewrite(message=code, interval=0.01)
     pyautogui.press('enter')
     if origin_window is not None:
         origin_window.raise_()
