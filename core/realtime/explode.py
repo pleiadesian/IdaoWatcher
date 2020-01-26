@@ -41,7 +41,6 @@ class TimeShareExplosion:
             self.deal_volume[code] = (0.0, datetime.datetime.now())
             self.deal_price[code] = 0.0
 
-    # TODO: scale to 30 codes
     def detect_timeshare_explode(self, storage, code):
         assert(isinstance(code, list) is False)
         basic_infos = storage.get_basicinfo_single(tm.ts_mapping[code])
