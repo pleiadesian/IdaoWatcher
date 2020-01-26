@@ -27,6 +27,9 @@ LARGE_FREE_SHARE = 50000
 
 MINUTE_ABSOLUTE_VOLUME_THRESHOLD = 1.12  # default 112%
 
+# TODO: add neckline-crossing detection
+# TODO: morning turnover threshold
+
 
 class NeckLine:
     def __init__(self, storage):
