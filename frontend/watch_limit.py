@@ -5,13 +5,10 @@
 监听特定股票的封停是否有打开的迹象
 """
 import tushare as ts
-import copy
 import sys
-import os
 import winsound
-import setfocus
-import watch_limit_main, watch_limit_warn
-from PyQt5.QtWidgets import QApplication, QMainWindow, QMessageBox, QWidget, QDesktopWidget
+from frontend import watch_limit_warn, setfocus, watch_limit_main
+from PyQt5.QtWidgets import QApplication, QMainWindow, QMessageBox, QWidget
 from PyQt5.QtCore import QTimer, Qt
 
 # alert if bid1 amount has decreased more than 5% in 3 second
