@@ -15,6 +15,7 @@ import pandas as pd
 from random import randint
 from multiprocessing.pool import ThreadPool
 from urllib.request import urlopen, Request
+from main import TOKEN_PATH
 import tushare as ts
 import api.ts_map as tm
 
@@ -25,12 +26,20 @@ DATA_COLS = ['name', 'open', 'pre_close', 'price', 'high', 'low', 'bid', 'ask', 
              'b2_v', 'b2_p', 'b3_v', 'b3_p', 'b4_v', 'b4_p', 'b5_v', 'b5_p', 'a1_v', 'a1_p', 'a2_v', 'a2_p', 'a3_v',
              'a3_p', 'a4_v', 'a4_p', 'a5_v', 'a5_p', 'date', 'time', 's']
 
-# with open('token/token.txt', "r") as f:
-#     token = f.read()
-with open('../../api/token/token.txt', "r") as f:
+# if __file__.endswith('main.py'):
+#     with open('api/token/token.txt', "r") as f:
+#         token = f.read()
+# elif __file__.endswith('main_ui.py'):
+#     with open('./api/token/token.txt', "r") as f:
+#         token = f.read()
+# elif __file__.endswith('ts_map.py') or __file__.endswith('storage.py'):
+#     with open('token/token.txt', "r") as f:
+#         token = f.read()
+# else:
+#     with open('../../api/token/token.txt', "r") as f:
+#         token = f.read()
+with open(TOKEN_PATH, "r") as f:
     token = f.read()
-# with open('api/token/token.txt', "r") as f:
-#     token = f.read()
 ts.set_token(token)
 pro = ts.pro_api(token)
 
