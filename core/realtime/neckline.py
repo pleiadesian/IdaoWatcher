@@ -27,6 +27,8 @@ BOOM_LOWER_BOUND = 0.99  # default 98%
 BOOM_UPPER_BOUND = 1.03  # default 103%
 NORMAL_LOWER_BOUND = 0.99  # default 98%
 NORMAL_UPPER_BOUND = 1.01  # default 101.5%
+HIGH_LOWER_BOUND = 0.995
+HIGH_UPPER_BOUND = 1.005
 
 NORMAL_OPEN_HIGH_THRESHOLD = 0.02
 LARGE_OPEN_HIGH_THRESHOLD = 0.005
@@ -356,6 +358,66 @@ class NeckLine:
                         break
         return selected
 
+    def detect_high_neckline(self, matched, boomed):
+        """
+        used in all day
+        :param matched: matched list by time share explosion filter
+        :param boomed: high speed rising
+        :return: filtered matched list by high neckline detection
+        """
+        selected = []
+        df_list = self.storage.get_realtime_chart(matched + boomed)
+
+        for df in df_list:
+            code = df.iloc[0]['code']
+            open_price = self.pre_close[code]
+            close = self.curr_price[code]
+            limit = round(open_price * 1.1, 2)
+
+            # too early
+            if code not in self.past_price or len(df) < 2:
+                continue
+
+            # too high
+            if close >= limit:
+                continue
+
+            # high neckline should be at a high price
+            rise_ratio = (close - open_price) / open_price
+            if rise_ratio < 0.03:
+                continue
+
+            if len(df) > 20:
+                df_recent = df[-20:-1]
+            else:
+                df_recent = df[:-1]
+
+            # detect crossing
+            past_deal = self.past_price[code]
+            curr_deal = self.curr_price[code]
+            highest = max(df_recent['high'].values)
+            # log
+            print(code + '(recent): ' + str(highest))
+            with open('../../stock.log', 'a') as f:
+                f.write(code + '(recent): ' + str(highest) + '\n')
+
+            if past_deal <= highest <= curr_deal:
+                selected.append(code)
+                continue
+
+            # detect if price is in a box form
+            if code in boomed:
+                lower_bound = BOOM_LOWER_BOUND
+                upper_bound = BOOM_UPPER_BOUND
+            else:
+                lower_bound = HIGH_LOWER_BOUND
+                upper_bound = HIGH_UPPER_BOUND
+            if highest * lower_bound <= curr_deal <= highest * upper_bound:
+                selected.append(code)
+                continue
+
+        return selected
+
     def update_local_price(self, matched, boomed):
         """
         update current price and price 3 second ago
@@ -376,17 +438,20 @@ class NeckLine:
         """
         if DEBUG == 1:
             self.update_local_price(matched, boomed)
+            self.update_local_price(matched, boomed)
+            selected_high = self.detect_high_neckline(matched, boomed)
+            return selected_high
             selected_long = self.detect_long_neckline(matched, boomed)
             selected_morning = self.detect_morning_neckline(matched, boomed)
             selected_general = self.detect_general_neckline(matched, boomed)
             return selected_long + selected_general + selected_morning
         self.update_local_price(matched, boomed)
-        if datetime.datetime.now() < datetime.datetime.strptime('10:30:00', '%H:%M:%S'):
+        if datetime.datetime.now() < datetime.datetime.strptime('10:00:00', '%H:%M:%S'):
             selected = self.detect_morning_neckline(matched, boomed)
-        elif datetime.datetime.now() < datetime.datetime.strptime('11:00:00', '%H:%M:%S'):
+        elif datetime.datetime.now() < datetime.datetime.strptime('10:30:00', '%H:%M:%S'):
             selected_morning = self.detect_morning_neckline(matched, boomed)
-            selected_general = self.detect_general_neckline(matched, boomed)
-            selected = list(set(selected_morning) & set(selected_general))
+            selected_long = self.detect_long_neckline(matched, boomed)
+            selected = list(set(selected_morning) & set(selected_long))
         else:
             selected = self.detect_general_neckline(matched, boomed)
         return selected
@@ -396,11 +461,14 @@ if __name__ == '__main__':
     storage = st.Storage()
     storage.update_realtime_storage()
     neckline = NeckLine(storage)
-    # neckline.detect_neckline(['300009'],[])
-    neckline.detect_neckline(['600789', '000078', '300342', '601999', '000700', '300030'], [])
+    # neckline.detect_neckline(['603333'],[])
+    # neckline.detect_neckline(['600789', '000078', '300342', '601999', '000700', '300030'], [])
     # neckline.detect_neckline(['603315', '600988', '002352', '600332', '000570'], [])
     # neckline.detect_neckline(['603022', '601999', '002022', '600118', '300448'], [])
-    # code_list = []
-    # for code in tm.ts_mapping:
-    #     code_list.append(code)
-    # neckline.detect_neckline(code_list, [])
+    code_list = []
+    for code in tm.ts_mapping:
+        code_list.append(code)
+        if len(code_list) > 10:
+            print(neckline.detect_neckline(code_list, []))
+            code_list = []
+

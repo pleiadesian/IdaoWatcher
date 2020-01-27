@@ -105,7 +105,7 @@ class TimeShareExplosion:
         exploded &= (curr_deal_accer >= ACCER_THRESHOLD or
                      curr_deal_accer_percent >= LARGE_ACCER_THRESHOLD or
                      (free_share >= LARGE_FREE_SHARE and curr_deal_accer >= 0.0))
-        exploded &= relative_large_volume
+        exploded &= (relative_large_volume or absolute_large_volume)
         # if code == '000955':
         #     print(str(time) + ' '+str(curr_deal_volume))
 
