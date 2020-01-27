@@ -9,6 +9,8 @@ import time
 import api.storage as st
 import api.ts_map as tm
 
+# TODO: print more info in log for debug
+
 DEBUG = 1
 
 NECKLINE_UPPER_BOUND = 1.005
@@ -31,8 +33,6 @@ LARGE_OPEN_HIGH_THRESHOLD = 0.005
 LARGE_FREE_SHARE = 50000
 
 MINUTE_ABSOLUTE_VOLUME_THRESHOLD = 1.12  # default 112%
-
-# TODO: morning turnover threshold
 
 
 class NeckLine:
@@ -132,11 +132,11 @@ class NeckLine:
                              range(-NECKLINE_MINUS_STEP, NECKLINE_STEP)]
             neckline_select = []
             df = df.iloc[:-10]
-            df_recent = df.iloc[-45:] if len(df) > 45 else df[-25:]
+            # df_recent = df.iloc[-45:] if len(df) > 45 else df[-25:]
             df = df.set_index('high')
             df = df.sort_index()
-            df_recent = df_recent.set_index('high')
-            df_recent = df_recent.sort_index()
+            # df_recent = df_recent.set_index('high')
+            # df_recent = df_recent.sort_index()
             last_length = None
             for i in range(1, NECKLINE_STEP + NECKLINE_MINUS_STEP):
                 df_temp = df[(df.index > neckline_list[i - 1]) & (df.index <= neckline_list[i])]
@@ -145,39 +145,36 @@ class NeckLine:
                     neck_price = neckline_list[i - 1]
                     upper = neck_price * NECKLINE_UPPER_BOUND
                     lower = neck_price * NECKLINE_LOWER_BOUND
-                    # global neckline or recent neckline
-                    for df_curr in [df, df_recent]:
-                        df_area = df_curr[(df_curr.index > lower) & (df_curr.index < upper)]
-                        df_area = df_area[df_area.index < limit]  # do not count limit price
-                        # neckline should be longer than 35 minutes
-                        if len(df_area) >= NECKLINE_LENGTH_THRESHOLD:
-                            df_area = df_area.sort_values(by=['day'])
-                            df_area_morning = df_area[df_area['day'] <= (df_area.iloc[0]['day'][:10] + ' 11:30:00')]
-                            df_area_afternoon = df_area[df_area['day'] >= (df_area.iloc[0]['day'][:10] + ' 13:00:00')]
-                            # calculate confidence coefficient of this neckline
-                            outliners = 0
-                            for df_half in [df_area_morning, df_area_afternoon]:
-                                for j in range(1, len(df_half)):
-                                    min_elapse = (datetime.datetime.strptime(df_half.iloc[j]['day'],
-                                                                             '%Y-%m-%d %H:%M:%S') -
-                                                  datetime.datetime.strptime(df_half.iloc[j-1]['day'],
-                                                                             '%Y-%m-%d %H:%M:%S'))\
-                                                    .seconds / 60
-                                    # separated neckline
-                                    if min_elapse > SEPARATED_NECKLINE_MIN_GAP or min_elapse <= 1:
-                                        continue
-                                    outliners += min_elapse - 1
-                            # too much outliner
-                            if outliners / len(df_area) > OUTLINER_THRESHOLD:
+                    # general neckline
+                    df_area = df[(df.index > lower) & (df.index < upper)]
+                    df_area = df_area[df_area.index < limit]  # do not count limit price
+                    # neckline should be longer than 35 minutes
+                    if len(df_area) >= NECKLINE_LENGTH_THRESHOLD:
+                        df_area = df_area.sort_values(by=['day'])
+                        # calculate confidence coefficient of this neckline
+                        outliners = 0
+                        for j in range(1, len(df_area)):
+                            min_elapse = (datetime.datetime.strptime(df_area.iloc[j]['day'],
+                                                                     '%Y-%m-%d %H:%M:%S') -
+                                          datetime.datetime.strptime(df_area.iloc[j-1]['day'],
+                                                                     '%Y-%m-%d %H:%M:%S'))\
+                                            .seconds / 60
+                            # separated neckline
+                            if min_elapse > SEPARATED_NECKLINE_MIN_GAP or min_elapse <= 1:
                                 continue
+                            outliners += min_elapse - 1
+                        # too much outliner
+                        if outliners / len(df_area) <= OUTLINER_THRESHOLD:
                             neckline_select.append((i - 1, code))
-                            break
                 last_length = len(df_temp)
+
+            # for log
             print([k[1] + ': '+str(neckline_list[k[0]]) for k in neckline_select])
             with open('../../stock.log', 'a') as f:
                 f.write(str([k[1] + ': '+str(neckline_list[k[0]]) for k in neckline_select]) + '\n')
             if len(neckline_select) == 0:
                 continue
+
             # detect neckline-crossing
             if code in self.past_price:
                 past_deal = self.past_price[code]
@@ -256,12 +253,14 @@ class NeckLine:
                     neckline_idx = int(((highs[i] - open_price) / open_price) / 0.005)+1
                     if neckline_idx < 20:
                         neckline[neckline_idx] += 1
+
+            # log and select
             for i in range(0, 20):
                 if neckline[i] > 0:
                     neckline_price = open_price * (1 + i * 0.1 / 20)
-                    print(code + ":" + str(neckline_price))
+                    print(code + "(morning):" + str(neckline_price))
                     with open('../../stock.log', 'a') as f:
-                        f.write(code + ":" + str(neckline_price) + "\n")
+                        f.write(code + "(morning):" + str(neckline_price) + "\n")
                     # detect neckline-crossing
                     if code in self.past_price:
                         if self.past_price[code] <= neckline_price <= self.curr_price[code]:
@@ -329,7 +328,7 @@ class NeckLine:
                         neckline_select.append((i-1, code))
                 last_length = len(df_temp)
 
-            print([k[1] + ': '+str(neckline_list[k[0]]) for k in neckline_select])
+            print([k[1] + '(long neckline): '+str(neckline_list[k[0]]) for k in neckline_select])
             with open('../../stock.log', 'a') as f:
                 f.write(str([k[1] + '(long neckline): '+str(neckline_list[k[0]]) for k in neckline_select]) + '\n')
             if len(neckline_select) == 0:
@@ -398,9 +397,9 @@ if __name__ == '__main__':
     storage.update_realtime_storage()
     neckline = NeckLine(storage)
     # neckline.detect_neckline(['300009'],[])
-    # neckline.detect_neckline(['600789', '000078', '300342', '601999', '000700', '300030'], [])
+    neckline.detect_neckline(['600789', '000078', '300342', '601999', '000700', '300030'], [])
     # neckline.detect_neckline(['603315', '600988', '002352', '600332', '000570'], [])
-    neckline.detect_neckline(['603022', '601999', '002022', '600118', '300448'], [])
+    # neckline.detect_neckline(['603022', '601999', '002022', '600118', '300448'], [])
     # code_list = []
     # for code in tm.ts_mapping:
     #     code_list.append(code)

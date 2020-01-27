@@ -190,7 +190,7 @@ def process_json_realtime(code):
     text = resp.text
     js = json.loads(text)
     df = pd.DataFrame(js, columns=cols)
-    df = df[df.day >= js[-1]['day'][:10] + ' 9:00:00']
+    df = df[df.day >= js[-1]['day'][:10] + ' 09:00:00']
     for col in cols[1:]:
         df[col] = df[col].astype(float)
     df.insert(0, 'code', code[2:])
