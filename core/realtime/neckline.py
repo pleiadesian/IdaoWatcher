@@ -130,6 +130,8 @@ class NeckLine:
             open_price = self.pre_close[code]
             limit = round(open_price * 1.1, 2)
 
+            # TODO: average price line detection?
+
             neckline_list = [open_price * (1 + ratio * 0.1 / NECKLINE_STEP) for ratio in
                              range(-NECKLINE_MINUS_STEP, NECKLINE_STEP)]
             neckline_select = []
@@ -438,13 +440,13 @@ class NeckLine:
         """
         if DEBUG == 1:
             self.update_local_price(matched, boomed)
-            self.update_local_price(matched, boomed)
-            selected_high = self.detect_high_neckline(matched, boomed)
-            return selected_high
-            selected_long = self.detect_long_neckline(matched, boomed)
-            selected_morning = self.detect_morning_neckline(matched, boomed)
+            # self.update_local_price(matched, boomed)
+            # selected_high = self.detect_high_neckline(matched, boomed)
+            # selected_long = self.detect_long_neckline(matched, boomed)
+            # selected_morning = self.detect_morning_neckline(matched, boomed)
             selected_general = self.detect_general_neckline(matched, boomed)
-            return selected_long + selected_general + selected_morning
+            # return selected_long + selected_general + selected_morning
+            return selected_general
         self.update_local_price(matched, boomed)
         if datetime.datetime.now() < datetime.datetime.strptime('10:00:00', '%H:%M:%S'):
             selected = self.detect_morning_neckline(matched, boomed)
@@ -454,6 +456,8 @@ class NeckLine:
             selected = list(set(selected_morning) & set(selected_long))
         else:
             selected = self.detect_general_neckline(matched, boomed)
+        selected_high = self.detect_high_neckline(matched, boomed)
+        selected = list(set(selected) & set(selected_high))
         return selected
 
 
@@ -468,7 +472,6 @@ if __name__ == '__main__':
     code_list = []
     for code in tm.ts_mapping:
         code_list.append(code)
-        if len(code_list) > 10:
-            print(neckline.detect_neckline(code_list, []))
-            code_list = []
+    ret = neckline.detect_neckline(code_list, [])
+    print(ret)
 
