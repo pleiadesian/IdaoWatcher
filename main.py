@@ -31,31 +31,32 @@ class Main:
         matching in an interval
         :return: matched codes
         """
-        if TEST_HIGHOPEN == 1:
-            matched = []
-            for code in tm.ts_mapping:
-                if oh.detect_high_open(self.storage, code):
+        # if TEST_HIGHOPEN == 1:
+        #     matched = []
+        #     for code in tm.ts_mapping:
+        #         if oh.detect_high_open(self.storage, code):
+        #             matched.append(code)
+        #     return matched
+        # else:
+        matched = []
+        # final_matched = []
+        boomed = []
+        for code in tm.ts_mapping:
+            ret = self.time_share_explosion.detect_timeshare_explode(self.storage, code)
+            if ret:
+                if ret > 1:
+                    boomed.append(code)
+                else:
                     matched.append(code)
-            return matched
-        else:
-            matched = []
-            final_matched = []
-            boomed = []
-            for code in tm.ts_mapping:
-                ret = self.time_share_explosion.detect_timeshare_explode(self.storage, code)
-                if ret:
-                    if ret > 1:
-                        boomed.append(code)
-                    else:
-                        matched.append(code)
-            if len(matched) > 0 or len(boomed) > 0:
-                print(str(datetime.datetime.now()) + '     ' + ' '.join(matched) + " | " + ' '.join(boomed) + " 颈线检测前")
-                with open('stock.log', 'a') as f:
-                    f.write(str(datetime.datetime.now()) + '     ' + ' '.join(matched) + " | " + ' '.join(boomed) + " 颈线检测前"+'\n')
-                final_matched = self.neckline.detect_neckline(matched, boomed)
-            if TEST_NECKLINE == 0:
-                final_matched = matched
-            return final_matched
+        # if len(matched) > 0 or len(boomed) > 0:
+        #     print(str(datetime.datetime.now()) + '     ' + ' '.join(matched) + " | " + ' '.join(boomed) + " 颈线检测前")
+        #     with open('stock.log', 'a') as f:
+        #         f.write(str(datetime.datetime.now()) + '     ' + ' '.join(matched) + " | " + ' '.join(boomed) + " 颈线检测前"+'\n')
+        #     final_matched = self.neckline.detect_neckline(matched, boomed)
+        # if TEST_NECKLINE == 0:
+        #     final_matched = matched
+        # return final_matched
+        return boomed + matched
 
     def mainloop(self):
         """
@@ -78,7 +79,7 @@ class Main:
                 with open('stock.log', 'a') as f:
                     f.write(str(datetime.datetime.now()) + '\n')
             end = time.time()
-            # print("main:" + str(end - start))
+            print("mainloop:" + str(end - start))
 
 
 if __name__ == '__main__':
