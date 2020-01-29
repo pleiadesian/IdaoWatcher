@@ -11,13 +11,15 @@ import api.storage as st
 
 DEBUG = 0
 
+# TODO: print more info in log for debug
+
 OPEN_UPPER_LIMIT = 0.1  # default 0.03
 OPEN_LOWER_LIMIT = -0.03  # default -0.02
 
 RUSH_LOWER_LIMIT = -0.05  # default -0.03
 
 AMOUNT_THRESHOLD = 100  # 1,000,000 volume of transaction
-TURNOVER_THRESHOLD = 2.5  # turnover rate 2.5%, default %0.6
+TURNOVER_THRESHOLD = 2.5  # turnover rate 2.5%, default 0.6%
 VOLUME_RATIO_THRESHOLD = 0.6
 
 # EXPLODE_RISE_RATIO_THRESHOLD = 0.0158
@@ -25,9 +27,9 @@ ACCER_THRESHOLD = 0.01  # ￥0.01
 LARGE_ACCER_THRESHOLD = 0.01  # %2
 
 RELATIVE_LARGE_VOLUME_THRESHOLD = 50  # default 58
-SMALL_ABSOLUTE_LARGE_VOLUME_THRESHOLD = 3.5
-ABSOLUTE_LARGE_VOLUME_THRESHOLD = 1.27  # default 127%
-BIG_ABSOLUTE_LARGE_VOLUME_THRESHOLD = 0.5
+SMALL_ABSOLUTE_LARGE_VOLUME_THRESHOLD = 2.0  # default 350%
+ABSOLUTE_LARGE_VOLUME_THRESHOLD = 0.95  # default 127%
+BIG_ABSOLUTE_LARGE_VOLUME_THRESHOLD = 0.9  # default 50%
 
 SMALL_FREE_SHARE = 12000
 LARGE_FREE_SHARE = 50000
@@ -41,7 +43,6 @@ class TimeShareExplosion:
             self.deal_volume[code] = (0.0, datetime.datetime.now())
             self.deal_price[code] = 0.0
 
-    # TODO: scale to 30 codes
     def detect_timeshare_explode(self, storage, code):
         assert(isinstance(code, list) is False)
         basic_infos = storage.get_basicinfo_single(tm.ts_mapping[code])
@@ -104,7 +105,7 @@ class TimeShareExplosion:
         exploded &= (curr_deal_accer >= ACCER_THRESHOLD or
                      curr_deal_accer_percent >= LARGE_ACCER_THRESHOLD or
                      (free_share >= LARGE_FREE_SHARE and curr_deal_accer >= 0.0))
-        exploded &= relative_large_volume
+        exploded &= (relative_large_volume or absolute_large_volume)
         # if code == '000955':
         #     print(str(time) + ' '+str(curr_deal_volume))
 

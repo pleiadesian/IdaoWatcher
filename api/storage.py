@@ -18,6 +18,7 @@ from urllib.request import urlopen, Request
 import tushare as ts
 import api.ts_map as tm
 
+
 DEBUG = 1
 RELOAD = 0
 
@@ -25,12 +26,8 @@ DATA_COLS = ['name', 'open', 'pre_close', 'price', 'high', 'low', 'bid', 'ask', 
              'b2_v', 'b2_p', 'b3_v', 'b3_p', 'b4_v', 'b4_p', 'b5_v', 'b5_p', 'a1_v', 'a1_p', 'a2_v', 'a2_p', 'a3_v',
              'a3_p', 'a4_v', 'a4_p', 'a5_v', 'a5_p', 'date', 'time', 's']
 
-# with open('token/token.txt', "r") as f:
-#     token = f.read()
-with open('../../api/token/token.txt', "r") as f:
-    token = f.read()
-# with open('api/token/token.txt', "r") as f:
-#     token = f.read()
+token = os.getenv('TOKEN')
+# token = os.environ
 ts.set_token(token)
 pro = ts.pro_api(token)
 
@@ -177,7 +174,7 @@ def process_json(codes):
 def process_json_realtime(code):
     cols = ['day', 'open', 'high', 'low', 'close', 'volume']
     url = 'https://quotes.sina.cn/cn/api/json_v2.php/' \
-          'CN_MarketDataService.getKLineData?symbol=%s&scale=1&ma=no&datalen=242' % code
+          'CN_MarketDataService.getKLineData?symbol=%s&scale=1&ma=no&datalen=240' % code
     not_get = True
     resp = None
     while not_get:
@@ -193,13 +190,39 @@ def process_json_realtime(code):
     text = resp.text
     js = json.loads(text)
     df = pd.DataFrame(js, columns=cols)
-    df = df[df.day >= js[0]['day'][:10] + ' 15:00:00']
+    df = df[df.day >= js[-1]['day'][:10] + ' 09:00:00']
     for col in cols[1:]:
         df[col] = df[col].astype(float)
     df.insert(0, 'code', code[2:])
     df['code'] = code[2:]
     # df = df.set_index('day')
     # df = df.sort_index(ascending=False)
+    return df
+
+
+def process_json_realtime_long(code):
+    cols = ['day', 'open', 'high', 'low', 'close', 'volume']
+    url = 'https://quotes.sina.cn/cn/api/json_v2.php/' \
+          'CN_MarketDataService.getKLineData?symbol=%s&scale=1&ma=no&datalen=480' % code
+    not_get = True
+    resp = None
+    while not_get:
+        try:
+            resp = requests.get(url, timeout=3)
+            not_get = False
+            if resp is None or len(resp.text) == 0:
+                time.sleep(1)
+                not_get = True
+        except requests.exceptions.RequestException as e:
+            time.sleep(1)
+            not_get = True
+    text = resp.text
+    js = json.loads(text)
+    df = pd.DataFrame(js, columns=cols)
+    for col in cols[1:]:
+        df[col] = df[col].astype(float)
+    df.insert(0, 'code', code[2:])
+    df['code'] = code[2:]
     return df
 
 
@@ -257,7 +280,6 @@ class Storage:
         # df_list = p.starmap(process_plaintext, args)
         dict_list = p.starmap(process_plaintext, args)
 
-
         args_remain = []
         for i in range(5, 8):
             args_remain.append((i, self.reg, self.reg_sym))
@@ -286,6 +308,16 @@ class Storage:
         ts_code_list = [tm.ts_lower_mapping[k] for k in code_list]
         p = ThreadPool()
         df_list = p.map(process_json_realtime, ts_code_list)
+        return df_list
+
+    def get_realtime_chart_long(self, code_list):
+        """
+        :param code_list: stock code_list
+        :return: stock realtime chart list in 3 days
+        """
+        ts_code_list = [tm.ts_lower_mapping[k] for k in code_list]
+        p = ThreadPool()
+        df_list = p.map(process_json_realtime_long, ts_code_list)
         return df_list
 
     def get_realtime_storage(self):

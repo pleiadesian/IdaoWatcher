@@ -13,4 +13,3 @@ __pycache__/
 dist/
 build/
 .ipynb_checkpoints/
-token/
