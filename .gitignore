@@ -1,9 +1,16 @@
+*.dat
+*.log
+*.dll
+*.ipynb
 *.idea/
 *.sln
+*.spec
 *.vcxproj*
-*/.vs/
+*.vs/
 */Debug/
 venv/
 __pycache__/
 dist/
 build/
+.ipynb_checkpoints/
+token/
