@@ -4,6 +4,7 @@
 @ Desc:     本模块用于在9：15~9：25集合竞价期间对高开股票进行检测
 @ Author:   pleiadesian
 """
+import time
 import pandas as pd
 import api.ts_map as tm
 import api.storage as st
@@ -12,12 +13,20 @@ import datetime
 
 RECENT_PEAK = 2  # 往前计算，直到2天前
 
+LARGE_FREE_SHARE = 50000
 
-# TODO: 注意高开必须9：25伴随放量, 蓝筹股和小盘股的高开阈值应该不同
+PEAK_DELTA = 0.99
+
+NORMAL_HIGHOPEN_THRESHOLD = 0.02
+LARGE_HIGHOPEN_THRESHOLD = 0.005
+
+
+# TODO: opt to 3s
 
 
 def calc_peak(code):
     """
+    not used
     计算股票近RECENT_PEAK天的极值，作为detect_high_open的子程序
     :param code: 股票代码
     :return: 最高价，出现在几天前
@@ -52,20 +61,30 @@ def detect_high_open(storage, code):
     :param code: 股票代码
     :return: 检测到发生高开（True or False）
     """
-    # TODO: high open specific for blue-chip
     df_hist = pd.DataFrame([serie for serie in storage.get_histdata_single(tm.ts_mapping[code])])
-    df_recent = df_hist.iloc[:RECENT_PEAK].reset_index().sort_values(by=['high'])
-    df_high = df_recent.iloc[-1]
-    peak_value_1 = df_high['high']
     df_rt = storage.get_realtime_storage_single(code)
+    basic_infos = storage.get_basicinfo_single(tm.ts_mapping[code])
+    df_recent = df_hist.iloc[-RECENT_PEAK:].reset_index().sort_values(by=['high'])
+    df_high = df_recent.iloc[-1]
+    peak_value = df_high['high']
     price_now = float(df_rt[6])  # current bid price
     pre_close = float(df_rt[2])
     open_ratio = (price_now - pre_close) / pre_close
+    free_share = basic_infos['free_share']
 
-    return price_now > peak_value_1 and open_ratio > 0.03
+    if free_share < LARGE_FREE_SHARE:
+        high_open = open_ratio >= NORMAL_HIGHOPEN_THRESHOLD
+    else:
+        high_open = open_ratio >= LARGE_HIGHOPEN_THRESHOLD
+    peak_open = price_now >= peak_value * PEAK_DELTA
+    return peak_open and high_open
 
 
 if __name__ == '__main__':
     storage = st.Storage()
     storage.update_realtime_storage()
-    print(detect_high_open(storage, '300703'))
+    start = time.time()
+    for code in tm.ts_mapping:
+        detect_high_open(storage, code)
+    end = time.time()
+    print(end - start)
