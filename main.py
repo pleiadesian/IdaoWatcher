@@ -14,7 +14,6 @@ import api.ts_map as tm
 
 SLEEP_INTERVAL = 3
 
-TEST_HIGHOPEN = 0
 TEST_NECKLINE = 1
 TIMEING = 0
 
@@ -31,7 +30,7 @@ class Main:
         matching in an interval
         :return: matched codes
         """
-        if TEST_HIGHOPEN == 1:
+        if datetime.datetime.now() < datetime.datetime.strptime('09:30:00', '%H:%M:%S'):
             matched = []
             for code in tm.ts_mapping:
                 if oh.detect_high_open(self.storage, code):
@@ -39,8 +38,8 @@ class Main:
             return matched
         else:
             matched = []
-            final_matched = []
             boomed = []
+            final_matched = []
             for code in tm.ts_mapping:
                 ret = self.time_share_explosion.detect_timeshare_explode(self.storage, code)
                 if ret:
@@ -54,7 +53,7 @@ class Main:
                     f.write(str(datetime.datetime.now()) + '     ' + ' '.join(matched) + " | " + ' '.join(boomed) + " 颈线检测前"+'\n')
                 final_matched = self.neckline.detect_neckline(matched, boomed)
             if TEST_NECKLINE == 0:
-                final_matched = matched
+                final_matched = matched + boomed
             return final_matched
 
     def mainloop(self):

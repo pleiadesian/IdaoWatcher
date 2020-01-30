@@ -12,6 +12,7 @@ import api.storage as st
 DEBUG = 0
 
 # TODO: print more info in log for debug
+# TODO: handle stocks with free share larger than 10,000,000,000
 
 OPEN_UPPER_LIMIT = 0.1  # default 0.03
 OPEN_LOWER_LIMIT = -0.03  # default -0.02
