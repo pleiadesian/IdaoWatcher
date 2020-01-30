@@ -42,6 +42,8 @@ class NeckLine:
         self.curr_price = dict()
         self.past_price = dict()
         self.pre_close = dict()
+        self.curr_realtime_chart = None
+        self.curr_realtime_chart_long = None
         self.storage = storage
 
     def detect_lower_neckline(self, boomed):
@@ -122,7 +124,7 @@ class NeckLine:
         :param boomed: high speed rising
         :return: filtered matched list by neckline detection
         """
-        df_list = self.storage.get_realtime_chart(matched + boomed)
+        df_list = self.curr_realtime_chart
         selected = []
         for df in df_list:
             code = df.iloc[0]['code']
@@ -210,7 +212,7 @@ class NeckLine:
         :return: filtered matched list by morning neckline detection
         """
         selected = []
-        df_list = self.storage.get_realtime_chart(matched + boomed)
+        df_list = self.curr_realtime_chart
 
         if DEBUG == 1:
             df_list = [df[:30] for df in df_list]
@@ -289,7 +291,7 @@ class NeckLine:
         :param boomed: high speed rising
         :return: filtered matched list by long neckline detection
         """
-        df_list = self.storage.get_realtime_chart_long(matched + boomed)
+        df_list = self.curr_realtime_chart_long
         if DEBUG == 1:
             df_list = [df[:-210] for df in df_list]
         selected = []
@@ -368,7 +370,7 @@ class NeckLine:
         :return: filtered matched list by high neckline detection
         """
         selected = []
-        df_list = self.storage.get_realtime_chart(matched + boomed)
+        df_list = self.curr_realtime_chart
 
         for df in df_list:
             code = df.iloc[0]['code']
@@ -427,6 +429,8 @@ class NeckLine:
         :param boomed: high speed rising
         """
         self.past_price = self.curr_price
+        self.curr_realtime_chart = self.storage.get_realtime_chart(matched + boomed)
+        self.curr_realtime_chart_long = self.storage.get_realtime_chart_long(matched + boomed)
         for code in matched + boomed:
             info = storage.get_realtime_storage_single(code)
             self.curr_price[code] = float(info[3])
@@ -440,13 +444,12 @@ class NeckLine:
         """
         if DEBUG == 1:
             self.update_local_price(matched, boomed)
-            # self.update_local_price(matched, boomed)
-            # selected_high = self.detect_high_neckline(matched, boomed)
-            # selected_long = self.detect_long_neckline(matched, boomed)
-            # selected_morning = self.detect_morning_neckline(matched, boomed)
+            selected_high = self.detect_high_neckline(matched, boomed)
+            selected_long = self.detect_long_neckline(matched, boomed)
+            selected_morning = self.detect_morning_neckline(matched, boomed)
             selected_general = self.detect_general_neckline(matched, boomed)
-            # return selected_long + selected_general + selected_morning
-            return selected_general
+            return selected_high + selected_long + selected_general + selected_morning
+            # return selected_general
         self.update_local_price(matched, boomed)
         if datetime.datetime.now() < datetime.datetime.strptime('10:00:00', '%H:%M:%S'):
             selected = self.detect_morning_neckline(matched, boomed)
@@ -465,13 +468,16 @@ if __name__ == '__main__':
     storage = st.Storage()
     storage.update_realtime_storage()
     neckline = NeckLine(storage)
-    # neckline.detect_neckline(['603333'],[])
-    # neckline.detect_neckline(['600789', '000078', '300342', '601999', '000700', '300030'], [])
+    start = time.time()
+    # neckline.detect_neckline(['600789', '000078', '300342'], [])
+    neckline.detect_neckline(['600789', '000078', '300342', '601999', '000700', '300030'], [])
+    end = time.time()
+    print(end - start)
     # neckline.detect_neckline(['603315', '600988', '002352', '600332', '000570'], [])
     # neckline.detect_neckline(['603022', '601999', '002022', '600118', '300448'], [])
-    code_list = []
-    for code in tm.ts_mapping:
-        code_list.append(code)
-    ret = neckline.detect_neckline(code_list, [])
-    print(ret)
+    # code_list = []
+    # for code in tm.ts_mapping:
+    #     code_list.append(code)
+    # ret = neckline.detect_neckline(code_list, [])
+    # print(ret)
 
