@@ -18,7 +18,7 @@ INTERVAL = 3000
 THRESHOLD = 0.95
 HIGH_THRESHOLD = 0.80
 
-DEBUG = 0
+DEBUG = 1
 
 
 def get_new_a1p(codes):
