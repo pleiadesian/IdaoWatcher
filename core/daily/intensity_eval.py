@@ -22,6 +22,8 @@ HIGH_RUSH_RATIO = 0.03
 def judge_doji(open_price, high, close, low):
     return abs(open_price - close) <= (high - low) * 0.5 or close <= open_price
 
+# TODO: note that Seismic storage line should be on the first rising of price
+
 
 def eval_intensity(storage, code):
     """
@@ -31,9 +33,8 @@ def eval_intensity(storage, code):
     :return: 0=不符合三1, 1=半根, 2=一根半, 3=两根半, 4=三流以上三一股
     """
     basic_infos = storage.get_basicinfo_single(tm.ts_mapping[code])
-    hist_list = [serie for serie in storage.get_histdata_single(tm.ts_mapping[code])]
-    hist_list.reverse()
-    df = pd.DataFrame(hist_list)
+    df = storage.get_histdata_single(tm.ts_mapping[code])[-15:]
+    df = df.iloc[::-1]
     pre_close = df['close']
     free_share = basic_infos['free_share']
     limit_set = [round(k * 1.1, 2) for k in pre_close][1:]

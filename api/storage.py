@@ -18,8 +18,8 @@ import tushare as ts
 import api.ts_map as tm
 
 
-DEBUG = 0
-RELOAD = 1
+DEBUG = 1
+RELOAD = 0
 
 DATA_COLS = ['name', 'open', 'pre_close', 'price', 'high', 'low', 'bid', 'ask', 'volume', 'amount', 'b1_v', 'b1_p',
              'b2_v', 'b2_p', 'b3_v', 'b3_p', 'b4_v', 'b4_p', 'b5_v', 'b5_p', 'a1_v', 'a1_p', 'a2_v', 'a2_p', 'a3_v',
@@ -225,6 +225,17 @@ def process_json_realtime_long(code):
     return df
 
 
+def process_histdata(date):
+    not_get = True
+    while not_get:
+        try:
+            df = pro.daily(ts_code='', start_date=date, end_date=date)
+            return df
+        except requests.exceptions.RequestException as e:
+            time.sleep(1)
+            not_get = True
+
+
 class Storage:
     def __init__(self):
         self.pro = ts.pro_api(token)
@@ -411,27 +422,35 @@ class Storage:
         #     df_pretrade = df_date[df_date.cal_date < datetime.datetime.now().strftime('%Y%m%d')]
         df_pre5 = df_pretrade[-days:]
         pretrade_date = df_pre5['cal_date'].values
-        df_list = list()
-        for i in range(0, days):
-            print(i)
-            not_get = True
-            while not_get:
-                try:
-                    df = self.pro.daily(ts_code='', start_date=pretrade_date[i], end_date=pretrade_date[i])
 
-                    df_list.append(df)
-                    not_get = False
-                except requests.exceptions.RequestException as e:
-                    time.sleep(1)
-                    not_get = True
+        p = ThreadPool()
+        df_list = p.map(process_histdata, pretrade_date)
+
+        # df_list = list()
+        # for i in range(0, days):
+        #     print(i)
+        #     not_get = True
+        #     while not_get:
+        #         try:
+        #             df = self.pro.daily(ts_code='', start_date=pretrade_date[i], end_date=pretrade_date[i])
+        #
+        #             df_list.append(df)
+        #             not_get = False
+        #         except requests.exceptions.RequestException as e:
+        #             time.sleep(1)
+        #             not_get = True
+
         df_histdata = pd.concat(df_list)
-        for index, row in df_histdata.iterrows():
-            if row['ts_code'] not in self.hist_data:
-                # self.hist_data[row['ts_code']] = pd.DataFrame().append(row, ignore_index=True)
-                self.hist_data[row['ts_code']] = [row]
-            else:
-                # self.hist_data[row['ts_code']].append(row, ignore_index=True)
-                self.hist_data[row['ts_code']].append(row)
+        for ts_code in tm.ts_mapping.values():
+            print(ts_code)
+            self.hist_data[ts_code] = df_histdata[df_histdata['ts_code'] == ts_code].sort_values(by=['trade_date'])
+        # for index, row in df_histdata.iterrows():
+        #     if row['ts_code'] not in self.hist_data:
+        #         # self.hist_data[row['ts_code']] = pd.DataFrame().append(row, ignore_index=True)
+        #         self.hist_data[row['ts_code']] = [row]
+        #     else:
+        #         # self.hist_data[row['ts_code']].append(row, ignore_index=True)
+        #         self.hist_data[row['ts_code']].append(row)
         # self.hist_data = df_histdata.set_index('ts_code')
 
         # args = []
