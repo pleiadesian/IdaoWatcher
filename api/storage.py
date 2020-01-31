@@ -14,13 +14,12 @@ import requests
 import pandas as pd
 from random import randint
 from multiprocessing.pool import ThreadPool
-from urllib.request import urlopen, Request
 import tushare as ts
 import api.ts_map as tm
 
 
-DEBUG = 1
-RELOAD = 0
+DEBUG = 0
+RELOAD = 1
 
 DATA_COLS = ['name', 'open', 'pre_close', 'price', 'high', 'low', 'bid', 'ask', 'volume', 'amount', 'b1_v', 'b1_p',
              'b2_v', 'b2_p', 'b3_v', 'b3_p', 'b4_v', 'b4_p', 'b5_v', 'b5_p', 'a1_v', 'a1_p', 'a2_v', 'a2_p', 'a3_v',
@@ -400,20 +399,21 @@ class Storage:
 
     def init_histdata(self):
         """
-        initialize data in 5 days
+        initialize data in 15 days
         """
-        df_date = self.pro.trade_cal(exchange='SSE', start_date=datetime.datetime.now().strftime('%Y')+'0101',
-                                     is_open=1)
+        days = 365
+        df_date = self.pro.trade_cal(exchange='SSE', is_open=1)
         df_pretrade = df_date[df_date.cal_date < datetime.datetime.now().strftime('%Y%m%d')]
-        if len(df_pretrade) == 0:
-            # consider the trade date after New Year's day
-            df_date = self.pro.trade_cal(exchange='SSE', start_date='20200101',
-                                         is_open=1)
-            df_pretrade = df_date[df_date.cal_date < datetime.datetime.now().strftime('%Y%m%d')]
-        df_pre5 = df_pretrade[-5:]
+        # if len(df_pretrade) == 0:
+        #     # consider the trade date after New Year's day
+        #     df_date = self.pro.trade_cal(exchange='SSE', start_date='20200101',
+        #                                  is_open=1)
+        #     df_pretrade = df_date[df_date.cal_date < datetime.datetime.now().strftime('%Y%m%d')]
+        df_pre5 = df_pretrade[-days:]
         pretrade_date = df_pre5['cal_date'].values
         df_list = list()
-        for i in range(0, 5):
+        for i in range(0, days):
+            print(i)
             not_get = True
             while not_get:
                 try:

@@ -23,7 +23,7 @@ AMOUNT_THRESHOLD = 100  # 1,000,000 volume of transaction
 TURNOVER_THRESHOLD = 2.5  # turnover rate 2.5%, default 0.6%
 VOLUME_RATIO_THRESHOLD = 0.6
 
-# EXPLODE_RISE_RATIO_THRESHOLD = 0.0158
+EXPLODE_RISE_RATIO_THRESHOLD = 0.0158
 ACCER_THRESHOLD = 0.01  # ￥0.01
 LARGE_ACCER_THRESHOLD = 0.01  # %2
 
@@ -47,7 +47,7 @@ class TimeShareExplosion:
     def detect_timeshare_explode(self, storage, code):
         assert(isinstance(code, list) is False)
         basic_infos = storage.get_basicinfo_single(tm.ts_mapping[code])
-        hist_data = storage.get_histdata_single(tm.ts_mapping[code])
+        hist_data = storage.get_histdata_single(tm.ts_mapping[code])[-5:]
         info = storage.get_realtime_storage_single(code)
 
         volume = float(info[8]) / 100  # calculation by Lot
