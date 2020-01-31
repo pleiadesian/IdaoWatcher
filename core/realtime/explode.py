@@ -51,8 +51,8 @@ class TimeShareExplosion:
         info = storage.get_realtime_storage_single(code)
 
         volume = float(info[8]) / 100  # calculation by Lot
-        volume_ma5 = sum([serie['vol'] for serie in hist_data]) / len(hist_data)
-        volume_ma5_deal = sum([serie['vol'] for serie in hist_data]) / (len(hist_data) * 240 * 20)
+        volume_ma5 = sum(hist_data['vol']) / len(hist_data)
+        volume_ma5_deal = sum(hist_data['vol']) / (len(hist_data) * 240 * 20)
         today_open = float(info[1])
         pre_close = float(info[2])
         price = float(info[3])
