@@ -217,8 +217,8 @@ class NeckLine:
         selected = []
         df_list = self.curr_realtime_chart
 
-        if DEBUG == 1:
-            df_list = [df[:TRUNCATE_TIME] for df in df_list]
+        # if DEBUG == 1:
+        #     df_list = [df[:TRUNCATE_TIME] for df in df_list]
         for df in df_list:
             # neckline = [0] * 20
             code = df.iloc[0]['code']
@@ -386,8 +386,8 @@ class NeckLine:
         selected = []
         df_list = self.curr_realtime_chart
 
-        if DEBUG == 1:
-            df_list = [df[:TRUNCATE_TIME] for df in df_list]
+        # if DEBUG == 1:
+        #     df_list = [df[:TRUNCATE_TIME] for df in df_list]
         for df in df_list:
             code = df.iloc[0]['code']
             close = self.curr_price[code]
@@ -470,8 +470,8 @@ class NeckLine:
         selected = []
         df_list = self.curr_realtime_chart
 
-        if DEBUG == 1:
-            df_list = [df[:TRUNCATE_TIME] for df in df_list]
+        # if DEBUG == 1:
+        #     df_list = [df[:TRUNCATE_TIME] for df in df_list]
         for df in df_list:
             code = df.iloc[0]['code']
             open_price = self.pre_close[code]

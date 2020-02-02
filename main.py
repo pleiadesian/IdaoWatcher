@@ -50,7 +50,8 @@ class Main:
             if len(matched) > 0 or len(boomed) > 0:
                 print(str(datetime.datetime.now()) + '     ' + ' '.join(matched) + " | " + ' '.join(boomed) + " 颈线检测前")
                 with open('stock.log', 'a') as f:
-                    f.write(str(datetime.datetime.now()) + '     ' + ' '.join(matched) + " | " + ' '.join(boomed) + " 颈线检测前"+'\n')
+                    f.write(str(datetime.datetime.now()) + '     ' + ' '.join(matched) + " | " + ' '.join(boomed) +
+                            " 颈线检测前"+'\n')
                 final_matched = self.neckline.detect_neckline(matched, boomed)
             if TEST_NECKLINE == 0:
                 final_matched = matched + boomed

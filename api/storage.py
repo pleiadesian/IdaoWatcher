@@ -18,8 +18,8 @@ import tushare as ts
 import api.ts_map as tm
 
 
-DEBUG = 1
-RELOAD = 0
+DEBUG = 0
+RELOAD = 1
 
 DATA_COLS = ['name', 'open', 'pre_close', 'price', 'high', 'low', 'bid', 'ask', 'volume', 'amount', 'b1_v', 'b1_p',
              'b2_v', 'b2_p', 'b3_v', 'b3_p', 'b4_v', 'b4_p', 'b5_v', 'b5_p', 'a1_v', 'a1_p', 'a2_v', 'a2_p', 'a3_v',
