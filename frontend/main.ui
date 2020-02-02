@@ -234,5 +234,25 @@
   </widget>
  </widget>
  <resources/>
- <connections/>
+ <connections>
+  <connection>
+   <sender>pushButton_0</sender>
+   <signal>clicked()</signal>
+   <receiver>Dialog</receiver>
+   <slot>test()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>256</x>
+     <y>62</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>336</x>
+     <y>57</y>
+    </hint>
+   </hints>
+  </connection>
+ </connections>
+ <slots>
+  <slot>test()</slot>
+ </slots>
 </ui>

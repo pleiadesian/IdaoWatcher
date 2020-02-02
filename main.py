@@ -5,13 +5,16 @@
 """
 import time
 import datetime
+import multiprocessing
 from random import randint
+from multiprocessing import Value, Manager
 import core.realtime.neckline as nl
 import core.realtime.explode as ex
 import core.realtime.open_high as oh
 import core.daily.up_num as un
 import api.storage as st
 import api.ts_map as tm
+import main_ui as frontend
 
 SLEEP_INTERVAL = 3
 
@@ -68,35 +71,33 @@ class Main:
             codes.append(tm.detail_code_list[code_index][2:])
         return codes
 
-    def mainloop(self):
-        """
-        start main loop
-        """
-        start = 0
-        end = 3
-        while True:
-            if end - start < 3:
-                time.sleep(SLEEP_INTERVAL - (end - start))
-            start = time.time()  # update too fast?
-            self.storage.update_realtime_storage()
-            # codes = self.matching()
-            codes = self.mock_matching()
-            if len(codes) > 0:
-                print(str(datetime.datetime.now()) + '     ' + ' '.join(codes) + " 出现分时攻击")
-                with open('stock.log', 'a') as f:
-                    f.write(str(datetime.datetime.now()) + '     ' + ' '.join(codes) + " 出现分时攻击"+'\n')
-            else:
-                print(str(datetime.datetime.now()))
-                with open('stock.log', 'a') as f:
-                    f.write(str(datetime.datetime.now()) + '\n')
-            end = time.time()
-            # print("main:" + str(end - start))
 
-
-def start_mainloop():
+def mainloop(codes):
+    """
+    start main loop
+    """
+    start = 0
+    end = 3
     main = Main()
-    main.mainloop()
+    while True:
+        if end - start < 3:
+            time.sleep(SLEEP_INTERVAL - (end - start))
+        start = time.time()  # update too fast?
+        main.storage.update_realtime_storage()
+        codes[:] = []
+        for code in main.mock_matching():
+            codes.append(code)
+        if len(codes) > 0:
+            print(str(datetime.datetime.now()) + '     ' + ' '.join(codes) + " 出现分时攻击")
+            with open('stock.log', 'a') as f:
+                f.write(str(datetime.datetime.now()) + '     ' + ' '.join(codes) + " 出现分时攻击"+'\n')
+        else:
+            print(str(datetime.datetime.now()))
+            with open('stock.log', 'a') as f:
+                f.write(str(datetime.datetime.now()) + '\n')
+        end = time.time()
+        # print("main:" + str(end - start))
 
 
 if __name__ == '__main__':
-    start_mainloop()
+    mainloop([])

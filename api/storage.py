@@ -230,6 +230,7 @@ def process_histdata(date):
     while not_get:
         try:
             df = pro.daily(ts_code='', start_date=date, end_date=date)
+            print(date)
             return df
         except requests.exceptions.RequestException as e:
             time.sleep(1)
@@ -249,10 +250,11 @@ class Storage:
         self.basic_info = dict()
         self.hist_data = dict()
 
+        path = os.getenv('PROJPATH')
+        target_bi = path + 'basicinfo.dat'
+        target_hd = path + 'histdata.dat'
         # self.init_neckline_storage()
         if DEBUG == 1:
-            target_bi = 'basicinfo.dat'
-            target_hd = 'histdata.dat'
             if os.path.getsize(target_bi) > 0 and os.path.getsize(target_hd) > 0:
                 with open(target_bi, "rb") as f:
                     unpickler = pickle.Unpickler(f)
@@ -264,9 +266,9 @@ class Storage:
             self.init_basicinfo()
             self.init_histdata()
             if RELOAD == 1:
-                with open('basicinfo.dat', 'wb') as f:
+                with open(target_bi, 'wb') as f:
                     pickle.dump(self.basic_info, f)
-                with open('histdata.dat', 'wb') as f:
+                with open(target_hd, 'wb') as f:
                     pickle.dump(self.hist_data, f)
 
     def update_realtime_storage(self):
@@ -443,6 +445,7 @@ class Storage:
         df_histdata = pd.concat(df_list)
         gb = df_histdata.set_index(['trade_date']).sort_index().groupby('ts_code')
         for ts_code in tm.ts_mapping.values():
+            print(ts_code)
             self.hist_data[ts_code] = gb.get_group(ts_code)
             # self.hist_data[ts_code] = df_histdata[df_histdata['ts_code'] == ts_code].sort_values(by=['trade_date'])
         # for index, row in df_histdata.iterrows():

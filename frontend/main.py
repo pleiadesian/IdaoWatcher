@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file 'main.ui'
+# Form implementation generated from reading ui file 'frontend/main.ui'
 #
 # Created by: PyQt5 UI code generator 5.14.1
 #
@@ -89,6 +89,7 @@ class Ui_Dialog(object):
         self.pushButton_11.setObjectName("pushButton_11")
 
         self.retranslateUi(Dialog)
+        self.pushButton_0.clicked.connect(Dialog.test)
         QtCore.QMetaObject.connectSlotsByName(Dialog)
 
     def retranslateUi(self, Dialog):
