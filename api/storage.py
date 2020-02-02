@@ -441,9 +441,10 @@ class Storage:
         #             not_get = True
 
         df_histdata = pd.concat(df_list)
+        gb = df_histdata.set_index(['trade_date']).sort_index().groupby('ts_code')
         for ts_code in tm.ts_mapping.values():
-            print(ts_code)
-            self.hist_data[ts_code] = df_histdata[df_histdata['ts_code'] == ts_code].sort_values(by=['trade_date'])
+            self.hist_data[ts_code] = gb.get_group(ts_code)
+            # self.hist_data[ts_code] = df_histdata[df_histdata['ts_code'] == ts_code].sort_values(by=['trade_date'])
         # for index, row in df_histdata.iterrows():
         #     if row['ts_code'] not in self.hist_data:
         #         # self.hist_data[row['ts_code']] = pd.DataFrame().append(row, ignore_index=True)
