@@ -18,8 +18,8 @@ import tushare as ts
 import api.ts_map as tm
 
 
-DEBUG = 1
-RELOAD = 0
+DEBUG = 0
+RELOAD = 1
 
 DATA_COLS = ['name', 'open', 'pre_close', 'price', 'high', 'low', 'bid', 'ask', 'volume', 'amount', 'b1_v', 'b1_p',
              'b2_v', 'b2_p', 'b3_v', 'b3_p', 'b4_v', 'b4_p', 'b5_v', 'b5_p', 'a1_v', 'a1_p', 'a2_v', 'a2_p', 'a3_v',
@@ -441,9 +441,11 @@ class Storage:
         #             not_get = True
 
         df_histdata = pd.concat(df_list)
+
+        gb = df_histdata.set_index(['trade_date']).sort_index().groupby('ts_code')
         for ts_code in tm.ts_mapping.values():
-            print(ts_code)
-            self.hist_data[ts_code] = df_histdata[df_histdata['ts_code'] == ts_code].sort_values(by=['trade_date'])
+            self.hist_data[ts_code] = gb.get_group(ts_code)
+            # self.hist_data[ts_code] = df_histdata[df_histdata['ts_code'] == ts_code].sort_values(by=['trade_date'])
         # for index, row in df_histdata.iterrows():
         #     if row['ts_code'] not in self.hist_data:
         #         # self.hist_data[row['ts_code']] = pd.DataFrame().append(row, ignore_index=True)

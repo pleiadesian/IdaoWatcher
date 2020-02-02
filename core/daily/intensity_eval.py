@@ -23,6 +23,7 @@ def judge_doji(open_price, high, close, low):
     return abs(open_price - close) <= (high - low) * 0.5 or close <= open_price
 
 # TODO: note that Seismic storage line should be on the first rising of price
+# TODO: too specific. Consider active 60-K detection and fine daily-K detection
 
 
 def eval_intensity(storage, code):
