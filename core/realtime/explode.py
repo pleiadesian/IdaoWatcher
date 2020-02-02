@@ -28,12 +28,14 @@ ACCER_THRESHOLD = 0.01  # ￥0.01
 LARGE_ACCER_THRESHOLD = 0.01  # %2
 
 RELATIVE_LARGE_VOLUME_THRESHOLD = 50  # default 58
-SMALL_ABSOLUTE_LARGE_VOLUME_THRESHOLD = 2.0  # default 350%
+SMALL_ABSOLUTE_LARGE_VOLUME_THRESHOLD = 2.5  # default 350%
 ABSOLUTE_LARGE_VOLUME_THRESHOLD = 0.95  # default 127%
 BIG_ABSOLUTE_LARGE_VOLUME_THRESHOLD = 0.9  # default 50%
+SUPERBIG_ABSOLUTE_LARGE_VOLUME_THRESHOLD = 0.4  # default 40%
 
 SMALL_FREE_SHARE = 12000
 LARGE_FREE_SHARE = 50000
+SUPERLARGE_FREE_SHARE = 200000
 
 
 class TimeShareExplosion:
@@ -94,8 +96,10 @@ class TimeShareExplosion:
             absolute_large_volume = deal_turnover_rate > SMALL_ABSOLUTE_LARGE_VOLUME_THRESHOLD
         elif free_share < LARGE_FREE_SHARE:
             absolute_large_volume = deal_turnover_rate > ABSOLUTE_LARGE_VOLUME_THRESHOLD
-        else:
+        elif free_share < SUPERLARGE_FREE_SHARE:
             absolute_large_volume = deal_turnover_rate > BIG_ABSOLUTE_LARGE_VOLUME_THRESHOLD
+        else:
+            absolute_large_volume = deal_turnover_rate > SUPERBIG_ABSOLUTE_LARGE_VOLUME_THRESHOLD
 
         exploded = amount / 10000 > AMOUNT_THRESHOLD
         exploded &= turnover_rate >= TURNOVER_THRESHOLD

@@ -65,6 +65,10 @@ class Main:
         while True:
             if end - start < 3:
                 time.sleep(SLEEP_INTERVAL - (end - start))
+            if end - start > 5:
+                print(str(datetime.datetime.now()) + ' BLOCKED FOR ' + str(end - start) + ' s')
+                with open('stock.log', 'a') as f:
+                    f.write(str(datetime.datetime.now()) + ' BLOCKED FOR ' + str(end - start) + ' s' + '\n')
             start = time.time()  # update too fast?
             self.storage.update_realtime_storage()
             codes = self.matching()
