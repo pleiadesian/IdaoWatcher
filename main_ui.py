@@ -18,9 +18,6 @@ INTERVAL = 1000
 BUTTON_X = 60
 BUTTON_NONE_X = -200
 
-manager = Manager()
-codes = manager.list()
-
 
 class MainUi(QMainWindow, frontend.Ui_Dialog):
     def __init__(self):
@@ -30,7 +27,7 @@ class MainUi(QMainWindow, frontend.Ui_Dialog):
         self.button_list = [self.pushButton_0, self.pushButton_1, self.pushButton_2, self.pushButton_3,
                             self.pushButton_4, self.pushButton_5, self.pushButton_6, self.pushButton_7,
                             self.pushButton_8, self.pushButton_9, self.pushButton_10, self.pushButton_11]
-        self.code_list = [''] * 10
+        self.code_list = [''] * 12
         for button in self.button_list:
             button.move(BUTTON_NONE_X, button.y())
         self.window_info = setfocus.init_fs()
@@ -57,15 +54,19 @@ class MainUi(QMainWindow, frontend.Ui_Dialog):
             button.setText(code)
             self.code_list[i] = code
             button.move(BUTTON_X, button.y())
+            i += 1
         alert_codes = len(codes)
         for button in self.button_list:
             alert_codes -= 1
             if alert_codes < 0:
                 button.setText('None')
                 button.move(BUTTON_NONE_X, button.y())
+        print('after check:' + str(self.code_list))
 
 
 if __name__ == '__main__':
+    manager = Manager()
+    codes = manager.list()
     p = multiprocessing.Process(target=backend.mainloop, args=(codes,))
     p.start()
     app = QApplication(sys.argv)

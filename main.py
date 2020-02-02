@@ -14,7 +14,6 @@ import core.realtime.open_high as oh
 import core.daily.up_num as un
 import api.storage as st
 import api.ts_map as tm
-import main_ui as frontend
 
 SLEEP_INTERVAL = 3
 
