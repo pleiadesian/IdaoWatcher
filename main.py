@@ -5,6 +5,8 @@
 """
 import time
 import datetime
+from random import randint
+import tushare as ts
 import core.realtime.neckline as nl
 import core.realtime.explode as ex
 import core.realtime.open_high as oh
@@ -80,6 +82,21 @@ class Main:
             # print("main:" + str(end - start))
 
 
+def mock_matching(date):
+    """
+    :return: 0~10 random stock codes
+    """
+    codenum = randint(0, 5)
+    codes = []
+    for i in range(0, codenum):
+        code_index = randint(0, len(tm.detail_code_list) - 1)
+        codes.append(tm.detail_code_list[code_index][2:])
+    return codes
+
+
 if __name__ == '__main__':
-    main = Main()
-    main.mainloop()
+    date = '2020-01-02 10:00:01'
+    codes = mock_matching(date)
+    print(date + ' 买入: ' + str(codes))
+    # main = Main()
+    # main.mainloop()
