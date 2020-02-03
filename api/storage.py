@@ -250,9 +250,10 @@ class Storage:
         self.hist_data = dict()
 
         # self.init_neckline_storage()
+        path = os.getenv('PROJPATH')
         if DEBUG == 1:
-            target_bi = 'basicinfo.dat'
-            target_hd = 'histdata.dat'
+            target_bi = path + 'basicinfo.dat'
+            target_hd = path + 'histdata.dat'
             if os.path.getsize(target_bi) > 0 and os.path.getsize(target_hd) > 0:
                 with open(target_bi, "rb") as f:
                     unpickler = pickle.Unpickler(f)
@@ -264,9 +265,9 @@ class Storage:
             self.init_basicinfo()
             self.init_histdata()
             if RELOAD == 1:
-                with open('basicinfo.dat', 'wb') as f:
+                with open(path + 'basicinfo.dat', 'wb') as f:
                     pickle.dump(self.basic_info, f)
-                with open('histdata.dat', 'wb') as f:
+                with open(path + 'histdata.dat', 'wb') as f:
                     pickle.dump(self.hist_data, f)
 
     def update_realtime_storage(self):

@@ -50,7 +50,8 @@ class Main:
             if len(matched) > 0 or len(boomed) > 0:
                 print(str(datetime.datetime.now()) + '     ' + ' '.join(matched) + " | " + ' '.join(boomed) + " 颈线检测前")
                 with open('stock.log', 'a') as f:
-                    f.write(str(datetime.datetime.now()) + '     ' + ' '.join(matched) + " | " + ' '.join(boomed) + " 颈线检测前"+'\n')
+                    f.write(str(datetime.datetime.now()) + '     ' + ' '.join(matched) + " | " + ' '.join(boomed) +
+                            " 颈线检测前"+'\n')
                 final_matched = self.neckline.detect_neckline(matched, boomed)
             if TEST_NECKLINE == 0:
                 final_matched = matched + boomed
@@ -65,8 +66,12 @@ class Main:
         while True:
             if end - start < 3:
                 time.sleep(SLEEP_INTERVAL - (end - start))
-            start = time.time()  # update too fast?
+            if end - start > 5:
+                print(str(datetime.datetime.now()) + ' BLOCKED FOR ' + str(end - start) + ' s')
+                with open('stock.log', 'a') as f:
+                    f.write(str(datetime.datetime.now()) + ' BLOCKED FOR ' + str(end - start) + ' s' + '\n')
             self.storage.update_realtime_storage()
+            start = time.time()  # update too fast?
             codes = self.matching()
             if len(codes) > 0:
                 print(str(datetime.datetime.now()) + '     ' + ' '.join(codes) + " 出现分时攻击")
