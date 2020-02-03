@@ -4,6 +4,7 @@
 @ Datetime: 2020-01-16 20:51
 @ Desc:     time share exploding detection
 """
+import os
 import datetime
 import tushare as ts
 import api.ts_map as tm
@@ -17,7 +18,7 @@ DEBUG = 0
 OPEN_UPPER_LIMIT = 0.1  # default 0.03
 OPEN_LOWER_LIMIT = -0.03  # default -0.02
 
-RUSH_LOWER_LIMIT = -0.06  # default -0.03 | -0.05
+RUSH_LOWER_LIMIT = -0.05  # default -0.03
 
 AMOUNT_THRESHOLD = 100  # 1,000,000 volume of transaction
 TURNOVER_THRESHOLD = 2.5  # turnover rate 2.5%, default 0.6%
@@ -38,6 +39,8 @@ LARGE_FREE_SHARE = 50000
 SUPERLARGE_FREE_SHARE = 200000
 
 LOW_PRICE_BOUND = -0.01
+
+path = os.getenv('PROJPATH')
 
 
 class TimeShareExplosion:
@@ -84,9 +87,8 @@ class TimeShareExplosion:
         else:
             minutes_elapse = 120 + (time - datetime.datetime.strptime('13:00:00', "%H:%M:%S")).seconds / 60
 
-        # todo
         if minutes_elapse == 0:
-            return False
+            minutes_elapse = 1
 
         turnover_rate = volume * 240 / free_share / minutes_elapse  # customized turnover_rate
         volume_ratio = volume * 240 / volume_ma5 / minutes_elapse
@@ -119,9 +121,9 @@ class TimeShareExplosion:
         # exploded &= rise_ratio >= EXPLODE_RISE_RATIO_THRESHOLD
         exploded &= (curr_deal_accer >= ACCER_THRESHOLD or
                      curr_deal_accer_percent >= LARGE_ACCER_THRESHOLD or
-                     (free_share >= LARGE_FREE_SHARE and curr_deal_accer >= 0.0))
-        if curr_deal_accer < 0.01:
-            exploded &= curr_deal_positive_ask >= 0.5 * (volume - self.deal_volume[code][0])
+                     (free_share >= LARGE_FREE_SHARE and curr_deal_accer >= 0.0)) or \
+                    (-0.01 < curr_deal_accer < 0.01 and
+                     curr_deal_positive_ask >= 0.5 * (volume - self.deal_volume[code][0]))
         exploded &= (relative_large_volume or absolute_large_volume)
         # if code == '000955':
         #     print(str(time) + ' '+str(curr_deal_volume))
@@ -137,6 +139,8 @@ class TimeShareExplosion:
         # in case of low-price transaction
         if exploded and rise_ratio < LOW_PRICE_BOUND and curr_deal_accer_percent < LARGE_ACCER_THRESHOLD:
             print(code + ' too low')
+            with open(path + 'stock.log', 'a') as f:
+                f.write(code + ' too low' + "\n")
             return False
         return exploded
 

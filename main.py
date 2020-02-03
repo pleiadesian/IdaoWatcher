@@ -70,8 +70,8 @@ class Main:
                 print(str(datetime.datetime.now()) + ' BLOCKED FOR ' + str(end - start) + ' s')
                 with open('stock.log', 'a') as f:
                     f.write(str(datetime.datetime.now()) + ' BLOCKED FOR ' + str(end - start) + ' s' + '\n')
-            start = time.time()  # update too fast?
             self.storage.update_realtime_storage()
+            start = time.time()  # update too fast?
             codes = self.matching()
             if len(codes) > 0:
                 print(str(datetime.datetime.now()) + '     ' + ' '.join(codes) + " 出现分时攻击")
