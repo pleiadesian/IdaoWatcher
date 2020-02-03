@@ -18,7 +18,8 @@ DEBUG = 0
 OPEN_UPPER_LIMIT = 0.1  # default 0.03
 OPEN_LOWER_LIMIT = -0.03  # default -0.02
 
-RUSH_LOWER_LIMIT = -0.05  # default -0.03
+# TODO: CHANGE TO -0.05
+# RUSH_LOWER_LIMIT = -0.09  # default -0.03
 
 AMOUNT_THRESHOLD = 100  # 1,000,000 volume of transaction
 TURNOVER_THRESHOLD = 2.5  # turnover rate 2.5%, default 0.6%
@@ -101,7 +102,7 @@ class TimeShareExplosion:
         low_ratio = (low - pre_close) / pre_close
 
         rush_not_broken = OPEN_LOWER_LIMIT <= open_ratio <= OPEN_UPPER_LIMIT
-        rush_not_broken &= low_ratio >= RUSH_LOWER_LIMIT
+        # rush_not_broken &= low_ratio >= RUSH_LOWER_LIMIT
 
         relative_large_volume = deal_volume_ratio > RELATIVE_LARGE_VOLUME_THRESHOLD
         if free_share < SMALL_FREE_SHARE:
@@ -119,9 +120,8 @@ class TimeShareExplosion:
 
         exploded &= rush_not_broken
         # exploded &= rise_ratio >= EXPLODE_RISE_RATIO_THRESHOLD
-        exploded &= (curr_deal_accer >= ACCER_THRESHOLD or
-                     curr_deal_accer_percent >= LARGE_ACCER_THRESHOLD or
-                     (free_share >= LARGE_FREE_SHARE and curr_deal_accer >= 0.0)) or \
+        exploded &= curr_deal_accer >= ACCER_THRESHOLD or \
+                    curr_deal_accer_percent >= LARGE_ACCER_THRESHOLD or \
                     (-0.01 < curr_deal_accer < 0.01 and
                      curr_deal_positive_ask >= 0.5 * (volume - self.deal_volume[code][0]))
         exploded &= (relative_large_volume or absolute_large_volume)
@@ -149,7 +149,7 @@ if __name__ == '__main__':
     storage = st.Storage()
     storage.update_realtime_storage()
     time_share_explotion = TimeShareExplosion()
-    ret = time_share_explotion.detect_timeshare_explode(storage, '603660')
+    ret = time_share_explotion.detect_timeshare_explode(storage, '002252')
     print(ret)
 
 

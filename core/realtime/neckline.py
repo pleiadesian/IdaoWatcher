@@ -22,14 +22,16 @@ NECKLINE_LOWER_BOUND = 0.99
 NECKLINE_STEP = 20
 NECKLINE_MINUS_STEP = 10
 
+LOW_NECKLINE_INDEX = 17
+LOW_NECKLINE_LENGTH_THRESHOLD = 60
 RECENT_NECKLINE_LENGTH_THRESHOLD = 20  # default 15
 NECKLINE_LENGTH_THRESHOLD = 30  # default 35
 LONG_NECKLINE_LENGTH_THRESHOLD = 70
 SEPARATED_NECKLINE_MIN_GAP = 45
-OUTLINER_THRESHOLD = 0.55
-RECENT_OUTLINER_THRESHOLD = 0.35
+OUTLINER_THRESHOLD = 0.65  # default 0.55
+RECENT_OUTLINER_THRESHOLD = 0.45
 
-BOOM_LOWER_BOUND = 0.99  # default 98%
+BOOM_LOWER_BOUND = 0.99  # default 98% | 99%
 BOOM_UPPER_BOUND = 1.03  # default 103%
 NORMAL_LOWER_BOUND = 0.99  # default 98%
 NORMAL_UPPER_BOUND = 1.015  # default 101.5%
@@ -39,8 +41,11 @@ HIGH_UPPER_BOUND = 1.005
 NORMAL_OPEN_HIGH_THRESHOLD = 0.02
 LARGE_OPEN_HIGH_THRESHOLD = 0.005
 LARGE_FREE_SHARE = 50000
+RISE_HIGH_THRESHOLD = 0.03
 
 MINUTE_ABSOLUTE_VOLUME_THRESHOLD = 1.12  # default 112%
+
+HIGH_PRICE_PERCENT = 1.095
 
 path = os.getenv('PROJPATH')
 
@@ -128,18 +133,24 @@ class NeckLine:
 
     def detect_general_neckline(self, matched, boomed):
         """
-        ONLY used after 10:30
+        ONLY used after 10:30, recent neckline detection included
         :param matched: matched list by time share explosion filter
         :param boomed: high speed rising
         :return: filtered matched list by neckline detection
         """
         df_list = self.curr_realtime_chart
         selected = []
+        selected_recent = self.detect_recent_neckline(matched, boomed)
         for df in df_list:
             code = df.iloc[0]['code']
             close = self.curr_price[code]
+            boom_close = df.iloc[-1]['open']
             open_price = self.pre_close[code]
             limit = round(open_price * 1.1, 2)
+            rise_ratio = (close - open_price) / open_price
+
+            if close >= round(open_price * HIGH_PRICE_PERCENT, 2):
+                continue
 
             # TODO: average price line detection?
 
@@ -164,7 +175,11 @@ class NeckLine:
                     df_area = df[(df.index > lower) & (df.index < upper)]
                     df_area = df_area[df_area.index < limit]  # do not count limit price
                     # neckline should be longer than 35 minutes
-                    if len(df_area) >= NECKLINE_LENGTH_THRESHOLD:
+                    if i <= LOW_NECKLINE_INDEX:
+                        length_threshold = LOW_NECKLINE_LENGTH_THRESHOLD
+                    else:
+                        length_threshold = NECKLINE_LENGTH_THRESHOLD
+                    if len(df_area) >= length_threshold:
                         df_area = df_area.sort_values(by=['day'])
                         # calculate confidence coefficient of this neckline
                         days = df_area['day'].values
@@ -195,20 +210,26 @@ class NeckLine:
                 curr_deal = self.curr_price[code]
                 for neckline in neckline_select:
                     if past_deal <= neckline_list[neckline[0]] <= curr_deal:
-                        selected.append(code)
-                        break
+                        if code in selected_recent:
+                            selected.append(code)
+                            break
             # detect if price is in a box form
-            if code in boomed:
+            if code in boomed and close > boom_close:
                 lower_bound = BOOM_LOWER_BOUND
                 upper_bound = BOOM_UPPER_BOUND
+                close = boom_close
             else:
                 lower_bound = NORMAL_LOWER_BOUND
                 upper_bound = NORMAL_UPPER_BOUND
             # boomed stock is over neckline
             for neckline in neckline_select:
                 if neckline_list[neckline[0]] * lower_bound <= close <= neckline_list[neckline[0]] * upper_bound:
-                    selected.append(code)
-                    break
+                    if code in selected_recent:
+                        selected.append(code)
+                        break
+            if rise_ratio > RISE_HIGH_THRESHOLD and code in selected_recent:
+                selected.append(code)
+                break
         return selected
 
     def detect_morning_neckline(self, matched, boomed):
@@ -233,6 +254,9 @@ class NeckLine:
             limit = round(open_price * 1.1, 2)
             close = self.curr_price[code]
             highest = max(df['high'].values)
+
+            if close >= round(open_price * HIGH_PRICE_PERCENT, 2):
+                continue
 
             if close >= limit or highest >= limit:
                 print(code + "(morning neckline): at limit")
@@ -325,7 +349,11 @@ class NeckLine:
             code = df.iloc[0]['code']
             open_price = self.pre_close[code]
             close = self.curr_price[code]
+            boom_close = df.iloc[-1]['open']
             limit = round(open_price * 1.1, 2)
+
+            if close >= round(open_price * HIGH_PRICE_PERCENT, 2):
+                continue
 
             neckline_list = [open_price * (1 + ratio * 0.1 / NECKLINE_STEP) for ratio in
                              range(-NECKLINE_MINUS_STEP, NECKLINE_STEP)]
@@ -374,9 +402,10 @@ class NeckLine:
                         selected.append(code)
                         break
             # detect if price is in a box form
-            if code in boomed:
+            if code in boomed and close > boom_close:
                 lower_bound = BOOM_LOWER_BOUND
                 upper_bound = BOOM_UPPER_BOUND
+                close = boom_close
             else:
                 lower_bound = NORMAL_LOWER_BOUND
                 upper_bound = NORMAL_UPPER_BOUND
@@ -402,8 +431,12 @@ class NeckLine:
         for df in df_list:
             code = df.iloc[0]['code']
             close = self.curr_price[code]
+            boom_close = df.iloc[-1]['open']
             open_price = self.pre_close[code]
             limit = round(open_price * 1.1, 2)
+
+            if close >= round(open_price * HIGH_PRICE_PERCENT, 2):
+                continue
 
             neckline_list = [open_price * (1 + ratio * 0.1 / NECKLINE_STEP) for ratio in
                              range(-NECKLINE_MINUS_STEP, NECKLINE_STEP)]
@@ -412,8 +445,8 @@ class NeckLine:
             df = df.set_index('high')
             df = df.sort_index()
             last_length = None
-            for i in range(1, NECKLINE_STEP + NECKLINE_MINUS_STEP):
-                df_temp = df[(df.index > neckline_list[i - 1]) & (df.index <= neckline_list[i])]
+            for i in range(2, NECKLINE_STEP + NECKLINE_MINUS_STEP):
+                df_temp = df[(df.index > neckline_list[i - 2]) & (df.index <= neckline_list[i])]
                 # according to neckline definition
                 if last_length is not None and last_length - len(df_temp) > 3:
                     neck_price = neckline_list[i - 1]
@@ -457,9 +490,10 @@ class NeckLine:
                         selected.append(code)
                         break
             # detect if price is in a box form
-            if code in boomed:
+            if code in boomed and close > boom_close:
                 lower_bound = BOOM_LOWER_BOUND
                 upper_bound = BOOM_UPPER_BOUND
+                close = boom_close
             else:
                 lower_bound = NORMAL_LOWER_BOUND
                 upper_bound = NORMAL_UPPER_BOUND
@@ -486,6 +520,7 @@ class NeckLine:
             code = df.iloc[0]['code']
             open_price = self.pre_close[code]
             close = self.curr_price[code]
+            boom_close = df.iloc[-1]['open']
             if DEBUG == 1:
                 close = df.iloc[-1]['high']
             limit = round(open_price * 1.1, 2)
@@ -500,6 +535,9 @@ class NeckLine:
             if close >= limit:
                 continue
 
+            if close >= round(open_price * HIGH_PRICE_PERCENT, 2):
+                continue
+
             # high neckline should be at a high price
             if free_share >= LARGE_FREE_SHARE:
                 rise_threshold = LARGE_OPEN_HIGH_THRESHOLD
@@ -508,7 +546,9 @@ class NeckLine:
             if (close - open_price) / open_price < rise_threshold:
                 continue
 
-            if len(df) > 20:
+            if len(df) > 60:
+                df_recent = df[:-60]
+            elif len(df) > 20:
                 df_recent = df[:-20]
             else:
                 df_recent = df[:-5]
@@ -532,9 +572,10 @@ class NeckLine:
                 continue
 
             # detect if price is in a box form
-            if code in boomed:
+            if code in boomed and curr_deal > boom_close:
                 lower_bound = BOOM_LOWER_BOUND
                 upper_bound = BOOM_UPPER_BOUND
+                curr_deal = boom_close
             else:
                 lower_bound = HIGH_LOWER_BOUND
                 upper_bound = HIGH_UPPER_BOUND
@@ -582,9 +623,7 @@ class NeckLine:
             selected_recent = self.detect_recent_neckline(matched, boomed)
             selected = list(set(selected_morning) | set(selected_long) | set(selected_recent))
         else:
-            selected_general = self.detect_general_neckline(matched, boomed)
-            selected_recent = self.detect_recent_neckline(matched, boomed)
-            selected = list(set(selected_general) | set(selected_recent))
+            selected = self.detect_general_neckline(matched, boomed)
         selected_high = self.detect_high_neckline(matched, boomed)
         selected = list(set(selected) | set(selected_high))
         return selected
@@ -595,8 +634,8 @@ if __name__ == '__main__':
     storage.update_realtime_storage()
     neckline = NeckLine(storage)
     start = time.time()
-    neckline.detect_neckline(['600618', '002107', '000788', '300562'], [])
-    # neckline.detect_neckline(['000698'], [])
+    # neckline.detect_neckline(['600618', '002107', '000788', '300562'], [])
+    neckline.detect_neckline(['603601'], [])
     end = time.time()
     print('total: ' + str(end - start))
     # neckline.detect_neckline(['603315', '600988', '002352', '600332', '000570'], [])
