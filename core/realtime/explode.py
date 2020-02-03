@@ -17,7 +17,7 @@ DEBUG = 0
 OPEN_UPPER_LIMIT = 0.1  # default 0.03
 OPEN_LOWER_LIMIT = -0.03  # default -0.02
 
-RUSH_LOWER_LIMIT = -0.05  # default -0.03
+RUSH_LOWER_LIMIT = -0.06  # default -0.03 | -0.05
 
 AMOUNT_THRESHOLD = 100  # 1,000,000 volume of transaction
 TURNOVER_THRESHOLD = 2.5  # turnover rate 2.5%, default 0.6%
@@ -36,6 +36,8 @@ SUPERBIG_ABSOLUTE_LARGE_VOLUME_THRESHOLD = 0.4  # default 40%
 SMALL_FREE_SHARE = 12000
 LARGE_FREE_SHARE = 50000
 SUPERLARGE_FREE_SHARE = 200000
+
+LOW_PRICE_BOUND = -0.01
 
 
 class TimeShareExplosion:
@@ -131,6 +133,11 @@ class TimeShareExplosion:
         # in case of booming
         if curr_deal_accer_percent >= LARGE_ACCER_THRESHOLD and rise_ratio >= EXPLODE_RISE_RATIO_THRESHOLD:
             return 2
+
+        # in case of low-price transaction
+        if exploded and rise_ratio < LOW_PRICE_BOUND and curr_deal_accer_percent < LARGE_ACCER_THRESHOLD:
+            print(code + ' too low')
+            return False
         return exploded
 
 
@@ -138,7 +145,7 @@ if __name__ == '__main__':
     storage = st.Storage()
     storage.update_realtime_storage()
     time_share_explotion = TimeShareExplosion()
-    ret = time_share_explotion.detect_timeshare_explode(storage, '300303')
+    ret = time_share_explotion.detect_timeshare_explode(storage, '603660')
     print(ret)
 
 
