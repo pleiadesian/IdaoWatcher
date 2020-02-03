@@ -42,9 +42,11 @@ class TimeShareExplosion:
     def __init__(self):
         self.deal_volume = dict()
         self.deal_price = dict()
+        self.deal_bid = dict()
         for code in tm.ts_mapping:
             self.deal_volume[code] = (0.0, datetime.datetime.now())
             self.deal_price[code] = 0.0
+            self.deal_bid[code] = 0.0
 
     def detect_timeshare_explode(self, storage, code):
         assert(isinstance(code, list) is False)
@@ -61,6 +63,7 @@ class TimeShareExplosion:
         high = float(info[4])
         low = float(info[5])
         amount = float(info[9])
+        bid = float(info[20]) / 100
         free_share = basic_infos['free_share']
 
         time = info[31]
@@ -73,6 +76,7 @@ class TimeShareExplosion:
         curr_deal_volume = (volume - self.deal_volume[code][0]) / sec_delta * 3
         curr_deal_accer = (price - self.deal_price[code]) / sec_delta * 3
         curr_deal_accer_percent = (price - self.deal_price[code]) / sec_delta * 3 / pre_close
+        curr_deal_positive_ask = self.deal_bid[code] - bid
         if time <= datetime.datetime.strptime('11:30:00', "%H:%M:%S"):
             minutes_elapse = (time - datetime.datetime.strptime('9:30:00', "%H:%M:%S")).seconds / 60
         else:
@@ -114,12 +118,15 @@ class TimeShareExplosion:
         exploded &= (curr_deal_accer >= ACCER_THRESHOLD or
                      curr_deal_accer_percent >= LARGE_ACCER_THRESHOLD or
                      (free_share >= LARGE_FREE_SHARE and curr_deal_accer >= 0.0))
+        if curr_deal_accer < 0.01:
+            exploded &= curr_deal_positive_ask >= 0.5 * (volume - self.deal_volume[code][0])
         exploded &= (relative_large_volume or absolute_large_volume)
         # if code == '000955':
         #     print(str(time) + ' '+str(curr_deal_volume))
 
         self.deal_volume[code] = (volume, time)
         self.deal_price[code] = price
+        self.deal_bid[code] = bid
 
         # in case of booming
         if curr_deal_accer_percent >= LARGE_ACCER_THRESHOLD and rise_ratio >= EXPLODE_RISE_RATIO_THRESHOLD:

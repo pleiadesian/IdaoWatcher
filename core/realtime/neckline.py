@@ -228,6 +228,13 @@ class NeckLine:
             open_price_today = df.iloc[0]['open']
             limit = round(open_price * 1.1, 2)
             close = self.curr_price[code]
+            highest = max(df['high'].values)
+
+            if close >= limit or highest >= limit:
+                print(code + "(morning neckline): at limit")
+                with open('../../stock.log', 'a') as f:
+                    f.write(code + "(morning neckline): at limit" + "\n")
+                continue
 
             # morning neckline is effective on high-opened stock
             if free_share >= LARGE_FREE_SHARE:
@@ -512,6 +519,10 @@ class NeckLine:
             past_deal = self.past_price[code]
             curr_deal = self.curr_price[code]
             highest = max(df_recent['high'].values)
+            # too high
+            if highest >= limit:
+                continue
+
             # log
             if DEBUG == 1:
                 print(code + '(high neckline): ' + str(highest))
@@ -571,13 +582,13 @@ class NeckLine:
             selected_morning = self.detect_morning_neckline(matched, boomed)
             selected_long = self.detect_long_neckline(matched, boomed)
             selected_recent = self.detect_recent_neckline(matched, boomed)
-            selected = list(set(selected_morning) & set(selected_long) & set(selected_recent))
+            selected = list(set(selected_morning) | set(selected_long) | set(selected_recent))
         else:
             selected_general = self.detect_general_neckline(matched, boomed)
             selected_recent = self.detect_recent_neckline(matched, boomed)
-            selected = list(set(selected_general) & set(selected_recent))
+            selected = list(set(selected_general) | set(selected_recent))
         selected_high = self.detect_high_neckline(matched, boomed)
-        selected = list(set(selected) & set(selected_high))
+        selected = list(set(selected) | set(selected_high))
         return selected
 
 
