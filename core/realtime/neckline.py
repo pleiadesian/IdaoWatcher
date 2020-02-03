@@ -226,6 +226,7 @@ class NeckLine:
             free_share = basic_infos['free_share']
             open_price = self.pre_close[code]
             open_price_today = df.iloc[0]['open']
+            limit = round(open_price * 1.1, 2)
             close = self.curr_price[code]
 
             # morning neckline is effective on high-opened stock
@@ -279,6 +280,10 @@ class NeckLine:
             # for i in range(0, 20):
             #     if neckline[i] > 0:
             #         neckline_price = open_price * (1 + i * 0.1 / 20)
+            if open_price_today >= limit:
+                print(code + "(morning): at limit")
+                with open('../../stock.log', 'a') as f:
+                    f.write(code + "(morning): at limit" + "\n")
             if DEBUG == 1:
                 print(code + "(morning):" + str(open_price_today))
                 with open('../../stock.log', 'a') as f:
@@ -560,9 +565,9 @@ class NeckLine:
         #     return selected_long + selected_general + selected_morning + selected_recent
             # return selected_general
         self.update_local_price(matched, boomed)
-        if datetime.datetime.now() < datetime.datetime.strptime('10:00:00', '%H:%M:%S'):
+        if datetime.datetime.now().strftime('%H:%M:%S') < '10:00:00':
             selected = self.detect_morning_neckline(matched, boomed)
-        elif datetime.datetime.now() < datetime.datetime.strptime('10:30:00', '%H:%M:%S'):
+        elif datetime.datetime.now().strftime('%H:%M:%S') < '10:30:00':
             selected_morning = self.detect_morning_neckline(matched, boomed)
             selected_long = self.detect_long_neckline(matched, boomed)
             selected_recent = self.detect_recent_neckline(matched, boomed)
@@ -581,7 +586,7 @@ if __name__ == '__main__':
     storage.update_realtime_storage()
     neckline = NeckLine(storage)
     start = time.time()
-    # neckline.detect_neckline(['600789', '000078', '300342'], [])
+    neckline.detect_neckline(['002214'], [])
     # neckline.detect_neckline(['300348', '300627', '603348'], [])
     end = time.time()
     print('total: ' + str(end - start))
