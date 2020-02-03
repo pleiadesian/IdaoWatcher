@@ -553,14 +553,14 @@ class NeckLine:
         :param boomed: high speed rising
         :return: filtered matched list by neckline detection
         """
-        if DEBUG == 1:
-            self.update_local_price(matched, boomed)
-            # selected_high = self.detect_high_neckline(matched, boomed)
-            selected_morning = self.detect_morning_neckline(matched, boomed)
-            selected_long = self.detect_long_neckline(matched, boomed)
-            selected_recent = self.detect_recent_neckline(matched, boomed)
-            selected_general = self.detect_general_neckline(matched, boomed)
-            return selected_long + selected_general + selected_morning + selected_recent
+        # if DEBUG == 1:
+        #     self.update_local_price(matched, boomed)
+        #     # selected_high = self.detect_high_neckline(matched, boomed)
+        #     selected_morning = self.detect_morning_neckline(matched, boomed)
+        #     selected_long = self.detect_long_neckline(matched, boomed)
+        #     selected_recent = self.detect_recent_neckline(matched, boomed)
+        #     selected_general = self.detect_general_neckline(matched, boomed)
+        #     return selected_long + selected_general + selected_morning + selected_recent
             # return selected_general
         self.update_local_price(matched, boomed)
         if datetime.datetime.now() < datetime.datetime.strptime('10:00:00', '%H:%M:%S'):
@@ -568,9 +568,12 @@ class NeckLine:
         elif datetime.datetime.now() < datetime.datetime.strptime('10:30:00', '%H:%M:%S'):
             selected_morning = self.detect_morning_neckline(matched, boomed)
             selected_long = self.detect_long_neckline(matched, boomed)
-            selected = list(set(selected_morning) & set(selected_long))
+            selected_recent = self.detect_recent_neckline(matched, boomed)
+            selected = list(set(selected_morning) & set(selected_long) & set(selected_recent))
         else:
-            selected = self.detect_general_neckline(matched, boomed)
+            selected_general = self.detect_general_neckline(matched, boomed)
+            selected_recent = self.detect_recent_neckline(matched, boomed)
+            selected = list(set(selected_general) & set(selected_recent))
         selected_high = self.detect_high_neckline(matched, boomed)
         selected = list(set(selected) & set(selected_high))
         return selected
