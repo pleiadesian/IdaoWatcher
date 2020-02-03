@@ -78,6 +78,10 @@ class TimeShareExplosion:
         else:
             minutes_elapse = 120 + (time - datetime.datetime.strptime('13:00:00', "%H:%M:%S")).seconds / 60
 
+        # todo
+        if minutes_elapse == 0:
+            return False
+
         turnover_rate = volume * 240 / free_share / minutes_elapse  # customized turnover_rate
         volume_ratio = volume * 240 / volume_ma5 / minutes_elapse
         deal_volume_ratio = curr_deal_volume / volume_ma5_deal

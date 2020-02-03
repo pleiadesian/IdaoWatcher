@@ -88,7 +88,7 @@ class NeckLine:
                 upper_bound = NORMAL_UPPER_BOUND
             df = df.iloc[11:]  # exclude yesterday data and morning data
 
-            basic_infos = storage.get_basicinfo_single(tm.ts_mapping[code])
+            basic_infos = self.storage.get_basicinfo_single(tm.ts_mapping[code])
             free_share = basic_infos['free_share']
             # df_vol = df[df['volume'] * 240 / free_share / 100 > MINUTE_ABSOLUTE_VOLUME_THRESHOLD]
             # necklines = df_vol['high'].values
@@ -222,7 +222,7 @@ class NeckLine:
         for df in df_list:
             # neckline = [0] * 20
             code = df.iloc[0]['code']
-            basic_infos = storage.get_basicinfo_single(tm.ts_mapping[code])
+            basic_infos = self.storage.get_basicinfo_single(tm.ts_mapping[code])
             free_share = basic_infos['free_share']
             open_price = self.pre_close[code]
             open_price_today = df.iloc[0]['open']
@@ -237,7 +237,7 @@ class NeckLine:
                 continue
 
             # average price line can be an neckline for current price
-            info = storage.get_realtime_storage_single(code)
+            info = self.storage.get_realtime_storage_single(code)
             amount = float(info[9])
             volume = float(info[8])
             avl = amount / volume
@@ -479,7 +479,7 @@ class NeckLine:
             if DEBUG == 1:
                 close = df.iloc[-1]['high']
             limit = round(open_price * 1.1, 2)
-            basic_infos = storage.get_basicinfo_single(tm.ts_mapping[code])
+            basic_infos = self.storage.get_basicinfo_single(tm.ts_mapping[code])
             free_share = basic_infos['free_share']
 
             # too early
@@ -536,12 +536,9 @@ class NeckLine:
         :param matched: matched list by time share explosion filter
         :param boomed: high speed rising
         """
-        start = time.time()
         self.past_price = self.curr_price
         self.curr_realtime_chart = self.storage.get_realtime_chart(matched + boomed)
         self.curr_realtime_chart_long = self.storage.get_realtime_chart_long(matched + boomed)
-        end = time.time()
-        print('update: ' + str(end - start))
         for code in matched + boomed:
             info = self.storage.get_realtime_storage_single(code)
             self.curr_price[code] = float(info[3])
