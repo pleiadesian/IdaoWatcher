@@ -47,6 +47,8 @@ MINUTE_ABSOLUTE_VOLUME_THRESHOLD = 1.12  # default 112%
 
 HIGH_PRICE_PERCENT = 1.095
 
+RUSH_HIGH_THRESHOLD = 1.03
+
 path = os.getenv('PROJPATH')
 
 
@@ -218,6 +220,10 @@ class NeckLine:
                 lower_bound = BOOM_LOWER_BOUND
                 upper_bound = BOOM_UPPER_BOUND
                 close = boom_close
+                if DEBUG == 1:
+                    print(code + '(recent neckline): boomed at' + str(boom_close))
+                    with open(path + 'stock.log', 'a') as f:
+                        f.write(code + '(recent neckline): boomed at' + str(boom_close) + '\n')
             else:
                 lower_bound = NORMAL_LOWER_BOUND
                 upper_bound = NORMAL_UPPER_BOUND
@@ -269,7 +275,11 @@ class NeckLine:
                 open_threshold = LARGE_OPEN_HIGH_THRESHOLD
             else:
                 open_threshold = NORMAL_OPEN_HIGH_THRESHOLD
-            if (open_price_today - open_price) / open_price < open_threshold:
+            if (open_price_today - open_price) / open_price < open_threshold or \
+                    (close - open_price) / open_price < open_threshold:
+                print(code + "(morning neckline): too low")
+                with open(path + 'stock.log', 'a') as f:
+                    f.write(code + "(morning neckline): too low" + "\n")
                 continue
 
             # average price line can be an neckline for current price
@@ -285,12 +295,6 @@ class NeckLine:
                 upper_bound = NORMAL_UPPER_BOUND
             if code in self.past_price and \
                     self.past_price[code] <= avl <= self.curr_price[code]:
-                print(code + "(morning avl):" + str(avl))
-                with open(path + 'stock.log', 'a') as f:
-                    f.write(code + "(morning avl):" + str(avl) + "\n")
-                selected.append(code)
-                continue
-            if avl * lower_bound <= close <= avl * upper_bound:
                 print(code + "(morning avl):" + str(avl))
                 with open(path + 'stock.log', 'a') as f:
                     f.write(code + "(morning avl):" + str(avl) + "\n")
@@ -313,10 +317,11 @@ class NeckLine:
             # for i in range(0, 20):
             #     if neckline[i] > 0:
             #         neckline_price = open_price * (1 + i * 0.1 / 20)
-            if open_price_today >= limit:
-                print(code + "(morning): at limit")
+            if open_price_today >= limit or highest >= open_price_today * RUSH_HIGH_THRESHOLD:
+                print(code + "(morning): at limit or rush too high")
                 with open(path + 'stock.log', 'a') as f:
-                    f.write(code + "(morning): at limit" + "\n")
+                    f.write(code + "(morning): at limit or rush too high" + "\n")
+                continue
             if DEBUG == 1:
                 print(code + "(morning):" + str(open_price_today))
                 with open(path + 'stock.log', 'a') as f:
@@ -351,8 +356,18 @@ class NeckLine:
             close = self.curr_price[code]
             boom_close = df.iloc[-1]['open']
             limit = round(open_price * 1.1, 2)
+            rise_ratio = (close - open_price) / open_price
+            basic_infos = self.storage.get_basicinfo_single(tm.ts_mapping[code])
+            free_share = basic_infos['free_share']
 
             if close >= round(open_price * HIGH_PRICE_PERCENT, 2):
+                continue
+
+            if free_share >= LARGE_FREE_SHARE:
+                open_threshold = LARGE_OPEN_HIGH_THRESHOLD
+            else:
+                open_threshold = NORMAL_OPEN_HIGH_THRESHOLD
+            if rise_ratio < open_threshold:
                 continue
 
             neckline_list = [open_price * (1 + ratio * 0.1 / NECKLINE_STEP) for ratio in
@@ -406,6 +421,10 @@ class NeckLine:
                 lower_bound = BOOM_LOWER_BOUND
                 upper_bound = BOOM_UPPER_BOUND
                 close = boom_close
+                if DEBUG == 1:
+                    print(code + '(recent neckline): boomed at' + str(boom_close))
+                    with open(path + 'stock.log', 'a') as f:
+                        f.write(code + '(recent neckline): boomed at' + str(boom_close) + '\n')
             else:
                 lower_bound = NORMAL_LOWER_BOUND
                 upper_bound = NORMAL_UPPER_BOUND
@@ -416,11 +435,12 @@ class NeckLine:
                     break
         return selected
 
-    def detect_recent_neckline(self, matched, boomed):
+    def detect_recent_neckline(self, matched, boomed, must_be_high=False):
         """
         used ONLY after 10:30. Detect neckline longer than 20 min.
-        :param matched:
-        :param boomed:
+        :param matched: matched list by time share explosion filter
+        :param boomed: high speed rising
+        :param must_be_high: is true in the morning
         :return:
         """
         selected = []
@@ -434,9 +454,20 @@ class NeckLine:
             boom_close = df.iloc[-1]['open']
             open_price = self.pre_close[code]
             limit = round(open_price * 1.1, 2)
+            rise_ratio = (close - open_price) / open_price
+            basic_infos = self.storage.get_basicinfo_single(tm.ts_mapping[code])
+            free_share = basic_infos['free_share']
 
             if close >= round(open_price * HIGH_PRICE_PERCENT, 2):
                 continue
+
+            if must_be_high:
+                if free_share >= LARGE_FREE_SHARE:
+                    open_threshold = LARGE_OPEN_HIGH_THRESHOLD
+                else:
+                    open_threshold = NORMAL_OPEN_HIGH_THRESHOLD
+                if rise_ratio < open_threshold:
+                    continue
 
             neckline_list = [open_price * (1 + ratio * 0.1 / NECKLINE_STEP) for ratio in
                              range(-NECKLINE_MINUS_STEP, NECKLINE_STEP)]
@@ -445,8 +476,8 @@ class NeckLine:
             df = df.set_index('high')
             df = df.sort_index()
             last_length = None
-            for i in range(2, NECKLINE_STEP + NECKLINE_MINUS_STEP):
-                df_temp = df[(df.index > neckline_list[i - 2]) & (df.index <= neckline_list[i])]
+            for i in range(1, NECKLINE_STEP + NECKLINE_MINUS_STEP):
+                df_temp = df[(df.index > neckline_list[i - 1]) & (df.index <= neckline_list[i])]
                 # according to neckline definition
                 if last_length is not None and last_length - len(df_temp) > 3:
                     neck_price = neckline_list[i - 1]
@@ -494,6 +525,10 @@ class NeckLine:
                 lower_bound = BOOM_LOWER_BOUND
                 upper_bound = BOOM_UPPER_BOUND
                 close = boom_close
+                if DEBUG == 1:
+                    print(code + '(recent neckline): boomed at' + str(boom_close))
+                    with open(path + 'stock.log', 'a') as f:
+                        f.write(code + '(recent neckline): boomed at' + str(boom_close) + '\n')
             else:
                 lower_bound = NORMAL_LOWER_BOUND
                 upper_bound = NORMAL_UPPER_BOUND
@@ -524,10 +559,10 @@ class NeckLine:
             if DEBUG == 1:
                 close = df.iloc[-1]['high']
             limit = round(open_price * 1.1, 2)
-            basic_infos = self.storage.get_basicinfo_single(tm.ts_mapping[code])
-            free_share = basic_infos['free_share']
+            # basic_infos = self.storage.get_basicinfo_single(tm.ts_mapping[code])
+            # free_share = basic_infos['free_share']
 
-            # too early
+            # too early, should only use morning neckline
             if code not in self.past_price or len(df) < 10:
                 continue
 
@@ -539,26 +574,38 @@ class NeckLine:
                 continue
 
             # high neckline should be at a high price
-            if free_share >= LARGE_FREE_SHARE:
-                rise_threshold = LARGE_OPEN_HIGH_THRESHOLD
-            else:
-                rise_threshold = NORMAL_OPEN_HIGH_THRESHOLD
-            if (close - open_price) / open_price < rise_threshold:
+            # if free_share >= LARGE_FREE_SHARE:
+            #     rise_threshold = LARGE_OPEN_HIGH_THRESHOLD
+            # else:
+            #     rise_threshold = NORMAL_OPEN_HIGH_THRESHOLD
+            if (close - open_price) / open_price > RISE_HIGH_THRESHOLD:
                 continue
 
             if len(df) > 60:
                 df_recent = df[:-60]
-            elif len(df) > 20:
-                df_recent = df[:-20]
+            elif len(df) > 10:
+                df_recent = df[:-1]
             else:
-                df_recent = df[:-5]
+                assert False
+            # elif len(df) > 20:
+            #     df_recent = df[:-20]
+            # else:
+            #     df_recent = df[:-5]
 
             # detect crossing
             past_deal = self.past_price[code]
             curr_deal = self.curr_price[code]
             highest = max(df_recent['high'].values)
+            highest_recent = max(df[-10:-1]['high'].values)
             # too high
             if highest >= limit:
+                continue
+
+            # is rising
+            if highest < highest_recent:
+                print(code + "(high neckline): is rising")
+                with open(path + 'stock.log', 'a') as f:
+                    f.write(code + "(high neckline): too rising" + "\n")
                 continue
 
             # log
@@ -576,6 +623,10 @@ class NeckLine:
                 lower_bound = BOOM_LOWER_BOUND
                 upper_bound = BOOM_UPPER_BOUND
                 curr_deal = boom_close
+                if DEBUG == 1:
+                    print(code + '(recent neckline): boomed at' + str(boom_close))
+                    with open(path + 'stock.log', 'a') as f:
+                        f.write(code + '(recent neckline): boomed at' + str(boom_close) + '\n')
             else:
                 lower_bound = HIGH_LOWER_BOUND
                 upper_bound = HIGH_UPPER_BOUND
@@ -620,7 +671,7 @@ class NeckLine:
         elif datetime.datetime.now().strftime('%H:%M:%S') < '10:30:00':
             selected_morning = self.detect_morning_neckline(matched, boomed)
             selected_long = self.detect_long_neckline(matched, boomed)
-            selected_recent = self.detect_recent_neckline(matched, boomed)
+            selected_recent = self.detect_recent_neckline(matched, boomed, True)
             selected = list(set(selected_morning) | set(selected_long) | set(selected_recent))
         else:
             selected = self.detect_general_neckline(matched, boomed)
@@ -635,7 +686,7 @@ if __name__ == '__main__':
     neckline = NeckLine(storage)
     start = time.time()
     # neckline.detect_neckline(['600618', '002107', '000788', '300562'], [])
-    neckline.detect_neckline(['603601'], [])
+    neckline.detect_neckline(['002540'], [])
     end = time.time()
     print('total: ' + str(end - start))
     # neckline.detect_neckline(['603315', '600988', '002352', '600332', '000570'], [])

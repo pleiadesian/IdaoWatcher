@@ -22,7 +22,7 @@ OPEN_LOWER_LIMIT = -0.03  # default -0.02
 # RUSH_LOWER_LIMIT = -0.09  # default -0.03
 
 AMOUNT_THRESHOLD = 100  # 1,000,000 volume of transaction
-TURNOVER_THRESHOLD = 2.5  # turnover rate 2.5%, default 0.6%
+TURNOVER_THRESHOLD = 3  # turnover rate 2.5%, default 0.6% | 2.5%
 VOLUME_RATIO_THRESHOLD = 0.6
 
 EXPLODE_RISE_RATIO_THRESHOLD = 0.0158
@@ -30,12 +30,12 @@ ACCER_THRESHOLD = 0.01  # ￥0.01
 LARGE_ACCER_THRESHOLD = 0.01  # %2
 
 RELATIVE_LARGE_VOLUME_THRESHOLD = 50  # default 58
-SMALL_ABSOLUTE_LARGE_VOLUME_THRESHOLD = 2.5  # default 350%
+SMALL_ABSOLUTE_LARGE_VOLUME_THRESHOLD = 3.5  # default 350% | 250%
 ABSOLUTE_LARGE_VOLUME_THRESHOLD = 0.95  # default 127%
 BIG_ABSOLUTE_LARGE_VOLUME_THRESHOLD = 0.9  # default 50%
 SUPERBIG_ABSOLUTE_LARGE_VOLUME_THRESHOLD = 0.4  # default 40%
 
-SMALL_FREE_SHARE = 12000
+SMALL_FREE_SHARE = 15000  # default 12000
 LARGE_FREE_SHARE = 50000
 SUPERLARGE_FREE_SHARE = 200000
 
@@ -104,6 +104,8 @@ class TimeShareExplosion:
         rush_not_broken = OPEN_LOWER_LIMIT <= open_ratio <= OPEN_UPPER_LIMIT
         # rush_not_broken &= low_ratio >= RUSH_LOWER_LIMIT
 
+        active_stock = turnover_rate >= TURNOVER_THRESHOLD and volume_ratio > VOLUME_RATIO_THRESHOLD
+
         relative_large_volume = deal_volume_ratio > RELATIVE_LARGE_VOLUME_THRESHOLD
         if free_share < SMALL_FREE_SHARE:
             absolute_large_volume = deal_turnover_rate > SMALL_ABSOLUTE_LARGE_VOLUME_THRESHOLD
@@ -115,8 +117,7 @@ class TimeShareExplosion:
             absolute_large_volume = deal_turnover_rate > SUPERBIG_ABSOLUTE_LARGE_VOLUME_THRESHOLD
 
         exploded = amount / 10000 > AMOUNT_THRESHOLD
-        exploded &= turnover_rate >= TURNOVER_THRESHOLD
-        exploded &= volume_ratio > VOLUME_RATIO_THRESHOLD
+        exploded &= active_stock
 
         exploded &= rush_not_broken
         # exploded &= rise_ratio >= EXPLODE_RISE_RATIO_THRESHOLD
@@ -133,7 +134,8 @@ class TimeShareExplosion:
         self.deal_bid[code] = bid
 
         # in case of booming
-        if curr_deal_accer_percent >= LARGE_ACCER_THRESHOLD and rise_ratio >= EXPLODE_RISE_RATIO_THRESHOLD:
+        if active_stock and rush_not_broken and curr_deal_accer_percent >= LARGE_ACCER_THRESHOLD and \
+                rise_ratio >= EXPLODE_RISE_RATIO_THRESHOLD:
             return 2
 
         # in case of low-price transaction
@@ -149,7 +151,7 @@ if __name__ == '__main__':
     storage = st.Storage()
     storage.update_realtime_storage()
     time_share_explotion = TimeShareExplosion()
-    ret = time_share_explotion.detect_timeshare_explode(storage, '002252')
+    ret = time_share_explotion.detect_timeshare_explode(storage, '002206')
     print(ret)
 
 
