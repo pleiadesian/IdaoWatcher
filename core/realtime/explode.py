@@ -16,13 +16,13 @@ DEBUG = 0
 # TODO: handle stocks with free share larger than 10,000,000,000
 
 OPEN_UPPER_LIMIT = 0.1  # default 0.03
-OPEN_LOWER_LIMIT = -0.03  # default -0.02
+OPEN_LOWER_LIMIT = -0.05  # default -0.02 | -0.03
 
 # TODO: CHANGE TO -0.05
 # RUSH_LOWER_LIMIT = -0.09  # default -0.03
 
 AMOUNT_THRESHOLD = 100  # 1,000,000 volume of transaction
-TURNOVER_THRESHOLD = 3  # turnover rate 2.5%, default 0.6% | 2.5%
+TURNOVER_THRESHOLD = 4  # turnover rate 2.5%, default 0.6% | 2.5%
 VOLUME_RATIO_THRESHOLD = 0.6
 
 EXPLODE_RISE_RATIO_THRESHOLD = 0.0158
@@ -33,9 +33,9 @@ RELATIVE_LARGE_VOLUME_THRESHOLD = 50  # default 58
 SMALL_ABSOLUTE_LARGE_VOLUME_THRESHOLD = 3.5  # default 350% | 250%
 ABSOLUTE_LARGE_VOLUME_THRESHOLD = 0.95  # default 127%
 BIG_ABSOLUTE_LARGE_VOLUME_THRESHOLD = 0.9  # default 50%
-SUPERBIG_ABSOLUTE_LARGE_VOLUME_THRESHOLD = 0.4  # default 40%
+SUPERBIG_ABSOLUTE_LARGE_VOLUME_THRESHOLD = 0.9  # default 40%
 
-SMALL_FREE_SHARE = 22000  # default 12000
+SMALL_FREE_SHARE = 26000  # default 12000
 LARGE_FREE_SHARE = 50000
 SUPERLARGE_FREE_SHARE = 200000
 
@@ -49,10 +49,12 @@ class TimeShareExplosion:
         self.deal_volume = dict()
         self.deal_price = dict()
         self.deal_bid = dict()
+        self.deal_ask = dict()
         for code in tm.ts_mapping:
             self.deal_volume[code] = (0.0, datetime.datetime.now())
             self.deal_price[code] = 0.0
-            self.deal_bid[code] = 0.0
+            self.deal_bid[code] = (0.0, 0.0)
+            self.deal_ask[code] = (0.0, 0.0)
 
     def detect_timeshare_explode(self, storage, code):
         assert(isinstance(code, list) is False)
@@ -70,6 +72,9 @@ class TimeShareExplosion:
         low = float(info[5])
         amount = float(info[9])
         bid = float(info[20]) / 100
+        bid_price = float(info[21])
+        ask = float(info[10]) / 100
+        ask_price = float(info[11])
         free_share = basic_infos['free_share']
 
         time = info[31]
@@ -82,7 +87,9 @@ class TimeShareExplosion:
         curr_deal_volume = (volume - self.deal_volume[code][0]) / sec_delta * 3
         curr_deal_accer = (price - self.deal_price[code]) / sec_delta * 3
         curr_deal_accer_percent = (price - self.deal_price[code]) / sec_delta * 3 / pre_close
-        curr_deal_positive_ask = self.deal_bid[code] - bid
+        curr_deal_positive_ask = self.deal_bid[code][0] - bid
+        curr_deal_positive_bid = self.deal_ask[code][0] - ask
+
         if time <= datetime.datetime.strptime('11:30:00', "%H:%M:%S"):
             minutes_elapse = (time - datetime.datetime.strptime('9:30:00', "%H:%M:%S")).seconds / 60
         else:
@@ -124,18 +131,24 @@ class TimeShareExplosion:
         exploded &= curr_deal_accer >= ACCER_THRESHOLD or \
                     curr_deal_accer_percent >= LARGE_ACCER_THRESHOLD or \
                     (-0.01 < curr_deal_accer < 0.01 and
-                     curr_deal_positive_ask >= 0.5 * (volume - self.deal_volume[code][0]))
+                     bid_price >= self.deal_bid[code][1] and
+                     (bid_price > self.deal_bid[code][1] or
+                      curr_deal_positive_ask >= 0.5 * (volume - self.deal_volume[code][0])) and
+                     ask_price >= self.deal_ask[code][1] and
+                     (ask_price > self.deal_ask[code][1] or
+                      curr_deal_positive_bid <= 0.5 * (volume - self.deal_volume[code][0])))
         exploded &= (relative_large_volume or absolute_large_volume)
         # if code == '000955':
         #     print(str(time) + ' '+str(curr_deal_volume))
 
         self.deal_volume[code] = (volume, time)
         self.deal_price[code] = price
-        self.deal_bid[code] = bid
+        self.deal_bid[code] = (bid, bid_price)
+        self.deal_ask[code] = (ask, ask_price)
 
         # in case of booming
         if active_stock and rush_not_broken and curr_deal_accer_percent >= LARGE_ACCER_THRESHOLD and \
-                rise_ratio >= EXPLODE_RISE_RATIO_THRESHOLD:
+                curr_deal_accer > ACCER_THRESHOLD and rise_ratio >= EXPLODE_RISE_RATIO_THRESHOLD:
             return 2
 
         # in case of low-price transaction
@@ -151,7 +164,7 @@ if __name__ == '__main__':
     storage = st.Storage()
     storage.update_realtime_storage()
     time_share_explotion = TimeShareExplosion()
-    ret = time_share_explotion.detect_timeshare_explode(storage, '002206')
+    ret = time_share_explotion.detect_timeshare_explode(storage, '002948')
     print(ret)
 
 

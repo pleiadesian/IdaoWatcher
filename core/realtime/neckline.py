@@ -45,7 +45,7 @@ RISE_HIGH_THRESHOLD = 0.03
 
 MINUTE_ABSOLUTE_VOLUME_THRESHOLD = 1.12  # default 112%
 
-HIGH_PRICE_PERCENT = 1.095
+HIGH_PRICE_PERCENT = 1.090  # default 9.5% rise ratio
 
 RUSH_HIGH_THRESHOLD = 1.03
 
@@ -150,9 +150,23 @@ class NeckLine:
             open_price = self.pre_close[code]
             limit = round(open_price * 1.1, 2)
             rise_ratio = (close - open_price) / open_price
+            basic_infos = self.storage.get_basicinfo_single(tm.ts_mapping[code])
+            free_share = basic_infos['free_share']
 
             if close >= round(open_price * HIGH_PRICE_PERCENT, 2):
                 continue
+
+            if free_share >= LARGE_FREE_SHARE:
+                rise_threshold = LARGE_OPEN_HIGH_THRESHOLD
+            else:
+                rise_threshold = NORMAL_OPEN_HIGH_THRESHOLD
+
+            if (close - open_price) / open_price < rise_threshold:
+                if code not in boomed:
+                    print(code + "(general neckline): too low and not boomed")
+                    with open(path + 'stock.log', 'a') as f:
+                        f.write(code + "(general neckline): too low and not boomed" + "\n")
+                    continue
 
             # TODO: average price line detection?
 
@@ -233,6 +247,7 @@ class NeckLine:
                     if code in selected_recent:
                         selected.append(code)
                         break
+            # small platform is legal when price is high
             if rise_ratio > RISE_HIGH_THRESHOLD and code in selected_recent:
                 selected.append(code)
                 break
