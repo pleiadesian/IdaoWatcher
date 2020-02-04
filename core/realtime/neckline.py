@@ -274,6 +274,7 @@ class NeckLine:
             open_price_today = df.iloc[0]['open']
             limit = round(open_price * 1.1, 2)
             close = self.curr_price[code]
+            boom_close = df.iloc[-1]['open']
             highest = max(df['high'].values)
 
             if close >= round(open_price * HIGH_PRICE_PERCENT, 2):
@@ -305,6 +306,14 @@ class NeckLine:
             if code in boomed:
                 lower_bound = BOOM_LOWER_BOUND
                 upper_bound = BOOM_UPPER_BOUND
+                close = boom_close
+                if avl * lower_bound <= close <= avl * upper_bound:
+                    print(code + "(morning avl):" + str(avl))
+                    with open(path + 'stock.log', 'a') as f:
+                        f.write(code + "(morning avl):" + str(avl) + "\n")
+                    selected.append(code)
+                    # if DEBUG == 1:
+                    continue
             else:
                 lower_bound = NORMAL_LOWER_BOUND
                 upper_bound = NORMAL_UPPER_BOUND
@@ -356,7 +365,7 @@ class NeckLine:
                 #     break
         return selected
 
-    def detect_long_neckline(self, matched, boomed):
+    def detect_long_neckline(self, matched, boomed, in_morning=False):
         """
         ONLY used before 10:30
         :param matched: matched list by time share explosion filter
@@ -448,6 +457,10 @@ class NeckLine:
                 if neckline_list[neckline[0]] * lower_bound <= close <= neckline_list[neckline[0]] * upper_bound:
                     selected.append(code)
                     break
+            if in_morning:
+                highest = max(df['high'].values)
+                if close >= highest:
+                    selected.append(code)
         return selected
 
     def detect_recent_neckline(self, matched, boomed, must_be_high=False):
@@ -681,7 +694,9 @@ class NeckLine:
             return selected_high + selected_long + selected_general + selected_morning + selected_recent
             # return selected_general
         self.update_local_price(matched, boomed)
-        if datetime.datetime.now().strftime('%H:%M:%S') < '10:00:00':
+        if datetime.datetime.now().strftime('%H:%M:%S') < '09:32:00':
+            selected = self.detect_long_neckline(matched, boomed, True)
+        elif datetime.datetime.now().strftime('%H:%M:%S') < '10:00:00':
             selected = self.detect_morning_neckline(matched, boomed)
         elif datetime.datetime.now().strftime('%H:%M:%S') < '10:30:00':
             selected_morning = self.detect_morning_neckline(matched, boomed)
