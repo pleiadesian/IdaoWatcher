@@ -578,7 +578,7 @@ class NeckLine:
             #     rise_threshold = LARGE_OPEN_HIGH_THRESHOLD
             # else:
             #     rise_threshold = NORMAL_OPEN_HIGH_THRESHOLD
-            if (close - open_price) / open_price > RISE_HIGH_THRESHOLD:
+            if (close - open_price) / open_price <= RISE_HIGH_THRESHOLD:
                 continue
 
             if len(df) > 60:
