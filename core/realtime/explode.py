@@ -22,7 +22,7 @@ OPEN_LOWER_LIMIT = -0.05  # default -0.02 | -0.03
 # RUSH_LOWER_LIMIT = -0.09  # default -0.03
 
 AMOUNT_THRESHOLD = 100  # 1,000,000 volume of transaction
-TURNOVER_THRESHOLD = 4  # turnover rate 2.5%, default 0.6% | 2.5%
+TURNOVER_THRESHOLD = 8  # turnover rate 2.5%, default 0.6% | 2.5%
 SMALL_TURNOVER_THRESHOLD = 8
 VOLUME_RATIO_THRESHOLD = 0.6
 
