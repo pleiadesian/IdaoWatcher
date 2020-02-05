@@ -5,18 +5,15 @@
 监听特定股票的封停是否有打开的迹象
 """
 import tushare as ts
-import copy
 import sys
-import os
 import winsound
-import setfocus
-import watch_limit_main, watch_limit_warn
-from PyQt5.QtWidgets import QApplication, QMainWindow, QMessageBox, QWidget, QDesktopWidget
+from frontend import watch_limit_warn, setfocus, watch_limit_main
+from PyQt5.QtWidgets import QApplication, QMainWindow, QMessageBox, QWidget
 from PyQt5.QtCore import QTimer, Qt
 
 # alert if bid1 amount has decreased more than 5% in 3 second
 INTERVAL = 3000
-THRESHOLD = 0.98  # default 0.95
+THRESHOLD = 0.95  # default 0.95
 HIGH_THRESHOLD = 0.85  # default 0.80
 BUTTON_X = 60
 BUTTON_NONE_X = -200
@@ -182,18 +179,18 @@ class PictureView(QMainWindow, watch_limit_main.Ui_MainWindow):
                     button.setText("none")
                     button.move(BUTTON_NONE_X, button.y())
             self.dlg.label_broken.setText(new_text_broken)
-            if DEBUG == 1:
-                self.lineEdit.setText(str(self.dlg.x()) + ' ' + str(self.dlg.y()) + ' ' +
-                                      str(self.dlg.screen_width) + ' ' + str(self.dlg.screen_height))
+            # if DEBUG == 1:
+            #     self.lineEdit.setText(str(self.dlg.x()) + ' ' + str(self.dlg.y()) + ' ' +
+            #                           str(self.dlg.screen_width) + ' ' + str(self.dlg.screen_height))
 
     def resetcode(self):
-        if DEBUG == 1:
-            self.label_watch.setText(str(self.x()) + ' ' + str(self.y()) + ' ' +
-                                     str(self.dlg.screen_width) + ' ' + str(self.dlg.screen_height))
-            self.label_watch.setText(str(self.dlg.screen_rect0.x()) + ' ' + str(self.dlg.screen_rect0.y()) + ' ' +
-                                     str(self.dlg.screen_rect0.width()) + ' ' + str(self.dlg.screen_rect0.height()) +
-                                     '  ' + str(self.dlg.screen_rect1.x()) + ' ' + str(self.dlg.screen_rect1.y()) + ' '
-                                     + str(self.dlg.screen_rect1.width()) + ' ' + str(self.dlg.screen_rect1.height()))
+        # if DEBUG == 1:
+        #     self.label_watch.setText(str(self.x()) + ' ' + str(self.y()) + ' ' +
+        #                           str(self.dlg.screen_width) + ' ' + str(self.dlg.screen_height))
+        # self.label_watch.setText(str(self.dlg.screen_rect0.x()) + ' ' + str(self.dlg.screen_rect0.y()) +
+        #                          ' ' + str(self.dlg.screen_rect0.width()) + ' '+ str(self.dlg.screen_rect0.height())
+        #                         + '  ' + str(self.dlg.screen_rect1.x()) + ' ' + str(self.dlg.screen_rect1.y()) +' '
+        #                           + str(self.dlg.screen_rect1.width()) + ' '+ str(self.dlg.screen_rect1.height()))
         # self.dlg.showMinimized()
         self.lineEdit.setText(self.label_watch.text())
 
