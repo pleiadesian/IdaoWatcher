@@ -28,6 +28,7 @@ VOLUME_RATIO_THRESHOLD = 0.6
 EXPLODE_RISE_RATIO_THRESHOLD = 0.0158
 ACCER_THRESHOLD = 0.01  # ￥0.01
 LARGE_ACCER_THRESHOLD = 0.01  # %2
+MORNING_ACCER_THRESHOLD = 0.005
 
 RELATIVE_LARGE_VOLUME_THRESHOLD = 50  # default 58
 SMALL_ABSOLUTE_LARGE_VOLUME_THRESHOLD = 3.5  # default 350% | 250%
@@ -98,6 +99,13 @@ class TimeShareExplosion:
         if minutes_elapse == 0:
             minutes_elapse = 1
 
+        if self.deal_price[code] == 0.0:
+            self.deal_volume[code] = (volume, time)
+            self.deal_price[code] = price
+            self.deal_bid[code] = (bid, bid_price)
+            self.deal_ask[code] = (ask, ask_price)
+            return False
+
         turnover_rate = volume * 240 / free_share / minutes_elapse  # customized turnover_rate
         volume_ratio = volume * 240 / volume_ma5 / minutes_elapse
         deal_volume_ratio = curr_deal_volume / volume_ma5_deal
@@ -147,9 +155,16 @@ class TimeShareExplosion:
         self.deal_ask[code] = (ask, ask_price)
 
         # in case of booming
-        if active_stock and rush_not_broken and curr_deal_accer_percent >= LARGE_ACCER_THRESHOLD and \
-                curr_deal_accer > ACCER_THRESHOLD and rise_ratio >= EXPLODE_RISE_RATIO_THRESHOLD:
-            return 2
+        if minutes_elapse <= 120:
+            accer_percent_threshold = MORNING_ACCER_THRESHOLD
+            if exploded and curr_deal_accer_percent >= accer_percent_threshold and \
+                    curr_deal_accer > ACCER_THRESHOLD:
+                return 2
+        else:
+            accer_percent_threshold = LARGE_ACCER_THRESHOLD
+            if active_stock and rush_not_broken and curr_deal_accer_percent >= accer_percent_threshold and \
+                    curr_deal_accer > ACCER_THRESHOLD and rise_ratio >= EXPLODE_RISE_RATIO_THRESHOLD:
+                return 2
 
         # in case of low-price transaction
         if exploded and rise_ratio < LOW_PRICE_BOUND and curr_deal_accer_percent < LARGE_ACCER_THRESHOLD:
