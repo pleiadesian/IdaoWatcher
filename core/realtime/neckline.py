@@ -14,8 +14,8 @@ import api.ts_map as tm
 # TODO: print more info in log for debug
 
 DEBUG = 1
-TRUNCATE_TIME = 168
-TRUNCATE = 1
+TRUNCATE_TIME = 30
+TRUNCATE = 0
 
 NECKLINE_UPPER_BOUND = 1.005
 NECKLINE_LOWER_BOUND = 0.99
@@ -504,7 +504,6 @@ class NeckLine:
         for df in df_list:
             code = df.iloc[0]['code']
             close = self.curr_price[code]
-            close = 8.75
             boom_close = df.iloc[-1]['open']
             open_price = self.pre_close[code]
             limit = round(open_price * 1.1, 2)
