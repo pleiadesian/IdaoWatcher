@@ -22,7 +22,7 @@ OPEN_LOWER_LIMIT = -0.05  # default -0.02 | -0.03
 # RUSH_LOWER_LIMIT = -0.09  # default -0.03
 
 AMOUNT_THRESHOLD = 100  # 1,000,000 volume of transaction
-TURNOVER_THRESHOLD = 4  # turnover rate 2.5%, default 0.6% | 2.5%
+TURNOVER_THRESHOLD = 8  # turnover rate 2.5%, default 0.6% | 2.5%
 SMALL_TURNOVER_THRESHOLD = 8
 VOLUME_RATIO_THRESHOLD = 0.6
 
@@ -32,11 +32,13 @@ LARGE_ACCER_THRESHOLD = 0.01  # %2
 MORNING_ACCER_THRESHOLD = 0.005
 
 RELATIVE_LARGE_VOLUME_THRESHOLD = 50  # default 58
+SUPERSMALL_ABSOLUTE_LARGE_VOLUME_THRESHOLD = 10.0
 SMALL_ABSOLUTE_LARGE_VOLUME_THRESHOLD = 3.5  # default 350% | 250%
 ABSOLUTE_LARGE_VOLUME_THRESHOLD = 0.95  # default 127%
 BIG_ABSOLUTE_LARGE_VOLUME_THRESHOLD = 0.9  # default 50%
 SUPERBIG_ABSOLUTE_LARGE_VOLUME_THRESHOLD = 0.9  # default 40%
 
+SUPERSMALL_FREE_SHARE = 5000
 SMALL_FREE_SHARE = 26000  # default 12000
 LARGE_FREE_SHARE = 50000
 SUPERLARGE_FREE_SHARE = 200000
@@ -117,7 +119,10 @@ class TimeShareExplosion:
         high_ratio = (high - pre_close) / pre_close
         low_ratio = (low - pre_close) / pre_close
 
-        if free_share < SMALL_FREE_SHARE:
+        if free_share < SUPERSMALL_FREE_SHARE:
+            absolute_large_volume = deal_turnover_rate > SUPERSMALL_ABSOLUTE_LARGE_VOLUME_THRESHOLD
+            turnover_threshold = SMALL_TURNOVER_THRESHOLD
+        elif free_share < SMALL_FREE_SHARE:
             absolute_large_volume = deal_turnover_rate > SMALL_ABSOLUTE_LARGE_VOLUME_THRESHOLD
             turnover_threshold = SMALL_TURNOVER_THRESHOLD
         elif free_share < LARGE_FREE_SHARE:
@@ -178,6 +183,11 @@ class TimeShareExplosion:
             with open(path + 'stock.log', 'a') as f:
                 f.write(code + ' too low' + "\n")
             return False
+
+        if exploded:
+            print(code + ' ' + str(price))
+            with open(path + 'stock.log', 'a') as f:
+                f.write(code + ' ' + str(price) + "\n")
         return exploded
 
 
