@@ -14,8 +14,8 @@ import api.ts_map as tm
 # TODO: print more info in log for debug
 
 DEBUG = 1
-TRUNCATE_TIME = 72
-TRUNCATE = 0
+TRUNCATE_TIME = 168
+TRUNCATE = 1
 
 NECKLINE_UPPER_BOUND = 1.005
 NECKLINE_LOWER_BOUND = 0.99
@@ -25,11 +25,13 @@ NECKLINE_MINUS_STEP = 10
 LOW_NECKLINE_INDEX = 17
 LOW_NECKLINE_LENGTH_THRESHOLD = 50  # default 60
 RECENT_NECKLINE_LENGTH_THRESHOLD = 20  # default 15
+RECENT_GOOD_NECKLINE_LENGTH_THRESHOLD = 12
 NECKLINE_LENGTH_THRESHOLD = 30  # default 35
 LONG_NECKLINE_LENGTH_THRESHOLD = 70
 SEPARATED_NECKLINE_MIN_GAP = 45
 OUTLINER_THRESHOLD = 0.40  # default 0.55 | 0.65
 RECENT_OUTLINER_THRESHOLD = 0.45
+RECENT_GOOD_OUTLINER_THRESHOLD = 0.05
 
 BOOM_LOWER_BOUND = 0.99  # default 98% | 99%
 BOOM_UPPER_BOUND = 1.015  # default 103%
@@ -502,6 +504,7 @@ class NeckLine:
         for df in df_list:
             code = df.iloc[0]['code']
             close = self.curr_price[code]
+            close = 8.75
             boom_close = df.iloc[-1]['open']
             open_price = self.pre_close[code]
             limit = round(open_price * 1.1, 2)
@@ -547,21 +550,24 @@ class NeckLine:
                     df_area = df[(df.index > lower) & (df.index < upper)]
                     df_area = df_area[df_area.index < limit]  # do not count limit price
                     # neckline should be longer than 15 minutes
-                    if len(df_area) >= RECENT_NECKLINE_LENGTH_THRESHOLD:
-                        df_area = df_area.sort_values(by=['day'])
-                        # calculate confidence coefficient of this neckline
-                        days = df_area['day'].values
-                        day_delta = np.array([(i - j).seconds / 60 for i, j in
-                                              zip([datetime.datetime.strptime(k, '%Y-%m-%d %H:%M:%S') for k in
-                                                   days[1:]],
-                                                  [datetime.datetime.strptime(k, '%Y-%m-%d %H:%M:%S') for k in
-                                                   days[:-1]])])
-                        day_delta = day_delta[(day_delta <= SEPARATED_NECKLINE_MIN_GAP) & (day_delta > 1)]
-                        day_delta = day_delta - 1
-                        outliners = sum(day_delta)
-                        # not too much outliners
-                        if outliners / len(df_area) < RECENT_OUTLINER_THRESHOLD:
-                            neckline_select.append((i - 1, code))
+                    # if len(df_area) >= RECENT_NECKLINE_LENGTH_THRESHOLD:
+                    df_area = df_area.sort_values(by=['day'])
+                    # calculate confidence coefficient of this neckline
+                    days = df_area['day'].values
+                    day_delta = np.array([(i - j).seconds / 60 for i, j in
+                                          zip([datetime.datetime.strptime(k, '%Y-%m-%d %H:%M:%S') for k in
+                                               days[1:]],
+                                              [datetime.datetime.strptime(k, '%Y-%m-%d %H:%M:%S') for k in
+                                               days[:-1]])])
+                    day_delta = day_delta[(day_delta <= SEPARATED_NECKLINE_MIN_GAP) & (day_delta > 1)]
+                    day_delta = day_delta - 1
+                    outliners = sum(day_delta)
+                    # not too much outliners
+                    if (len(df_area) >= RECENT_NECKLINE_LENGTH_THRESHOLD and
+                        outliners / len(df_area) < RECENT_OUTLINER_THRESHOLD) or \
+                            (len(df_area) >= RECENT_GOOD_NECKLINE_LENGTH_THRESHOLD and
+                             outliners / len(df_area) < RECENT_GOOD_OUTLINER_THRESHOLD):
+                        neckline_select.append((i - 1, code))
                 last_length = len(df_temp)
 
             # for log
@@ -754,7 +760,7 @@ if __name__ == '__main__':
     neckline = NeckLine(storage)
     start = time.time()
     # neckline.detect_neckline(['600618', '002107', '000788', '300562'], [])
-    neckline.detect_neckline(['600460'], [])
+    neckline.detect_neckline(['002252'], [])
     end = time.time()
     print('total: ' + str(end - start))
     # neckline.detect_neckline(['603315', '600988', '002352', '600332', '000570'], [])
