@@ -23,6 +23,7 @@ OPEN_LOWER_LIMIT = -0.05  # default -0.02 | -0.03
 
 AMOUNT_THRESHOLD = 100  # 1,000,000 volume of transaction
 TURNOVER_THRESHOLD = 4  # turnover rate 2.5%, default 0.6% | 2.5%
+SMALL_TURNOVER_THRESHOLD = 8
 VOLUME_RATIO_THRESHOLD = 0.6
 
 EXPLODE_RISE_RATIO_THRESHOLD = 0.0158
@@ -116,20 +117,24 @@ class TimeShareExplosion:
         high_ratio = (high - pre_close) / pre_close
         low_ratio = (low - pre_close) / pre_close
 
+        if free_share < SMALL_FREE_SHARE:
+            absolute_large_volume = deal_turnover_rate > SMALL_ABSOLUTE_LARGE_VOLUME_THRESHOLD
+            turnover_threshold = SMALL_TURNOVER_THRESHOLD
+        elif free_share < LARGE_FREE_SHARE:
+            absolute_large_volume = deal_turnover_rate > ABSOLUTE_LARGE_VOLUME_THRESHOLD
+            turnover_threshold = SMALL_TURNOVER_THRESHOLD
+        elif free_share < SUPERLARGE_FREE_SHARE:
+            absolute_large_volume = deal_turnover_rate > BIG_ABSOLUTE_LARGE_VOLUME_THRESHOLD
+            turnover_threshold = TURNOVER_THRESHOLD
+        else:
+            absolute_large_volume = deal_turnover_rate > SUPERBIG_ABSOLUTE_LARGE_VOLUME_THRESHOLD
+            turnover_threshold = TURNOVER_THRESHOLD
+
         rush_not_broken = OPEN_LOWER_LIMIT <= open_ratio <= OPEN_UPPER_LIMIT
         # rush_not_broken &= low_ratio >= RUSH_LOWER_LIMIT
 
-        active_stock = turnover_rate >= TURNOVER_THRESHOLD and volume_ratio > VOLUME_RATIO_THRESHOLD
-
+        active_stock = turnover_rate >= turnover_threshold and volume_ratio > VOLUME_RATIO_THRESHOLD
         relative_large_volume = deal_volume_ratio > RELATIVE_LARGE_VOLUME_THRESHOLD
-        if free_share < SMALL_FREE_SHARE:
-            absolute_large_volume = deal_turnover_rate > SMALL_ABSOLUTE_LARGE_VOLUME_THRESHOLD
-        elif free_share < LARGE_FREE_SHARE:
-            absolute_large_volume = deal_turnover_rate > ABSOLUTE_LARGE_VOLUME_THRESHOLD
-        elif free_share < SUPERLARGE_FREE_SHARE:
-            absolute_large_volume = deal_turnover_rate > BIG_ABSOLUTE_LARGE_VOLUME_THRESHOLD
-        else:
-            absolute_large_volume = deal_turnover_rate > SUPERBIG_ABSOLUTE_LARGE_VOLUME_THRESHOLD
 
         exploded = amount / 10000 > AMOUNT_THRESHOLD
         exploded &= active_stock
@@ -141,10 +146,11 @@ class TimeShareExplosion:
                     (-0.01 < curr_deal_accer < 0.01 and
                      bid_price >= self.deal_bid[code][1] and
                      (bid_price > self.deal_bid[code][1] or
-                      curr_deal_positive_ask >= 0.5 * (volume - self.deal_volume[code][0])) and
-                     ask_price >= self.deal_ask[code][1] and
-                     (ask_price > self.deal_ask[code][1] or
-                      curr_deal_positive_bid <= 0.5 * (volume - self.deal_volume[code][0])))
+                      curr_deal_positive_ask >= 0.5 * (volume - self.deal_volume[code][0])))
+                     # and
+                     # ask_price >= self.deal_ask[code][1] and
+                     # (ask_price > self.deal_ask[code][1] or
+                     #  curr_deal_positive_bid <= 0.5 * (volume - self.deal_volume[code][0])))
         exploded &= (relative_large_volume or absolute_large_volume)
         # if code == '000955':
         #     print(str(time) + ' '+str(curr_deal_volume))
@@ -155,7 +161,7 @@ class TimeShareExplosion:
         self.deal_ask[code] = (ask, ask_price)
 
         # in case of booming
-        if minutes_elapse <= 120:
+        if minutes_elapse <= 60:
             accer_percent_threshold = MORNING_ACCER_THRESHOLD
             if exploded and curr_deal_accer_percent >= accer_percent_threshold and \
                     curr_deal_accer > ACCER_THRESHOLD:
@@ -179,7 +185,9 @@ if __name__ == '__main__':
     storage = st.Storage()
     storage.update_realtime_storage()
     time_share_explotion = TimeShareExplosion()
-    ret = time_share_explotion.detect_timeshare_explode(storage, '002948')
+    ret = time_share_explotion.detect_timeshare_explode(storage, '600804')
+    storage.update_realtime_storage()
+    ret = time_share_explotion.detect_timeshare_explode(storage, '600804')
     print(ret)
 
 

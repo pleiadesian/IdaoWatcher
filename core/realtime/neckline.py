@@ -23,12 +23,12 @@ NECKLINE_STEP = 20
 NECKLINE_MINUS_STEP = 10
 
 LOW_NECKLINE_INDEX = 17
-LOW_NECKLINE_LENGTH_THRESHOLD = 60
+LOW_NECKLINE_LENGTH_THRESHOLD = 50  # default 60
 RECENT_NECKLINE_LENGTH_THRESHOLD = 20  # default 15
 NECKLINE_LENGTH_THRESHOLD = 30  # default 35
 LONG_NECKLINE_LENGTH_THRESHOLD = 70
 SEPARATED_NECKLINE_MIN_GAP = 45
-OUTLINER_THRESHOLD = 0.65  # default 0.55
+OUTLINER_THRESHOLD = 0.40  # default 0.55 | 0.65
 RECENT_OUTLINER_THRESHOLD = 0.45
 
 BOOM_LOWER_BOUND = 0.99  # default 98% | 99%
@@ -162,11 +162,17 @@ class NeckLine:
                 rise_threshold = NORMAL_OPEN_HIGH_THRESHOLD
 
             if (close - open_price) / open_price < rise_threshold:
-                if code not in boomed:
+                if code not in boomed and df.iloc[-1]['high'] < df.iloc[-1]['open'] * 1.0075:
                     print(code + "(general neckline): too low and not boomed")
                     with open(path + 'stock.log', 'a') as f:
                         f.write(code + "(general neckline): too low and not boomed" + "\n")
                     continue
+
+            if df.iloc[-5]['open'] > close:
+                print(code + "(general neckline): is falling")
+                with open(path + 'stock.log', 'a') as f:
+                    f.write(code + "(general neckline): is falling" + "\n")
+                continue
 
             # TODO: average price line detection?
 
@@ -235,9 +241,9 @@ class NeckLine:
                 upper_bound = BOOM_UPPER_BOUND
                 close = boom_close
                 if DEBUG == 1:
-                    print(code + '(recent neckline): boomed at' + str(boom_close))
+                    print(code + '(general neckline): boomed at' + str(boom_close))
                     with open(path + 'stock.log', 'a') as f:
-                        f.write(code + '(recent neckline): boomed at' + str(boom_close) + '\n')
+                        f.write(code + '(general neckline): boomed at' + str(boom_close) + '\n')
             else:
                 lower_bound = NORMAL_LOWER_BOUND
                 upper_bound = NORMAL_UPPER_BOUND
@@ -609,6 +615,12 @@ class NeckLine:
             # basic_infos = self.storage.get_basicinfo_single(tm.ts_mapping[code])
             # free_share = basic_infos['free_share']
 
+            if code not in boomed and df.iloc[-1]['high'] < df.iloc[-1]['open'] * 1.0075:
+                print(code + "(high neckline): too low and not boomed")
+                with open(path + 'stock.log', 'a') as f:
+                    f.write(code + "(high neckline): too low and not boomed" + "\n")
+                continue
+
             # too early, should only use morning neckline
             if code not in self.past_price or len(df) <= 10:
                 continue
@@ -736,7 +748,7 @@ if __name__ == '__main__':
     neckline = NeckLine(storage)
     start = time.time()
     # neckline.detect_neckline(['600618', '002107', '000788', '300562'], [])
-    neckline.detect_neckline(['000802'], [])
+    neckline.detect_neckline(['600460'], [])
     end = time.time()
     print('total: ' + str(end - start))
     # neckline.detect_neckline(['603315', '600988', '002352', '600332', '000570'], [])
