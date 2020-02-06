@@ -97,6 +97,7 @@ class MainUi(QMainWindow, frontend.Ui_Dialog):
             self.spilled_codes = []
         i = 0
         display_codes = list(set(display_codes) - set(self.recent_codes))
+        display_codes.sort()
         for button, code in zip(self.button_list, display_codes):
             button.setText(code)
             self.code_list[i] = code
