@@ -629,15 +629,16 @@ class NeckLine:
             # basic_infos = self.storage.get_basicinfo_single(tm.ts_mapping[code])
             # free_share = basic_infos['free_share']
 
-            if code not in boomed and close < df.iloc[-1]['open'] * BOOMED_THRESHOLD:
-                print(code + "(high neckline): too low and not boomed need: "
-                      + str(df.iloc[-1]['open'] * BOOMED_THRESHOLD) + ' close: ' + str(close))
-                with open(path + 'stock.log', 'a') as f:
-                    f.write(code + "(high neckline): too low and not boomed" + "\n")
-                continue
+            # if code not in boomed and close < df.iloc[-1]['open'] * BOOMED_THRESHOLD:
+            #     print(code + "(high neckline): too low and not boomed need: "
+            #           + str(df.iloc[-1]['open'] * BOOMED_THRESHOLD) + ' close: ' + str(close))
+            #     with open(path + 'stock.log', 'a') as f:
+            #         f.write(code + "(high neckline): too low and not boomed need: "
+            #                 + str(df.iloc[-1]['open'] * BOOMED_THRESHOLD) + ' close: ' + str(close) + "\n")
+            #     continue
 
             # too early, should only use morning neckline
-            if code not in self.past_price or len(df) <= 10:
+            if code not in self.past_price:
                 continue
 
             # too high
@@ -662,7 +663,8 @@ class NeckLine:
                 df_recent = df[:-1]
                 highest_recent = max(df[-5:-2]['high'].values)
             else:
-                assert False
+                df_recent = df[:-2]
+                highest_recent = 0
             # elif len(df) > 20:
             #     df_recent = df[:-20]
             # else:
@@ -743,8 +745,10 @@ class NeckLine:
         self.update_local_price(matched, boomed)
         if datetime.datetime.now().strftime('%H:%M:%S') < '09:32:00':
             selected = self.detect_long_neckline(matched, boomed, True)
-        elif datetime.datetime.now().strftime('%H:%M:%S') < '10:00:00':
-            selected = self.detect_morning_neckline(matched, boomed)
+        elif datetime.datetime.now().strftime('%H:%M:%S') < '09:40:00':
+            selected_long = self.detect_long_neckline(matched, boomed, True)
+            selected_morning = self.detect_morning_neckline(matched, boomed)
+            selected = list(set(selected_long) | set(selected_morning))
         elif datetime.datetime.now().strftime('%H:%M:%S') < '10:30:00':
             selected_morning = self.detect_morning_neckline(matched, boomed)
             selected_long = self.detect_long_neckline(matched, boomed, True)

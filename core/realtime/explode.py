@@ -39,7 +39,7 @@ BIG_ABSOLUTE_LARGE_VOLUME_THRESHOLD = 0.9  # default 50%
 SUPERBIG_ABSOLUTE_LARGE_VOLUME_THRESHOLD = 0.9  # default 40%
 
 SUPERSMALL_FREE_SHARE = 5000
-SMALL_FREE_SHARE = 26000  # default 12000
+SMALL_FREE_SHARE = 12000  # default 12000
 LARGE_FREE_SHARE = 50000
 SUPERLARGE_FREE_SHARE = 200000
 
@@ -177,6 +177,11 @@ class TimeShareExplosion:
                     curr_deal_accer > ACCER_THRESHOLD and rise_ratio >= EXPLODE_RISE_RATIO_THRESHOLD:
                 return 2
 
+        if exploded:
+            print(code + ' ' + str(price))
+            with open(path + 'stock.log', 'a') as f:
+                f.write(code + ' ' + str(price) + "\n")
+
         # in case of low-price transaction
         if exploded and rise_ratio < LOW_PRICE_BOUND and curr_deal_accer_percent < LARGE_ACCER_THRESHOLD:
             print(code + ' too low')
@@ -184,10 +189,6 @@ class TimeShareExplosion:
                 f.write(code + ' too low' + "\n")
             return False
 
-        if exploded:
-            print(code + ' ' + str(price))
-            with open(path + 'stock.log', 'a') as f:
-                f.write(code + ' ' + str(price) + "\n")
         return exploded
 
 
