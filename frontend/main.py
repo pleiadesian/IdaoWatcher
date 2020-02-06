@@ -14,7 +14,7 @@ class Ui_Dialog(object):
     def setupUi(self, Dialog):
         Dialog.setObjectName("Dialog")
         Dialog.setEnabled(True)
-        Dialog.resize(403, 880)
+        Dialog.resize(485, 880)
         self.pushButton_0 = QtWidgets.QPushButton(Dialog)
         self.pushButton_0.setGeometry(QtCore.QRect(100, 30, 200, 60))
         font = QtGui.QFont()
@@ -87,8 +87,15 @@ class Ui_Dialog(object):
         font.setPointSize(20)
         self.pushButton_11.setFont(font)
         self.pushButton_11.setObjectName("pushButton_11")
+        self.pushButton = QtWidgets.QPushButton(Dialog)
+        self.pushButton.setGeometry(QtCore.QRect(330, 30, 131, 61))
+        font = QtGui.QFont()
+        font.setPointSize(20)
+        self.pushButton.setFont(font)
+        self.pushButton.setObjectName("pushButton")
 
         self.retranslateUi(Dialog)
+        self.pushButton.clicked.connect(Dialog.replay)
         QtCore.QMetaObject.connectSlotsByName(Dialog)
 
     def retranslateUi(self, Dialog):
@@ -106,3 +113,4 @@ class Ui_Dialog(object):
         self.pushButton_9.setText(_translate("Dialog", "PushButton"))
         self.pushButton_10.setText(_translate("Dialog", "PushButton"))
         self.pushButton_11.setText(_translate("Dialog", "PushButton"))
+        self.pushButton.setText(_translate("Dialog", "重新显示"))

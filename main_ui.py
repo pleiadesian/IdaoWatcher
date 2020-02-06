@@ -33,6 +33,7 @@ class MainUi(QMainWindow, frontend.Ui_Dialog):
         self.spilled_codes = []
         self.recent_codes = []
         self.clear_signals = []
+        self.replay_code = '000001'
         # TODO: replay button
         for button in self.button_list:
             button.move(BUTTON_NONE_X, button.y())
@@ -60,10 +61,14 @@ class MainUi(QMainWindow, frontend.Ui_Dialog):
         self.timer_recent.timeout.connect(self.clear_recent)
         self.timer_recent.start(INTERVAL_RECENT)
 
+    def replay(self):
+        setfocus.open_code(self.replay_code, self.window_info)
+
     def click_code(self, code_slot):
         setfocus.open_code(self.code_list[code_slot], self.window_info)
         self.recent_codes.append(self.code_list[code_slot])
         self.clear_signals.append(self.code_list[code_slot])
+        self.replay_code = self.code_list[code_slot]
 
     def clear_code(self):
         i = 0
