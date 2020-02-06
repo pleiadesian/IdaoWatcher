@@ -600,6 +600,10 @@ class NeckLine:
             # boomed stock is over neckline
             for neckline in neckline_select:
                 if neckline_list[neckline[0]] * lower_bound <= close <= neckline_list[neckline[0]] * upper_bound:
+                    print(code + '(recent neckline): select ' + str(neckline_list[neckline[0]])
+                          + ' close ' + str(close))
+                    with open(path + 'stock.log', 'a') as f:
+                        f.write(code + '(recent neckline): boomed at' + str(boom_close) + '\n')
                     selected.append(code)
                     break
         return selected

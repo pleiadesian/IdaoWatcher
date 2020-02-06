@@ -5,6 +5,7 @@
 """
 import time
 import datetime
+from random import randint
 import core.realtime.neckline as nl
 import core.realtime.explode as ex
 import core.realtime.open_high as oh
@@ -56,6 +57,13 @@ class Main:
                 final_matched = matched + boomed
             return final_matched
 
+    def mock_matching(self):
+        codenum = randint(0, 2)
+        codes = []
+        for i in range(0, codenum):
+            code_index = randint(0, len(tm.detail_code_list) - 1)
+            codes.append(tm.detail_code_list[code_index][2:])
+        return codes
 
 def mainloop(codes):
     """

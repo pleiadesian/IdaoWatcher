@@ -15,7 +15,8 @@ from PyQt5.QtWidgets import QApplication, QMainWindow, QMessageBox, QWidget
 from PyQt5.QtCore import QTimer, Qt
 
 INTERVAL = 1000
-INTERVAL_CLEAR = 3000
+INTERVAL_CLEAR = 5000
+INTERVAL_RECENT = 60000
 BUTTON_X = 60
 BUTTON_NONE_X = -200
 
@@ -30,7 +31,9 @@ class MainUi(QMainWindow, frontend.Ui_Dialog):
                             self.pushButton_8, self.pushButton_9, self.pushButton_10, self.pushButton_11]
         self.code_list = [''] * 12
         self.spilled_codes = []
-        self.clear_signals = [False] * 12
+        self.recent_codes = []
+        self.clear_signals = []
+        # TODO: replay button
         for button in self.button_list:
             button.move(BUTTON_NONE_X, button.y())
         self.window_info = setfocus.init_fs()
@@ -53,30 +56,42 @@ class MainUi(QMainWindow, frontend.Ui_Dialog):
         self.timer_clear = QTimer(self)
         self.timer_clear.timeout.connect(self.clear_code)
         self.timer_clear.start(INTERVAL_CLEAR)
+        self.timer_recent = QTimer(self)
+        self.timer_recent.timeout.connect(self.clear_recent)
+        self.timer_recent.start(INTERVAL_RECENT)
 
     def click_code(self, code_slot):
         setfocus.open_code(self.code_list[code_slot], self.window_info)
-        self.clear_signals[code_slot] = True
+        self.recent_codes.append(self.code_list[code_slot])
+        self.clear_signals.append(self.code_list[code_slot])
 
     def clear_code(self):
         i = 0
-        for signal in self.clear_signals:
-            if signal:
-                self.button_list[i].setText('None')
-                self.button_list[i].move(BUTTON_NONE_X, self.button_list[i].y())
+        for button, code in zip(self.button_list, self.code_list):
+            if code in self.clear_signals:
+                button.setText('None')
+                button.move(BUTTON_NONE_X, self.button_list[i].y())
                 self.code_list[i] = ''
-                self.clear_signals[i] = False
             i += 1
+        self.clear_signals = []
+
+    def clear_recent(self):
+        self.recent_codes = []
 
     def checkall(self):
         new_codes = list(set(codes) - set(self.code_list))
         # TODO: get code in code_list except ''
         displaying_codes = [code for code in self.code_list if code != '']
-        display_codes = new_codes + displaying_codes + self.spilled_codes
+        display_codes = displaying_codes + new_codes + self.spilled_codes
+        display_codes = list(set(display_codes))
+        print(str(displaying_codes) + str(new_codes) + str(self.spilled_codes) + str(display_codes) + str(self.code_list))
         if len(display_codes) > 12:
             self.spilled_codes = display_codes[12:]
             display_codes = display_codes[:12]
+        else:
+            self.spilled_codes = []
         i = 0
+        display_codes = list(set(display_codes) - set(self.recent_codes))
         for button, code in zip(self.button_list, display_codes):
             button.setText(code)
             self.code_list[i] = code
