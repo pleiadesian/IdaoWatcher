@@ -8,7 +8,6 @@ import datetime
 import core.realtime.neckline as nl
 import core.realtime.explode as ex
 import core.realtime.open_high as oh
-import core.daily.up_num as un
 import api.storage as st
 import api.ts_map as tm
 
@@ -90,6 +89,6 @@ def mainloop(codes):
 
 
 if __name__ == '__main__':
-    mainloop()
+    mainloop([])
     # main = Main()
     # main.mainloop()
