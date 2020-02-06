@@ -57,34 +57,39 @@ class Main:
                 final_matched = matched + boomed
             return final_matched
 
-    def mainloop(self):
-        """
-        start main loop
-        """
-        start = 0
-        end = 3
-        while True:
-            if end - start < 3:
-                time.sleep(SLEEP_INTERVAL - (end - start))
-            if end - start > 5:
-                print(str(datetime.datetime.now()) + ' BLOCKED FOR ' + str(end - start) + ' s')
-                with open('stock.log', 'a') as f:
-                    f.write(str(datetime.datetime.now()) + ' BLOCKED FOR ' + str(end - start) + ' s' + '\n')
-            self.storage.update_realtime_storage()
-            start = time.time()  # update too fast?
-            codes = self.matching()
-            if len(codes) > 0:
-                print(str(datetime.datetime.now()) + '     ' + ' '.join(codes) + " 出现分时攻击")
-                with open('stock.log', 'a') as f:
-                    f.write(str(datetime.datetime.now()) + '     ' + ' '.join(codes) + " 出现分时攻击"+'\n')
-            else:
-                print(str(datetime.datetime.now()))
-                with open('stock.log', 'a') as f:
-                    f.write(str(datetime.datetime.now()) + '\n')
-            end = time.time()
-            # print("main:" + str(end - start))
+
+def mainloop(codes):
+    """
+    start main loop
+    """
+    main = Main()
+    start = 0
+    end = 3
+    while True:
+        if end - start < 3:
+            time.sleep(SLEEP_INTERVAL - (end - start))
+        if end - start > 5:
+            print(str(datetime.datetime.now()) + ' BLOCKED FOR ' + str(end - start) + ' s')
+            with open('stock.log', 'a') as f:
+                f.write(str(datetime.datetime.now()) + ' BLOCKED FOR ' + str(end - start) + ' s' + '\n')
+        main.storage.update_realtime_storage()
+        start = time.time()  # update too fast?
+        codes[:] = []
+        for code in main.matching():
+            codes.append(code)
+        if len(codes) > 0:
+            print(str(datetime.datetime.now()) + '     ' + ' '.join(codes) + " 出现分时攻击")
+            with open('stock.log', 'a') as f:
+                f.write(str(datetime.datetime.now()) + '     ' + ' '.join(codes) + " 出现分时攻击"+'\n')
+        else:
+            print(str(datetime.datetime.now()))
+            with open('stock.log', 'a') as f:
+                f.write(str(datetime.datetime.now()) + '\n')
+        end = time.time()
+        # print("main:" + str(end - start))
 
 
 if __name__ == '__main__':
-    main = Main()
-    main.mainloop()
+    mainloop()
+    # main = Main()
+    # main.mainloop()

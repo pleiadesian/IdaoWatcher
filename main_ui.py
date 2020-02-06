@@ -61,7 +61,7 @@ class MainUi(QMainWindow, frontend.Ui_Dialog):
             if alert_codes < 0:
                 button.setText('None')
                 button.move(BUTTON_NONE_X, button.y())
-        print('after check:' + str(self.code_list))
+        # print('after check:' + str(self.code_list))
 
 
 if __name__ == '__main__':
