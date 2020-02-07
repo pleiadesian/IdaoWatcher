@@ -69,6 +69,7 @@ class TimeShareExplosion:
         volume_ma5 = sum(hist_data['vol']) / len(hist_data)
         volume_ma5_deal = sum(hist_data['vol']) / (len(hist_data) * 240 * 20)
         volume_yesterday = float(hist_data.iloc[-1]['vol'])
+        pct_chg_yesterday = float(hist_data.iloc[-1]['pct_chg'])
         today_open = float(info[1])
         pre_close = float(info[2])
         price = float(info[3])
@@ -139,11 +140,17 @@ class TimeShareExplosion:
             strict_turnover = False
 
         # add strict yesterday turnover threshold in the morning
-        if minutes_elapse <= 50 and strict_turnover and turnover_rate_yesterday < SMALL_TURNOVER_THRESHOLD:
-            print(code + ' yesterday turnover rate is too low')
-            with open(path + 'stock.log', 'a') as f:
-                f.write(code + ' yesterday turnover rate is too low' + "\n")
-            return False
+        if minutes_elapse <= 50:
+            if strict_turnover and turnover_rate_yesterday < SMALL_TURNOVER_THRESHOLD:
+                print(code + ' yesterday turnover rate is too low')
+                with open(path + 'stock.log', 'a') as f:
+                    f.write(code + ' yesterday turnover rate is too low' + "\n")
+                return False
+            if pct_chg_yesterday > 9.75:
+                print(code + ' yesterday at limit')
+                with open(path + 'stock.log', 'a') as f:
+                    f.write(code + ' yesterday at limit' + "\n")
+                return False
 
         rush_not_broken = OPEN_LOWER_LIMIT <= open_ratio <= OPEN_UPPER_LIMIT
         # rush_not_broken &= low_ratio >= RUSH_LOWER_LIMIT
