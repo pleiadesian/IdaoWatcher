@@ -288,13 +288,6 @@ class NeckLine:
             boom_close = df.iloc[-1]['open']
             highest = max(df['high'].values)
 
-            if code not in boomed and close < df.iloc[-1]['open'] * BOOMED_THRESHOLD:
-                print(code + '(morning neckline): not boomed, need: '
-                      + str(df.iloc[-1]['open'] * BOOMED_THRESHOLD) + ' close: ' + str(close))
-                with open(path + 'stock.log', 'a') as f:
-                    f.write(code + '(morning neckline): not boomed' + '\n')
-                continue
-
             if close >= round(open_price * HIGH_PRICE_PERCENT, 2):
                 continue
 
@@ -308,12 +301,18 @@ class NeckLine:
             if free_share >= LARGE_FREE_SHARE:
                 open_threshold = LARGE_OPEN_HIGH_THRESHOLD
             else:
+                if code not in boomed and close < df.iloc[-1]['open'] * BOOMED_THRESHOLD:
+                    print(code + '(morning neckline): not boomed, need: '
+                          + str(df.iloc[-1]['open'] * BOOMED_THRESHOLD) + ' close: ' + str(close))
+                    with open(path + 'stock.log', 'a') as f:
+                        f.write(code + '(morning neckline): not boomed' + '\n')
+                    continue
                 open_threshold = NORMAL_OPEN_HIGH_THRESHOLD
             if (open_price_today - open_price) / open_price < open_threshold or \
                     (close - open_price) / open_price < open_threshold:
-                print(code + "(morning neckline): too low")
+                print(code + "(morning neckline): open too low")
                 with open(path + 'stock.log', 'a') as f:
-                    f.write(code + "(morning neckline): too low" + "\n")
+                    f.write(code + "(morning neckline): open too low" + "\n")
                 continue
 
             # average price line can be an neckline for current price
@@ -337,9 +336,9 @@ class NeckLine:
                 upper_bound = NORMAL_UPPER_BOUND
             if code in self.past_price and \
                     self.past_price[code] <= avl <= self.curr_price[code]:
-                print(code + "(morning avl):" + str(avl))
+                print(code + "(morning avl): crossing " + str(avl))
                 with open(path + 'stock.log', 'a') as f:
-                    f.write(code + "(morning avl):" + str(avl) + "\n")
+                    f.write(code + "(morning avl): crossing " + str(avl) + "\n")
                 selected.append(code)
                 continue
 
@@ -359,7 +358,8 @@ class NeckLine:
             # for i in range(0, 20):
             #     if neckline[i] > 0:
             #         neckline_price = open_price * (1 + i * 0.1 / 20)
-            if open_price_today >= limit or highest >= ((open_price_today - open_price) / open_price + 1.015) * open_price:
+            if open_price_today >= limit or \
+                    highest >= ((open_price_today - open_price) / open_price + 1.015) * open_price:
                 print(code + "(morning): at limit or rush too high")
                 with open(path + 'stock.log', 'a') as f:
                     f.write(code + "(morning): at limit or rush too high" + "\n")
@@ -405,16 +405,15 @@ class NeckLine:
             if close >= round(open_price * HIGH_PRICE_PERCENT, 2):
                 continue
 
-            if in_morning and code not in boomed and close < df.iloc[-1]['open'] * BOOMED_THRESHOLD:
-                print(code + '(long neckline): not boomed in the morning need: '
-                      + str(df.iloc[-1]['open'] * BOOMED_THRESHOLD) + ' close: ' + str(close))
-                with open(path + 'stock.log', 'a') as f:
-                    f.write(code + '(long neckline): not boomed in the morning' + '\n')
-                continue
-
             if free_share >= LARGE_FREE_SHARE:
                 open_threshold = LARGE_OPEN_HIGH_THRESHOLD
             else:
+                if in_morning and code not in boomed and close < df.iloc[-1]['open'] * BOOMED_THRESHOLD:
+                    print(code + '(long neckline): not boomed in the morning need: '
+                          + str(df.iloc[-1]['open'] * BOOMED_THRESHOLD) + ' close: ' + str(close))
+                    with open(path + 'stock.log', 'a') as f:
+                        f.write(code + '(long neckline): not boomed in the morning' + '\n')
+                    continue
                 open_threshold = NORMAL_OPEN_HIGH_THRESHOLD
             if rise_ratio < open_threshold:
                 continue
@@ -515,15 +514,15 @@ class NeckLine:
                 continue
 
             if must_be_high:
-                if code not in boomed and close < df.iloc[-1]['open'] * BOOMED_THRESHOLD:
-                    print(code + '(recent neckline): not boomed in the morning need: '
-                          + str(df.iloc[-1]['open'] * BOOMED_THRESHOLD) + ' close: ' + str(close))
-                    with open(path + 'stock.log', 'a') as f:
-                        f.write(code + '(recent neckline): not boomed in the morning' + '\n')
-                    continue
                 if free_share >= LARGE_FREE_SHARE:
                     open_threshold = LARGE_OPEN_HIGH_THRESHOLD
                 else:
+                    if code not in boomed and close < df.iloc[-1]['open'] * BOOMED_THRESHOLD:
+                        print(code + '(recent neckline): not boomed in the morning need: '
+                              + str(df.iloc[-1]['open'] * BOOMED_THRESHOLD) + ' close: ' + str(close))
+                        with open(path + 'stock.log', 'a') as f:
+                            f.write(code + '(recent neckline): not boomed in the morning' + '\n')
+                        continue
                     open_threshold = NORMAL_OPEN_HIGH_THRESHOLD
                 if rise_ratio < open_threshold:
                     print(code + '(recent neckline): not open high in the morning')
@@ -626,16 +625,16 @@ class NeckLine:
             close = self.curr_price[code]
             boom_close = df.iloc[-1]['open']
             limit = round(open_price * 1.1, 2)
-            # basic_infos = self.storage.get_basicinfo_single(tm.ts_mapping[code])
-            # free_share = basic_infos['free_share']
+            basic_infos = self.storage.get_basicinfo_single(tm.ts_mapping[code])
+            free_share = basic_infos['free_share']
 
-            # if code not in boomed and close < df.iloc[-1]['open'] * BOOMED_THRESHOLD:
-            #     print(code + "(high neckline): too low and not boomed need: "
-            #           + str(df.iloc[-1]['open'] * BOOMED_THRESHOLD) + ' close: ' + str(close))
-            #     with open(path + 'stock.log', 'a') as f:
-            #         f.write(code + "(high neckline): too low and not boomed need: "
-            #                 + str(df.iloc[-1]['open'] * BOOMED_THRESHOLD) + ' close: ' + str(close) + "\n")
-            #     continue
+            if free_share < LARGE_FREE_SHARE and code not in boomed and close < df.iloc[-1]['open'] * BOOMED_THRESHOLD:
+                print(code + "(high neckline): small share and not boomed need: "
+                      + str(df.iloc[-1]['open'] * BOOMED_THRESHOLD) + ' close: ' + str(close))
+                with open(path + 'stock.log', 'a') as f:
+                    f.write(code + "(high neckline): small share and not boomed need: "
+                            + str(df.iloc[-1]['open'] * BOOMED_THRESHOLD) + ' close: ' + str(close) + "\n")
+                continue
 
             # too early, should only use morning neckline
             if code not in self.past_price:

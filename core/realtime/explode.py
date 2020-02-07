@@ -61,7 +61,6 @@ class TimeShareExplosion:
             self.deal_ask[code] = (0.0, 0.0)
 
     def detect_timeshare_explode(self, storage, code):
-        assert(isinstance(code, list) is False)
         basic_infos = storage.get_basicinfo_single(tm.ts_mapping[code])
         hist_data = storage.get_histdata_single(tm.ts_mapping[code])[-5:]
         info = storage.get_realtime_storage_single(code)
@@ -165,6 +164,11 @@ class TimeShareExplosion:
         self.deal_bid[code] = (bid, bid_price)
         self.deal_ask[code] = (ask, ask_price)
 
+        if exploded:
+            print(code + ' ' + str(price))
+            with open(path + 'stock.log', 'a') as f:
+                f.write(code + ' ' + str(price) + "\n")
+
         # in case of booming
         if minutes_elapse <= 60:
             accer_percent_threshold = MORNING_ACCER_THRESHOLD
@@ -177,16 +181,11 @@ class TimeShareExplosion:
                     curr_deal_accer > ACCER_THRESHOLD and rise_ratio >= EXPLODE_RISE_RATIO_THRESHOLD:
                 return 2
 
-        if exploded:
-            print(code + ' ' + str(price))
-            with open(path + 'stock.log', 'a') as f:
-                f.write(code + ' ' + str(price) + "\n")
-
         # in case of low-price transaction
         if exploded and rise_ratio < LOW_PRICE_BOUND and curr_deal_accer_percent < LARGE_ACCER_THRESHOLD:
-            print(code + ' too low')
+            print(code + ' explode too low')
             with open(path + 'stock.log', 'a') as f:
-                f.write(code + ' too low' + "\n")
+                f.write(code + ' explode too low' + "\n")
             return False
 
         return exploded
