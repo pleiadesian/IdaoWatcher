@@ -68,6 +68,7 @@ class TimeShareExplosion:
         volume = float(info[8]) / 100  # calculation by Lot
         volume_ma5 = sum(hist_data['vol']) / len(hist_data)
         volume_ma5_deal = sum(hist_data['vol']) / (len(hist_data) * 240 * 20)
+        volume_yesterday = float(hist_data.iloc[-1]['vol'])
         today_open = float(info[1])
         pre_close = float(info[2])
         price = float(info[3])
@@ -109,6 +110,7 @@ class TimeShareExplosion:
             return False
 
         turnover_rate = volume * 240 / free_share / minutes_elapse  # customized turnover_rate
+        turnover_rate_yesterday = volume_yesterday / free_share
         volume_ratio = volume * 240 / volume_ma5 / minutes_elapse
         deal_volume_ratio = curr_deal_volume / volume_ma5_deal
         deal_turnover_rate = curr_deal_volume * 20 * 240 / free_share / 100
@@ -118,6 +120,7 @@ class TimeShareExplosion:
         high_ratio = (high - pre_close) / pre_close
         low_ratio = (low - pre_close) / pre_close
 
+        strict_turnover = True
         if free_share < SUPERSMALL_FREE_SHARE:
             absolute_large_volume = deal_turnover_rate > SUPERSMALL_ABSOLUTE_LARGE_VOLUME_THRESHOLD
             turnover_threshold = SMALL_TURNOVER_THRESHOLD
@@ -133,6 +136,14 @@ class TimeShareExplosion:
         else:
             absolute_large_volume = deal_turnover_rate > SUPERBIG_ABSOLUTE_LARGE_VOLUME_THRESHOLD
             turnover_threshold = TURNOVER_THRESHOLD
+            strict_turnover = False
+
+        # add strict yesterday turnover threshold in the morning
+        if minutes_elapse <= 50 and strict_turnover and turnover_rate_yesterday < SMALL_TURNOVER_THRESHOLD:
+            print(code + ' yesterday turnover rate is too low')
+            with open(path + 'stock.log', 'a') as f:
+                f.write(code + ' yesterday turnover rate is too low' + "\n")
+            return False
 
         rush_not_broken = OPEN_LOWER_LIMIT <= open_ratio <= OPEN_UPPER_LIMIT
         # rush_not_broken &= low_ratio >= RUSH_LOWER_LIMIT
