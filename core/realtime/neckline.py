@@ -51,7 +51,7 @@ HIGH_PRICE_PERCENT = 1.090  # default 9.5% rise ratio
 
 RUSH_HIGH_THRESHOLD = 1.03
 
-BOOMED_THRESHOLD = 1.006
+BOOMED_THRESHOLD = 1.005
 
 path = os.getenv('PROJPATH')
 
@@ -162,16 +162,22 @@ class NeckLine:
 
             if free_share >= LARGE_FREE_SHARE:
                 rise_threshold = LARGE_OPEN_HIGH_THRESHOLD
+                if close < open_price:
+                    if code not in boomed and close < df.iloc[-1]['open'] * BOOMED_THRESHOLD:
+                        print(code + "(general neckline): too low and not boomed need: "
+                              + str(df.iloc[-1]['open'] * BOOMED_THRESHOLD) + ' close: ' + str(close))
+                        with open(path + 'stock.log', 'a') as f:
+                            f.write(code + "(general neckline): too low and not boomed" + "\n")
+                        continue
             else:
                 rise_threshold = NORMAL_OPEN_HIGH_THRESHOLD
-
-            if (close - open_price) / open_price < rise_threshold:
-                if code not in boomed and close < df.iloc[-1]['open'] * BOOMED_THRESHOLD:
-                    print(code + "(general neckline): too low and not boomed need: "
-                          + str(df.iloc[-1]['open'] * BOOMED_THRESHOLD) + ' close: ' + str(close))
-                    with open(path + 'stock.log', 'a') as f:
-                        f.write(code + "(general neckline): too low and not boomed" + "\n")
-                    continue
+                if (close - open_price) / open_price < rise_threshold:
+                    if code not in boomed and close < df.iloc[-1]['open'] * BOOMED_THRESHOLD:
+                        print(code + "(general neckline): too low and not boomed need: "
+                              + str(df.iloc[-1]['open'] * BOOMED_THRESHOLD) + ' close: ' + str(close))
+                        with open(path + 'stock.log', 'a') as f:
+                            f.write(code + "(general neckline): too low and not boomed" + "\n")
+                        continue
 
             if df.iloc[-5]['open'] > close:
                 print(code + "(general neckline): is falling")
@@ -297,6 +303,12 @@ class NeckLine:
                     f.write(code + "(morning neckline): at limit" + "\n")
                 continue
 
+            if len(df) > 5 and df.iloc[-5]['open'] > close:
+                print(code + "(general neckline): is falling")
+                with open(path + 'stock.log', 'a') as f:
+                    f.write(code + "(general neckline): is falling" + "\n")
+                continue
+
             # morning neckline is effective on high-opened stock
             if free_share >= LARGE_FREE_SHARE:
                 open_threshold = LARGE_OPEN_HIGH_THRESHOLD
@@ -416,6 +428,12 @@ class NeckLine:
                     continue
                 open_threshold = NORMAL_OPEN_HIGH_THRESHOLD
             if rise_ratio < open_threshold:
+                continue
+
+            if len(df) > 5 and df.iloc[-5]['open'] > close:
+                print(code + "(general neckline): is falling")
+                with open(path + 'stock.log', 'a') as f:
+                    f.write(code + "(general neckline): is falling" + "\n")
                 continue
 
             neckline_list = [open_price * (1 + ratio * 0.1 / NECKLINE_STEP) for ratio in
@@ -748,9 +766,9 @@ class NeckLine:
             selected_long = self.detect_long_neckline(matched, boomed, True)
             selected_morning = self.detect_morning_neckline(matched, boomed)
             selected = list(set(selected_long) | set(selected_morning))
-        elif datetime.datetime.now().strftime('%H:%M:%S') < '10:30:00':
+        elif datetime.datetime.now().strftime('%H:%M:%S') < '10:10:00':
             selected_morning = self.detect_morning_neckline(matched, boomed)
-            selected_long = self.detect_long_neckline(matched, boomed, True)
+            selected_long = self.detect_long_neckline(matched, boomed)
             selected_recent = self.detect_recent_neckline(matched, boomed, True)
             selected = list(set(selected_morning) | set(selected_long) | set(selected_recent))
         else:
