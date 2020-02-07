@@ -637,7 +637,7 @@ class NeckLine:
                 continue
 
             # too early, should only use morning neckline
-            if code not in self.past_price:
+            if code not in self.past_price or len(df) <= 2:
                 continue
 
             # too high
@@ -662,6 +662,7 @@ class NeckLine:
                 df_recent = df[:-1]
                 highest_recent = max(df[-5:-2]['high'].values)
             else:
+                # todo
                 df_recent = df[:-2]
                 highest_recent = 0
             # elif len(df) > 20:
