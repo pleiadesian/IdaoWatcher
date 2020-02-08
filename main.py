@@ -64,7 +64,7 @@ class Main:
             return final_matched
 
     def mock_matching(self):
-        codenum = randint(0, 2)
+        codenum = randint(0, 8)
         codes = []
         for i in range(0, codenum):
             code_index = randint(0, len(tm.detail_code_list) - 1)
@@ -89,7 +89,7 @@ def mainloop(codes):
         main.storage.update_realtime_storage()
         start = time.time()  # update too fast?
         codes[:] = []
-        for code in main.matching():
+        for code in main.mock_matching():
             codes.append(code)
         if len(codes) > 0:
             print(str(datetime.datetime.now()) + '     ' + ' '.join(codes) + " 出现分时攻击")

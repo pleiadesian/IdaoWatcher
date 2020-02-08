@@ -13,26 +13,26 @@ class setf():
         self.pid = self.get_pid_for_pname(self.gamename)
 
     def setfocus(self):
-        if self.pid:
-            # TODO: detect focus until success
-            for hwnd in self.get_hwnds_for_pid(self.pid):
-                self.shell.SendKeys('%')
-                self.dll.LockSetForegroundWindow(2)
-                if self.dll.IsIconic(hwnd):
-                    win32gui.SendMessage(hwnd, win32con.WM_SYSCOMMAND, win32con.SC_RESTORE, 0)
-                self.dll.SetWindowPos(hwnd, win32con.HWND_TOPMOST, 0, 0, 0, 0,
-                                      win32con.SWP_NOSIZE | win32con.SWP_NOMOVE)
-                self.dll.SetForegroundWindow(hwnd)
-                self.dll.SetActiveWindow(hwnd)
-            for hwnd in self.get_hwnds_for_pid(self.pid):
-                self.shell.SendKeys('%')
-                self.dll.LockSetForegroundWindow(2)
-                if self.dll.IsIconic(hwnd):
-                    win32gui.SendMessage(hwnd, win32con.WM_SYSCOMMAND, win32con.SC_RESTORE, 0)
-                self.dll.SetWindowPos(hwnd, win32con.HWND_TOPMOST, 0, 0, 0, 0,
-                                      win32con.SWP_NOSIZE | win32con.SWP_NOMOVE)
-                self.dll.SetForegroundWindow(hwnd)
-                self.dll.SetActiveWindow(hwnd)
+        while True:
+            hwnds = []
+            if self.pid:
+                for hwnd in self.get_hwnds_for_pid(self.pid):
+                    self.shell.SendKeys('%')
+                    self.dll.LockSetForegroundWindow(2)
+                    if self.dll.IsIconic(hwnd):
+                        win32gui.SendMessage(hwnd, win32con.WM_SYSCOMMAND, win32con.SC_RESTORE, 0)
+                    self.dll.SetWindowPos(hwnd, win32con.HWND_TOPMOST, 0, 0, 0, 0,
+                                          win32con.SWP_NOSIZE | win32con.SWP_NOMOVE)
+                    self.dll.SetForegroundWindow(hwnd)
+                    self.dll.SetActiveWindow(hwnd)
+                    hwnds.append(hwnd)
+            hwnd_front = self.dll.GetForegroundWindow()
+            for hwnd in hwnds:
+                if hwnd == hwnd_front:
+                    if win32gui.GetWindowText(hwnd)[:2] == '闪电':
+                        self.dll.SetForegroundWindow(0)
+                        self.dll.SetActiveWindow(0)
+                    return
 
     def get_pid_for_pname(self, processName):
         pids = psutil.pids()  # 获取主机所有的PID
@@ -40,12 +40,9 @@ class setf():
             p = psutil.Process(pid)  # 实例化进程对象
             if p.name() == processName:  # 判断实例进程名与输入的进程名是否一致（判断进程是否存活）
                 for hwnd in self.get_hwnds_for_pid(pid):
-                    a = win32gui.GetWindowText(hwnd)
                     # TODO: HIGH RISK! DO NOT input code to '闪电买入' and '闪电卖出'
                     if win32gui.GetWindowText(hwnd)[:2] == '中信':
                         return pid  # 返回
-                        # print(win32gui.GetWindowText(hwnd))
-                    # print(win32gui.GetWindowText(hwnd))
         return 0
 
     def get_hwnds_for_pid(self, pid):
