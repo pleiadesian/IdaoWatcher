@@ -5,6 +5,7 @@
 @ Desc:     time share exploding detection
 """
 import os
+import time
 import datetime
 import tushare as ts
 import api.ts_map as tm
@@ -39,7 +40,7 @@ BIG_ABSOLUTE_LARGE_VOLUME_THRESHOLD = 0.9  # default 50%
 SUPERBIG_ABSOLUTE_LARGE_VOLUME_THRESHOLD = 0.9  # default 40%
 
 SUPERSMALL_FREE_SHARE = 5000
-SMALL_FREE_SHARE = 12000  # default 12000
+SMALL_FREE_SHARE = 12000
 LARGE_FREE_SHARE = 50000
 SUPERLARGE_FREE_SHARE = 200000
 
@@ -61,6 +62,11 @@ class TimeShareExplosion:
             self.deal_ask[code] = (0.0, 0.0)
 
     def detect_timeshare_explode(self, storage, code):
+        """
+        :param storage: local storage
+        :param code: stock code
+        :return: if explosion detected on timeshare
+        """
         basic_infos = storage.get_basicinfo_single(tm.ts_mapping[code])
         hist_data = storage.get_histdata_single(tm.ts_mapping[code])[-5:]
         info = storage.get_realtime_storage_single(code)
@@ -68,8 +74,8 @@ class TimeShareExplosion:
         volume = float(info[8]) / 100  # calculation by Lot
         volume_ma5 = sum(hist_data['vol']) / len(hist_data)
         volume_ma5_deal = sum(hist_data['vol']) / (len(hist_data) * 240 * 20)
-        volume_yesterday = float(hist_data.iloc[-1]['vol'])
-        pct_chg_yesterday = float(hist_data.iloc[-1]['pct_chg'])
+        volume_yesterday = float(hist_data.values[-1][8])
+        pct_chg_yesterday = float(hist_data.values[-1][7])
         today_open = float(info[1])
         pre_close = float(info[2])
         price = float(info[3])
@@ -80,7 +86,7 @@ class TimeShareExplosion:
         bid_price = float(info[21])
         ask = float(info[10]) / 100
         ask_price = float(info[11])
-        free_share = basic_infos['free_share']
+        free_share = basic_infos.values[15]
 
         time = info[31]
         time = datetime.datetime.strptime(time, "%H:%M:%S")
@@ -213,9 +219,17 @@ if __name__ == '__main__':
     storage = st.Storage()
     storage.update_realtime_storage()
     time_share_explotion = TimeShareExplosion()
-    ret = time_share_explotion.detect_timeshare_explode(storage, '600804')
+    time_share_explotion.detect_timeshare_explode(storage, '600804')
     storage.update_realtime_storage()
     ret = time_share_explotion.detect_timeshare_explode(storage, '600804')
+    # cold run
+    for code in tm.ts_mapping:
+        time_share_explotion.detect_timeshare_explode(storage, code)
+    start = time.time()
+    for code in tm.ts_mapping:
+        time_share_explotion.detect_timeshare_explode(storage, code)
+    end = time.time()
+    print(end - start)
     print(ret)
 
 

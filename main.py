@@ -24,18 +24,24 @@ class Main:
         self.storage.update_realtime_storage()
         self.neckline = nl.NeckLine(self.storage)
         self.time_share_explosion = ex.TimeShareExplosion()
+        self.call_auction_complete = False
 
     def matching(self):
         """
         matching in an interval
         :return: matched codes
         """
-        if datetime.datetime.now() < datetime.datetime.strptime('09:30:00', '%H:%M:%S'):
-            matched = []
-            for code in tm.ts_mapping:
-                if oh.detect_high_open(self.storage, code):
-                    matched.append(code)
-            return matched
+        if datetime.datetime.strptime('09:25:00', '%H:%M:%S') < datetime.datetime.now() < \
+                datetime.datetime.strptime('09:30:00', '%H:%M:%S'):
+            if not self.call_auction_complete:
+                matched = []
+                for code in tm.ts_mapping:
+                    if oh.detect_high_open_explosion(self.storage, code):
+                        matched.append(code)
+                self.call_auction_complete = True
+                return matched
+            else:
+                return []
         else:
             matched = []
             boomed = []
