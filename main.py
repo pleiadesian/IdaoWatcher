@@ -71,6 +71,7 @@ class Main:
             codes.append(tm.detail_code_list[code_index][2:])
         return codes
 
+
 def mainloop(codes):
     """
     start main loop
