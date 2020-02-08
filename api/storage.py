@@ -19,7 +19,6 @@ import api.ts_map as tm
 
 
 DEBUG = 1
-RELOAD = 0
 
 DATA_COLS = ['name', 'open', 'pre_close', 'price', 'high', 'low', 'bid', 'ask', 'volume', 'amount', 'b1_v', 'b1_p',
              'b2_v', 'b2_p', 'b3_v', 'b3_p', 'b4_v', 'b4_p', 'b5_v', 'b5_p', 'a1_v', 'a1_p', 'a2_v', 'a2_p', 'a3_v',
@@ -251,9 +250,12 @@ class Storage:
 
         # self.init_neckline_storage()
         path = os.getenv('PROJPATH')
-        if DEBUG == 1:
-            target_bi = path + 'basicinfo.dat'
-            target_hd = path + 'histdata.dat'
+        load_from_disk = True
+        target_bi = path + 'basicinfo.dat'
+        target_hd = path + 'histdata.dat'
+        if not os.path.isfile(target_bi) or not os.path.isfile(target_hd):
+            load_from_disk = False
+        if load_from_disk:
             if os.path.getsize(target_bi) > 0 and os.path.getsize(target_hd) > 0:
                 with open(target_bi, "rb") as f:
                     unpickler = pickle.Unpickler(f)
@@ -261,14 +263,21 @@ class Storage:
                 with open(target_hd, "rb") as f:
                     unpickler = pickle.Unpickler(f)
                     self.hist_data = unpickler.load()
-        else:
+            # TODO: check it
+            load_trade_date = self.basic_info['000001.SZ']['trade_date']
+            df_date = self.pro.trade_cal(exchange='SSE', end_date=datetime.datetime.now().strftime('%Y%m%d'), is_open=1)
+            pre_trade_date = df_date.iloc[-2]['cal_date']
+            if pre_trade_date != load_trade_date:
+                load_from_disk = False
+                self.basic_info = dict()
+                self.hist_data = dict()
+        if not load_from_disk:
             self.init_basicinfo()
             self.init_histdata()
-            if RELOAD == 1:
-                with open(path + 'basicinfo.dat', 'wb') as f:
-                    pickle.dump(self.basic_info, f)
-                with open(path + 'histdata.dat', 'wb') as f:
-                    pickle.dump(self.hist_data, f)
+            with open(path + 'basicinfo.dat', 'wb') as f:
+                pickle.dump(self.basic_info, f)
+            with open(path + 'histdata.dat', 'wb') as f:
+                pickle.dump(self.hist_data, f)
 
     def update_realtime_storage(self):
         """

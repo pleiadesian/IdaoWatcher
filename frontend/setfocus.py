@@ -14,6 +14,16 @@ class setf():
 
     def setfocus(self):
         if self.pid:
+            # TODO: detect focus until success
+            for hwnd in self.get_hwnds_for_pid(self.pid):
+                self.shell.SendKeys('%')
+                self.dll.LockSetForegroundWindow(2)
+                if self.dll.IsIconic(hwnd):
+                    win32gui.SendMessage(hwnd, win32con.WM_SYSCOMMAND, win32con.SC_RESTORE, 0)
+                self.dll.SetWindowPos(hwnd, win32con.HWND_TOPMOST, 0, 0, 0, 0,
+                                      win32con.SWP_NOSIZE | win32con.SWP_NOMOVE)
+                self.dll.SetForegroundWindow(hwnd)
+                self.dll.SetActiveWindow(hwnd)
             for hwnd in self.get_hwnds_for_pid(self.pid):
                 self.shell.SendKeys('%')
                 self.dll.LockSetForegroundWindow(2)
@@ -67,8 +77,10 @@ def open_code(code, window_info, origin_window=None):
     # pyautogui.click(x=None, y=None, clicks=1, interval=0.0, button='left', duration=0.0, tween=pyautogui.linear)
     code = '0'+code  # why huawei matebook need padding?
     print(code)
+    # pyautogui.press('enter', interval=0.01)
     pyautogui.typewrite(message=code, interval=0.01)
     pyautogui.press('enter')
+    # pyautogui.typewrite(message=code, interval=0.01)
     if origin_window is not None:
         origin_window.raise_()
         origin_window.activateWindow()

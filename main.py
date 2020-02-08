@@ -5,10 +5,10 @@
 """
 import time
 import datetime
+from random import randint
 import core.realtime.neckline as nl
 import core.realtime.explode as ex
 import core.realtime.open_high as oh
-import core.daily.up_num as un
 import api.storage as st
 import api.ts_map as tm
 
@@ -57,34 +57,46 @@ class Main:
                 final_matched = matched + boomed
             return final_matched
 
-    def mainloop(self):
-        """
-        start main loop
-        """
-        start = 0
-        end = 3
-        while True:
-            if end - start < 3:
-                time.sleep(SLEEP_INTERVAL - (end - start))
-            if end - start > 5:
-                print(str(datetime.datetime.now()) + ' BLOCKED FOR ' + str(end - start) + ' s')
-                with open('stock.log', 'a') as f:
-                    f.write(str(datetime.datetime.now()) + ' BLOCKED FOR ' + str(end - start) + ' s' + '\n')
-            self.storage.update_realtime_storage()
-            start = time.time()  # update too fast?
-            codes = self.matching()
-            if len(codes) > 0:
-                print(str(datetime.datetime.now()) + '     ' + ' '.join(codes) + " 出现分时攻击")
-                with open('stock.log', 'a') as f:
-                    f.write(str(datetime.datetime.now()) + '     ' + ' '.join(codes) + " 出现分时攻击"+'\n')
-            else:
-                print(str(datetime.datetime.now()))
-                with open('stock.log', 'a') as f:
-                    f.write(str(datetime.datetime.now()) + '\n')
-            end = time.time()
-            # print("main:" + str(end - start))
+    def mock_matching(self):
+        codenum = randint(0, 2)
+        codes = []
+        for i in range(0, codenum):
+            code_index = randint(0, len(tm.detail_code_list) - 1)
+            codes.append(tm.detail_code_list[code_index][2:])
+        return codes
+
+def mainloop(codes):
+    """
+    start main loop
+    """
+    main = Main()
+    start = 0
+    end = 3
+    while True:
+        if end - start < 3:
+            time.sleep(SLEEP_INTERVAL - (end - start))
+        if end - start > 5:
+            print(str(datetime.datetime.now()) + ' BLOCKED FOR ' + str(end - start) + ' s')
+            with open('stock.log', 'a') as f:
+                f.write(str(datetime.datetime.now()) + ' BLOCKED FOR ' + str(end - start) + ' s' + '\n')
+        main.storage.update_realtime_storage()
+        start = time.time()  # update too fast?
+        codes[:] = []
+        for code in main.matching():
+            codes.append(code)
+        if len(codes) > 0:
+            print(str(datetime.datetime.now()) + '     ' + ' '.join(codes) + " 出现分时攻击")
+            with open('stock.log', 'a') as f:
+                f.write(str(datetime.datetime.now()) + '     ' + ' '.join(codes) + " 出现分时攻击"+'\n')
+        else:
+            print(str(datetime.datetime.now()))
+            with open('stock.log', 'a') as f:
+                f.write(str(datetime.datetime.now()) + '\n')
+        end = time.time()
+        # print("main:" + str(end - start))
 
 
 if __name__ == '__main__':
-    main = Main()
-    main.mainloop()
+    mainloop([])
+    # main = Main()
+    # main.mainloop()

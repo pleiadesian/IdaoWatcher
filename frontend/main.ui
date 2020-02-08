@@ -9,7 +9,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>403</width>
+    <width>485</width>
     <height>880</height>
    </rect>
   </property>
@@ -232,10 +232,46 @@
     <string>PushButton</string>
    </property>
   </widget>
+  <widget class="QPushButton" name="pushButton">
+   <property name="geometry">
+    <rect>
+     <x>330</x>
+     <y>30</y>
+     <width>131</width>
+     <height>61</height>
+    </rect>
+   </property>
+   <property name="font">
+    <font>
+     <pointsize>20</pointsize>
+    </font>
+   </property>
+   <property name="text">
+    <string>重新显示</string>
+   </property>
+  </widget>
  </widget>
  <resources/>
- <connections/>
+ <connections>
+  <connection>
+   <sender>pushButton</sender>
+   <signal>clicked()</signal>
+   <receiver>Dialog</receiver>
+   <slot>replay()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>404</x>
+     <y>64</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>404</x>
+     <y>134</y>
+    </hint>
+   </hints>
+  </connection>
+ </connections>
  <slots>
   <slot>test()</slot>
+  <slot>replay()</slot>
  </slots>
 </ui>
