@@ -61,6 +61,12 @@ class MainUi(QMainWindow, frontend.Ui_Dialog):
         self.timer_recent.timeout.connect(self.clear_recent)
         self.timer_recent.start(INTERVAL_RECENT)
 
+    def reset(self):
+        self.code_list = [''] * 12
+        self.spilled_codes = []
+        self.recent_codes = []
+        self.clear_signals = []
+
     def replay(self):
         setfocus.open_code(self.replay_code, self.window_info)
 

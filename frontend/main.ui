@@ -250,6 +250,24 @@
     <string>重新显示</string>
    </property>
   </widget>
+  <widget class="QPushButton" name="pushButton_12">
+   <property name="geometry">
+    <rect>
+     <x>330</x>
+     <y>100</y>
+     <width>131</width>
+     <height>61</height>
+    </rect>
+   </property>
+   <property name="font">
+    <font>
+     <pointsize>20</pointsize>
+    </font>
+   </property>
+   <property name="text">
+    <string>清除全部</string>
+   </property>
+  </widget>
  </widget>
  <resources/>
  <connections>
@@ -269,9 +287,26 @@
     </hint>
    </hints>
   </connection>
+  <connection>
+   <sender>pushButton_12</sender>
+   <signal>clicked()</signal>
+   <receiver>Dialog</receiver>
+   <slot>reset()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>377</x>
+     <y>147</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>373</x>
+     <y>208</y>
+    </hint>
+   </hints>
+  </connection>
  </connections>
  <slots>
   <slot>test()</slot>
   <slot>replay()</slot>
+  <slot>reset()</slot>
  </slots>
 </ui>

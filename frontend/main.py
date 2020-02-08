@@ -93,9 +93,16 @@ class Ui_Dialog(object):
         font.setPointSize(20)
         self.pushButton.setFont(font)
         self.pushButton.setObjectName("pushButton")
+        self.pushButton_12 = QtWidgets.QPushButton(Dialog)
+        self.pushButton_12.setGeometry(QtCore.QRect(330, 100, 131, 61))
+        font = QtGui.QFont()
+        font.setPointSize(20)
+        self.pushButton_12.setFont(font)
+        self.pushButton_12.setObjectName("pushButton_12")
 
         self.retranslateUi(Dialog)
         self.pushButton.clicked.connect(Dialog.replay)
+        self.pushButton_12.clicked.connect(Dialog.reset)
         QtCore.QMetaObject.connectSlotsByName(Dialog)
 
     def retranslateUi(self, Dialog):
@@ -114,3 +121,4 @@ class Ui_Dialog(object):
         self.pushButton_10.setText(_translate("Dialog", "PushButton"))
         self.pushButton_11.setText(_translate("Dialog", "PushButton"))
         self.pushButton.setText(_translate("Dialog", "重新显示"))
+        self.pushButton_12.setText(_translate("Dialog", "清除全部"))
