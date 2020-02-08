@@ -14,7 +14,7 @@ import api.ts_map as tm
 # TODO: print more info in log for debug
 
 DEBUG = 1
-TRUNCATE_TIME = 30
+TRUNCATE_TIME = 99
 TRUNCATE = 0
 
 NECKLINE_UPPER_BOUND = 1.005
@@ -24,7 +24,7 @@ NECKLINE_MINUS_STEP = 10
 
 LOW_NECKLINE_INDEX = 17
 LOW_NECKLINE_LENGTH_THRESHOLD = 50  # default 60
-RECENT_NECKLINE_LENGTH_THRESHOLD = 20  # default 15
+RECENT_NECKLINE_LENGTH_THRESHOLD = 19  # default 15 | 20
 RECENT_GOOD_NECKLINE_LENGTH_THRESHOLD = 12
 NECKLINE_LENGTH_THRESHOLD = 30  # default 35
 LONG_NECKLINE_LENGTH_THRESHOLD = 70
@@ -147,6 +147,8 @@ class NeckLine:
         df_list = self.curr_realtime_chart
         selected = []
         selected_recent = self.detect_recent_neckline(matched, boomed)
+        if TRUNCATE == 1:
+            df_list = [df[:TRUNCATE_TIME] for df in df_list]
         for df in df_list:
             code = df.iloc[0]['code']
             close = self.curr_price[code]
@@ -521,6 +523,8 @@ class NeckLine:
         for df in df_list:
             code = df.iloc[0]['code']
             close = self.curr_price[code]
+            if TRUNCATE == 1:
+                close = df.iloc[-1]['high']
             boom_close = df.iloc[-1]['open']
             open_price = self.pre_close[code]
             limit = round(open_price * 1.1, 2)
@@ -794,7 +798,7 @@ if __name__ == '__main__':
     neckline = NeckLine(storage)
     start = time.time()
     # neckline.detect_neckline(['600618', '002107', '000788', '300562'], [])
-    neckline.detect_neckline(['002252'], [])
+    neckline.detect_neckline(['002235'], [])
     end = time.time()
     print('total: ' + str(end - start))
     # neckline.detect_neckline(['603315', '600988', '002352', '600332', '000570'], [])
