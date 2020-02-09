@@ -92,6 +92,8 @@ class TimeShareExplosion:
         time = datetime.datetime.strptime(time, "%H:%M:%S")
         sec_delta = (time - self.deal_volume[code][1]).seconds
         # in case of re-fetch same data
+        if DEBUG == 1:
+            sec_delta = 30
         if sec_delta == 0:
             return False
         # in case of time delta
@@ -219,9 +221,9 @@ if __name__ == '__main__':
     storage = st.Storage()
     storage.update_realtime_storage()
     time_share_explotion = TimeShareExplosion()
-    time_share_explotion.detect_timeshare_explode(storage, '600804')
+    time_share_explotion.detect_timeshare_explode(storage, '603019')
     storage.update_realtime_storage()
-    ret = time_share_explotion.detect_timeshare_explode(storage, '600804')
+    ret = time_share_explotion.detect_timeshare_explode(storage, '603019')
     # cold run
     for code in tm.ts_mapping:
         time_share_explotion.detect_timeshare_explode(storage, code)

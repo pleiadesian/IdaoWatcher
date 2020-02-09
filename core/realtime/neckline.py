@@ -14,7 +14,7 @@ import api.ts_map as tm
 # TODO: print more info in log for debug
 
 DEBUG = 1
-TRUNCATE_TIME = 99
+TRUNCATE_TIME = 31
 TRUNCATE = 0
 
 NECKLINE_UPPER_BOUND = 1.005
@@ -798,7 +798,7 @@ if __name__ == '__main__':
     neckline = NeckLine(storage)
     start = time.time()
     # neckline.detect_neckline(['600618', '002107', '000788', '300562'], [])
-    neckline.detect_neckline(['002235'], [])
+    neckline.detect_neckline(['603019'], [])
     end = time.time()
     print('total: ' + str(end - start))
     # neckline.detect_neckline(['603315', '600988', '002352', '600332', '000570'], [])
