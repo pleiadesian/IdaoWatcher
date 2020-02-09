@@ -321,7 +321,8 @@ class Storage:
         dict_curr_remain = {k:v for dic in dict_list_remain for k,v in dic.items()}
         self.realtime_quotes = {**dict_curr, **dict_curr_remain}
 
-    def update_realtime_storage_backtest(self):
+    def update_realtime_storage_backtest(self, moment):
+        # TODO: fetch from Wind api
         pass
 
     def update_basicinfo_backtest(self, date):

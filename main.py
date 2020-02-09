@@ -71,6 +71,35 @@ class Main:
             codes.append(tm.detail_code_list[code_index][2:])
         return codes
 
+    def backtest_matching(self, date):
+        """
+        :param date: backtest date
+        :return: buy order
+        """
+        orders = dict()
+        self.storage.update_basicinfo_backtest(date)
+        self.storage.update_histdata_backtest(date)
+        moment = datetime.datetime.strptime('09:30:00', '%H:%M:%S')
+        while moment < datetime.datetime.strptime('15:00:00', '%H:%M:%S'):
+            self.storage.update_realtime_storage_backtest(date + ' ' + moment.strftime('%H:%M:%S'))
+            matched = []
+            boomed = []
+            final_matched = []
+            for code in tm.ts_mapping:
+                ret = self.time_share_explosion.detect_timeshare_explode(self.storage, code)
+                if ret:
+                    if ret > 1:
+                        boomed.append(code)
+                    else:
+                        matched.append(code)
+            if len(matched) > 0 or len(boomed) > 0:
+                final_matched = self.neckline.detect_neckline(matched, boomed)
+            orders[moment] = final_matched
+            moment = moment + datetime.timedelta(minutes=1)
+            if moment == datetime.datetime.strptime('11:30:00', '%H:%M:%S'):
+                moment = datetime.datetime.strptime('13:00:00', '%H:%M:%S')
+        return orders
+
 
 def mainloop(codes):
     """
