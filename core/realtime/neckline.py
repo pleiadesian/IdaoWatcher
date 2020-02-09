@@ -14,8 +14,8 @@ import api.ts_map as tm
 # TODO: print more info in log for debug
 
 DEBUG = 1
-TRUNCATE_TIME = 31
-TRUNCATE = 0
+TRUNCATE_TIME = 142
+TRUNCATE = 1
 
 NECKLINE_UPPER_BOUND = 1.005
 NECKLINE_LOWER_BOUND = 0.99
@@ -27,6 +27,7 @@ LOW_NECKLINE_LENGTH_THRESHOLD = 50  # default 60
 RECENT_NECKLINE_LENGTH_THRESHOLD = 19  # default 15 | 20
 RECENT_GOOD_NECKLINE_LENGTH_THRESHOLD = 12
 NECKLINE_LENGTH_THRESHOLD = 30  # default 35
+NECKLINE_GOOD_LENGTH_THRESHOLD = 90
 LONG_NECKLINE_LENGTH_THRESHOLD = 70
 SEPARATED_NECKLINE_MIN_GAP = 45
 OUTLINER_THRESHOLD = 0.40  # default 0.55 | 0.65
@@ -152,6 +153,8 @@ class NeckLine:
         for df in df_list:
             code = df.iloc[0]['code']
             close = self.curr_price[code]
+            if TRUNCATE == 1:
+                close = df.iloc[-1]['high']
             boom_close = df.iloc[-1]['open']
             open_price = self.pre_close[code]
             limit = round(open_price * 1.1, 2)
@@ -187,7 +190,10 @@ class NeckLine:
                     f.write(code + "(general neckline): is falling" + "\n")
                 continue
 
-            # TODO: average price line detection?
+            # small platform is legal when price is high
+            if rise_ratio > RISE_HIGH_THRESHOLD and code in selected_recent and code not in selected:
+                selected.append(code)
+                continue
 
             neckline_list = [open_price * (1 + ratio * 0.1 / NECKLINE_STEP) for ratio in
                              range(-NECKLINE_MINUS_STEP, NECKLINE_STEP)]
@@ -214,6 +220,9 @@ class NeckLine:
                         length_threshold = LOW_NECKLINE_LENGTH_THRESHOLD
                     else:
                         length_threshold = NECKLINE_LENGTH_THRESHOLD
+                    if len(df_area) >= NECKLINE_GOOD_LENGTH_THRESHOLD:
+                        neckline_select.append((i - 1, code))
+                        continue
                     if len(df_area) >= length_threshold:
                         df_area = df_area.sort_values(by=['day'])
                         # calculate confidence coefficient of this neckline
@@ -245,7 +254,7 @@ class NeckLine:
                 curr_deal = self.curr_price[code]
                 for neckline in neckline_select:
                     if past_deal <= neckline_list[neckline[0]] <= curr_deal:
-                        if code in selected_recent:
+                        if code in selected_recent and code not in selected:
                             selected.append(code)
                             break
             # detect if price is in a box form
@@ -263,13 +272,9 @@ class NeckLine:
             # boomed stock is over neckline
             for neckline in neckline_select:
                 if neckline_list[neckline[0]] * lower_bound <= close <= neckline_list[neckline[0]] * upper_bound:
-                    if code in selected_recent:
+                    if code in selected_recent and code not in selected:
                         selected.append(code)
                         break
-            # small platform is legal when price is high
-            if rise_ratio > RISE_HIGH_THRESHOLD and code in selected_recent:
-                selected.append(code)
-                break
         return selected
 
     def detect_morning_neckline(self, matched, boomed):
@@ -612,9 +617,9 @@ class NeckLine:
                 upper_bound = BOOM_UPPER_BOUND
                 close = boom_close
                 if DEBUG == 1:
-                    print(code + '(recent neckline): boomed at' + str(boom_close))
+                    print(code + '(recent neckline): boomed at ' + str(close))
                     with open(path + 'stock.log', 'a') as f:
-                        f.write(code + '(recent neckline): boomed at' + str(boom_close) + '\n')
+                        f.write(code + '(recent neckline): boomed at ' + str(close) + '\n')
             else:
                 lower_bound = NORMAL_LOWER_BOUND
                 upper_bound = NORMAL_UPPER_BOUND
@@ -624,7 +629,8 @@ class NeckLine:
                     print(code + '(recent neckline): select ' + str(neckline_list[neckline[0]])
                           + ' close ' + str(close))
                     with open(path + 'stock.log', 'a') as f:
-                        f.write(code + '(recent neckline): boomed at' + str(boom_close) + '\n')
+                        f.write(code + '(recent neckline): select ' + str(neckline_list[neckline[0]])
+                                + ' close ' + str(close) + '\n')
                     selected.append(code)
                     break
         return selected
@@ -797,15 +803,7 @@ if __name__ == '__main__':
     storage.update_realtime_storage()
     neckline = NeckLine(storage)
     start = time.time()
-    # neckline.detect_neckline(['600618', '002107', '000788', '300562'], [])
-    neckline.detect_neckline(['603019'], [])
+    neckline.detect_neckline(['300315'], [])
     end = time.time()
     print('total: ' + str(end - start))
-    # neckline.detect_neckline(['603315', '600988', '002352', '600332', '000570'], [])
-    # neckline.detect_neckline(['603022', '601999', '002022', '600118', '300448'], [])
-    # code_list = []
-    # for code in tm.ts_mapping:
-    #     code_list.append(code)
-    # ret = neckline.detect_neckline(code_list, [])
-    # print(ret)
 

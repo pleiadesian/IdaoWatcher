@@ -24,13 +24,19 @@ def get_attack_time_list(stock_id,log_file_path):
             
     time_share_attack_raw = []
     [time_share_attack_raw.append(line.split()[:-1]) for line in log_file if "出现分时攻击" in line]
+    time_share_check_raw = []
+    [time_share_check_raw.append(line.replace('|',' ').split()[:-1]) for line in log_file if "颈线检测前" in line]
     
     return_list = []
+    return_list_check = []
     for line in time_share_attack_raw:
         if stock_id in line:
             return_list.append(line[0]+' '+line[1])
+    for line in time_share_check_raw:
+        if stock_id in line:
+            return_list_check.append(line[0]+' '+line[1])
             
-    return return_list
+    return return_list, return_list_check
 
 def get_attack_distribution(log_file_path):
     """
