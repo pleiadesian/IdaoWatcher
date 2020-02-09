@@ -14,8 +14,8 @@ import api.ts_map as tm
 # TODO: print more info in log for debug
 
 DEBUG = 1
-TRUNCATE_TIME = 142
-TRUNCATE = 1
+TRUNCATE_TIME = 30
+TRUNCATE = 0
 
 NECKLINE_UPPER_BOUND = 1.005
 NECKLINE_LOWER_BOUND = 0.99

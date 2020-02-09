@@ -117,6 +117,36 @@ class MainUi(QMainWindow, frontend.Ui_Dialog):
                 button.move(BUTTON_NONE_X, button.y())
         # print('after check:' + str(self.code_list))
 
+    def ask5(self):
+        setfocus.open_code('.+5', self.window_info)
+
+    def ask4(self):
+        setfocus.open_code('.+4', self.window_info)
+
+    def ask3(self):
+        setfocus.open_code('.+3', self.window_info)
+
+    def ask2(self):
+        setfocus.open_code('.+2', self.window_info)
+
+    def ask1(self):
+        setfocus.open_code('.+1', self.window_info)
+
+    def bid1(self):
+        setfocus.open_code('.-1', self.window_info)
+
+    def bid2(self):
+        setfocus.open_code('.-2', self.window_info)
+
+    def bid3(self):
+        setfocus.open_code('.-3', self.window_info)
+
+    def bid4(self):
+        setfocus.open_code('.-4', self.window_info)
+
+    def bid5(self):
+        setfocus.open_code('.-5', self.window_info)
+
 
 if __name__ == '__main__':
     manager = Manager()
