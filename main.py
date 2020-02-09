@@ -64,7 +64,7 @@ class Main:
             return final_matched
 
     def mock_matching(self):
-        codenum = randint(0, 8)
+        codenum = randint(0, 3)
         codes = []
         for i in range(0, codenum):
             code_index = randint(0, len(tm.detail_code_list) - 1)
