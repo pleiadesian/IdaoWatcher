@@ -13,14 +13,10 @@ import api.storage as st
 
 DEBUG = 0
 
-# TODO: print more info in log for debug
-# TODO: handle stocks with free share larger than 10,000,000,000
-
 OPEN_UPPER_LIMIT = 0.1  # default 0.03
 OPEN_LOWER_LIMIT = -0.05  # default -0.02 | -0.03
 
-# TODO: CHANGE TO -0.05
-# RUSH_LOWER_LIMIT = -0.09  # default -0.03
+# RUSH_LOWER_LIMIT = -0.09  # default -0.03 | -0.05
 
 AMOUNT_THRESHOLD = 100  # 1,000,000 volume of transaction
 TURNOVER_THRESHOLD = 8  # turnover rate 2.5%, default 0.6% | 2.5%
