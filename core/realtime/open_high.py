@@ -29,8 +29,6 @@ SUPERLARGE_FREE_SHARE = 200000
 NORMAL_OPEN_HIGH_THRESHOLD = 0.02
 LARGE_OPEN_HIGH_THRESHOLD = 0.005
 
-# TODO: opt to 3s
-
 
 def calc_peak(code):
     """
@@ -99,12 +97,12 @@ def detect_high_open_explosion(storage, code):
     info = storage.get_realtime_storage_single(code)
 
     pre_close = float(info[2])
-    price = float(info[3])
+    price = float(info[21])
     volume = float(info[8]) / 100
     free_share = basic_infos.values[15]
 
     open_ratio = (price - pre_close) / pre_close
-    open_turnover_rate = volume / free_share
+    open_turnover_rate = volume * 100 / free_share
 
     if free_share < SUPERSMALL_FREE_SHARE:
         absolute_large_volume = open_turnover_rate > SUPERSMALL_ABSOLUTE_OPEN_LARGE_VOLUME_THRESHOLD
