@@ -147,14 +147,14 @@ class TimeShareExplosion:
         # add strict yesterday turnover threshold in the morning
         if minutes_elapse <= 50:
             if strict_turnover and turnover_rate_yesterday < SMALL_TURNOVER_THRESHOLD:
-                print(code + ' yesterday turnover rate is too low')
-                with open(path + 'stock.log', 'a') as f:
-                    f.write(code + ' yesterday turnover rate is too low' + "\n")
+                # print(code + ' yesterday turnover rate is too low')
+                # with open(path + 'stock.log', 'a') as f:
+                #     f.write(code + ' yesterday turnover rate is too low' + "\n")
                 return False
             if pct_chg_yesterday > 9.75:
-                print(code + ' yesterday at limit')
-                with open(path + 'stock.log', 'a') as f:
-                    f.write(code + ' yesterday at limit' + "\n")
+                # print(code + ' yesterday at limit')
+                # with open(path + 'stock.log', 'a') as f:
+                #     f.write(code + ' yesterday at limit' + "\n")
                 return False
 
         rush_not_broken = OPEN_LOWER_LIMIT <= open_ratio <= OPEN_UPPER_LIMIT
