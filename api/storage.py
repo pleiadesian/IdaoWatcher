@@ -183,7 +183,7 @@ def process_histdata(date):
         try:
             df = pro.daily(ts_code='', start_date=date, end_date=date)
             return df
-        except requests.exceptions.RequestException as e:
+        except requests.exceptions.RequestException or json.decoder.JSONDecodeError as e:
             time.sleep(1)
             not_get = True
 

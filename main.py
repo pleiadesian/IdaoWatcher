@@ -31,8 +31,7 @@ class Main:
         matching in an interval
         :return: matched codes
         """
-        if datetime.datetime.strptime('09:25:00', '%H:%M:%S') < datetime.datetime.now() < \
-                datetime.datetime.strptime('09:30:00', '%H:%M:%S'):
+        if '09:25:00' < datetime.datetime.now().strftime('%H:%M:%S') < '09:30:00':
             if not self.call_auction_complete:
                 matched = []
                 for code in tm.ts_mapping:
