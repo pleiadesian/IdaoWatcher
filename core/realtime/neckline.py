@@ -14,8 +14,8 @@ import api.ts_map as tm
 # TODO: print more info in log for debug
 
 DEBUG = 1
-TRUNCATE_TIME = 30
-TRUNCATE = 0
+TRUNCATE_TIME = 56
+TRUNCATE = 1
 
 NECKLINE_UPPER_BOUND = 1.005
 NECKLINE_LOWER_BOUND = 0.99
@@ -44,7 +44,8 @@ HIGH_UPPER_BOUND = 1.005
 NORMAL_OPEN_HIGH_THRESHOLD = 0.02
 LARGE_OPEN_HIGH_THRESHOLD = 0.005
 LARGE_FREE_SHARE = 50000
-RISE_HIGH_THRESHOLD = 0.03
+RISE_HIGH_THRESHOLD = 0.025  # default 0.03
+LARGE_RISE_HIGH_THRESHOLD = 0.02
 
 MINUTE_ABSOLUTE_VOLUME_THRESHOLD = 1.12  # default 112%
 
@@ -167,6 +168,7 @@ class NeckLine:
 
             if free_share >= LARGE_FREE_SHARE:
                 rise_threshold = LARGE_OPEN_HIGH_THRESHOLD
+                rise_high_threshold = LARGE_RISE_HIGH_THRESHOLD
                 if close < open_price:
                     if code not in boomed and close < df.iloc[-1]['open'] * BOOMED_THRESHOLD:
                         print(code + "(general neckline): too low and not boomed need: "
@@ -176,6 +178,7 @@ class NeckLine:
                         continue
             else:
                 rise_threshold = NORMAL_OPEN_HIGH_THRESHOLD
+                rise_high_threshold = RISE_HIGH_THRESHOLD
                 if (close - open_price) / open_price < rise_threshold:
                     if code not in boomed and close < df.iloc[-1]['open'] * BOOMED_THRESHOLD:
                         print(code + "(general neckline): too low and not boomed need: "
@@ -191,7 +194,7 @@ class NeckLine:
                 continue
 
             # small platform is legal when price is high
-            if rise_ratio > RISE_HIGH_THRESHOLD and code in selected_recent and code not in selected:
+            if rise_ratio > rise_high_threshold and code in selected_recent and code not in selected:
                 selected.append(code)
                 continue
 
@@ -803,7 +806,7 @@ if __name__ == '__main__':
     storage.update_realtime_storage()
     neckline = NeckLine(storage)
     start = time.time()
-    neckline.detect_neckline(['300315'], [])
+    neckline.detect_neckline(['002115'], [])
     end = time.time()
     print('total: ' + str(end - start))
 
