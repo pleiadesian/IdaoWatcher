@@ -138,6 +138,7 @@ class TimeShareExplosion:
         elif free_share < SUPERLARGE_FREE_SHARE:
             absolute_large_volume = deal_turnover_rate > BIG_ABSOLUTE_LARGE_VOLUME_THRESHOLD
             turnover_threshold = TURNOVER_THRESHOLD
+            strict_turnover = False
         else:
             absolute_large_volume = deal_turnover_rate > SUPERBIG_ABSOLUTE_LARGE_VOLUME_THRESHOLD
             turnover_threshold = TURNOVER_THRESHOLD
