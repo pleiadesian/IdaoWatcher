@@ -15,7 +15,7 @@ import api.ts_map as tm
 
 DEBUG = 1
 TRUNCATE_TIME = 56
-TRUNCATE = 1
+TRUNCATE = 0
 
 NECKLINE_UPPER_BOUND = 1.005
 NECKLINE_LOWER_BOUND = 0.99
@@ -187,7 +187,7 @@ class NeckLine:
                             f.write(code + "(general neckline): too low and not boomed" + "\n")
                         continue
 
-            if df.iloc[-5]['open'] > close:
+            if len(df) > 5 and df.iloc[-5]['open'] > close:
                 print(code + "(general neckline): is falling")
                 with open(path + 'stock.log', 'a') as f:
                     f.write(code + "(general neckline): is falling" + "\n")
