@@ -34,15 +34,16 @@ OUTLINER_THRESHOLD = 0.40  # default 0.55 | 0.65
 RECENT_OUTLINER_THRESHOLD = 0.45
 RECENT_GOOD_OUTLINER_THRESHOLD = 0.05
 
-BOOM_LOWER_BOUND = 0.99  # default 98% | 99%
+BOOM_LOWER_BOUND = 0.983  # default 98% | 99%
 BOOM_UPPER_BOUND = 1.015  # default 103%
-NORMAL_LOWER_BOUND = 0.99  # default 98%
+NORMAL_LOWER_BOUND = 0.983  # default 98%
 NORMAL_UPPER_BOUND = 1.015  # default 101.5%
 HIGH_LOWER_BOUND = 0.995
 HIGH_UPPER_BOUND = 1.005
 
 NORMAL_OPEN_HIGH_THRESHOLD = 0.02
 LARGE_OPEN_HIGH_THRESHOLD = 0.005
+SMALL_FREE_SHARE = 12000
 LARGE_FREE_SHARE = 50000
 RISE_HIGH_THRESHOLD = 0.025  # default 0.03
 LARGE_RISE_HIGH_THRESHOLD = 0.02
@@ -660,7 +661,7 @@ class NeckLine:
             basic_infos = self.storage.get_basicinfo_single(tm.ts_mapping[code])
             free_share = basic_infos['free_share']
 
-            if free_share < LARGE_FREE_SHARE and code not in boomed and close < df.iloc[-1]['open'] * BOOMED_THRESHOLD:
+            if free_share < SMALL_FREE_SHARE and code not in boomed and close < df.iloc[-1]['open'] * BOOMED_THRESHOLD:
                 print(code + "(high neckline): small share and not boomed need: "
                       + str(df.iloc[-1]['open'] * BOOMED_THRESHOLD) + ' close: ' + str(close))
                 with open(path + 'stock.log', 'a') as f:
