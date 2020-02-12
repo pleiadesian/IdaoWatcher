@@ -14,6 +14,8 @@ def get_attack_time_list(stock_id,log_file_path):
     stock_id: a string indicating the id of a stock
     log_file_path: a string path to the log file you want to read
     
+    return: a list containing the attack time string
+    
     """
     
     log_file = []
@@ -36,6 +38,8 @@ def get_attack_distribution(log_file_path):
     """
     
     log_file_path: a string path to the log file you want to read
+    
+    return: no return, plot the distribution 
     
     """
     log_file = []
