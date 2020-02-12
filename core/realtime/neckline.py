@@ -14,7 +14,7 @@ import api.ts_map as tm
 # TODO: print more info in log for debug
 
 DEBUG = 1
-TRUNCATE_TIME = 3
+TRUNCATE_TIME = 106
 TRUNCATE = 0
 
 NECKLINE_UPPER_BOUND = 1.005
@@ -27,6 +27,7 @@ LOW_NECKLINE_LENGTH_THRESHOLD = 50  # default 60
 RECENT_NECKLINE_LENGTH_THRESHOLD = 19  # default 15 | 20
 RECENT_GOOD_NECKLINE_LENGTH_THRESHOLD = 12
 NECKLINE_LENGTH_THRESHOLD = 30  # default 35
+SHORT_GENERAL_NECKLINE_LENGTH_PERCENT = 0.5
 NECKLINE_GOOD_LENGTH_THRESHOLD = 90
 LONG_NECKLINE_LENGTH_THRESHOLD = 70
 SEPARATED_NECKLINE_MIN_GAP = 45
@@ -227,7 +228,8 @@ class NeckLine:
                     if len(df_area) >= NECKLINE_GOOD_LENGTH_THRESHOLD:
                         neckline_select.append((i - 1, code))
                         continue
-                    if len(df_area) >= length_threshold:
+                    if len(df_area) >= length_threshold or \
+                            len(df_area) / len(df) > SHORT_GENERAL_NECKLINE_LENGTH_PERCENT:
                         df_area = df_area.sort_values(by=['day'])
                         # calculate confidence coefficient of this neckline
                         days = df_area['day'].values
@@ -669,6 +671,8 @@ class NeckLine:
             code = df.iloc[0]['code']
             open_price = self.pre_close[code]
             close = self.curr_price[code]
+            if TRUNCATE == 1:
+                close = df.iloc[-1]['high']
             boom_close = df.iloc[-1]['open']
             open_price_today = df.iloc[0]['open']
             limit = round(open_price * 1.1, 2)
@@ -703,11 +707,14 @@ class NeckLine:
                 continue
 
             in_the_morning = False
-            if len(df) > 60:
+            if len(df) > 120:
                 df_recent = df[:-60]
                 highest_recent = max(df[-10:-2]['high'].values)
+            elif len(df) > 60:
+                df_recent = df[:-30]
+                highest_recent = max(df[-10:-2]['high'].values)
             elif len(df) > 10:
-                df_recent = df[:-1]
+                df_recent = df[:-5]
                 highest_recent = max(df[-5:-2]['high'].values)
             else:
                 in_the_morning = True
@@ -735,9 +742,9 @@ class NeckLine:
 
             # is rising
             if highest <= highest_recent:
-                print(code + "(high neckline): is rising")
+                print(code + "(high neckline): is rising highest=" + str(highest))
                 with open(path + 'stock.log', 'a') as f:
-                    f.write(code + "(high neckline): too rising" + "\n")
+                    f.write(code + "(high neckline): is rising highest=" + str(highest) + "\n")
                 continue
 
             # log
@@ -821,7 +828,7 @@ if __name__ == '__main__':
     storage.update_realtime_storage()
     neckline = NeckLine(storage)
     start = time.time()
-    neckline.detect_neckline(['300253'], [])
+    neckline.detect_neckline(['002436'], [])
     end = time.time()
     print('total: ' + str(end - start))
 

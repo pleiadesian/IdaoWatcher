@@ -144,7 +144,7 @@ class TimeShareExplosion:
             turnover_threshold_yesterday = NORMAL_YESTERDAY_TURNOVER_THRESHOLD
         elif free_share < SUPERLARGE_FREE_SHARE:
             absolute_large_volume = deal_turnover_rate > BIG_ABSOLUTE_LARGE_VOLUME_THRESHOLD
-            turnover_threshold = TURNOVER_THRESHOLD
+            turnover_threshold = LARGE_TURNOVER_THRESHOLD
             turnover_threshold_yesterday = LARGE_YESTERDAY_TURNOVER_THRESHOLD
         else:
             absolute_large_volume = deal_turnover_rate > SUPERBIG_ABSOLUTE_LARGE_VOLUME_THRESHOLD
