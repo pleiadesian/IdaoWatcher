@@ -38,7 +38,7 @@ BOOM_LOWER_BOUND = 0.99  # default 98% | 99%
 BOOM_UPPER_BOUND = 1.015  # default 103%
 NORMAL_LOWER_BOUND = 0.99  # default 98%
 NORMAL_UPPER_BOUND = 1.015  # default 101.5%
-HIGH_LOWER_BOUND = 0.983
+HIGH_LOWER_BOUND = 0.995
 HIGH_UPPER_BOUND = 1.005
 
 NORMAL_OPEN_HIGH_THRESHOLD = 0.02
@@ -691,6 +691,9 @@ class NeckLine:
             in_the_morning = False
             if len(df) > 60:
                 df_recent = df[:-60]
+                highest_recent = max(df[-10:-2]['high'].values)
+            elif len(df) > 30:
+                df_recent = df[:-10]
                 highest_recent = max(df[-10:-2]['high'].values)
             elif len(df) > 10:
                 df_recent = df[:-1]
