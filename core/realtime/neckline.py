@@ -14,7 +14,7 @@ import api.ts_map as tm
 # TODO: print more info in log for debug
 
 DEBUG = 1
-TRUNCATE_TIME = 56
+TRUNCATE_TIME = 3
 TRUNCATE = 0
 
 NECKLINE_UPPER_BOUND = 1.005
@@ -415,21 +415,27 @@ class NeckLine:
         """
         df_list = self.curr_realtime_chart_long
         selected = []
+
+        if TRUNCATE == 1:
+            df_list = [df[:-238+TRUNCATE_TIME] for df in df_list]
         for df in df_list:
             code = df.iloc[0]['code']
             open_price = self.pre_close[code]
             close = self.curr_price[code]
+            if TRUNCATE == 1:
+                close = df.iloc[-1]['high']
             boom_close = df.iloc[-1]['open']
             limit = round(open_price * 1.1, 2)
             rise_ratio = (close - open_price) / open_price
             basic_infos = self.storage.get_basicinfo_single(tm.ts_mapping[code])
+            hist_data = self.storage.get_histdata_single(tm.ts_mapping[code])[-2:]
             free_share = basic_infos['free_share']
 
             if close >= round(open_price * HIGH_PRICE_PERCENT, 2):
                 continue
 
             if free_share >= LARGE_FREE_SHARE:
-                open_threshold = LARGE_OPEN_HIGH_THRESHOLD
+                rise_threshold = LARGE_OPEN_HIGH_THRESHOLD
             else:
                 # if in_morning and code not in boomed and close < df.iloc[-1]['open'] * BOOMED_THRESHOLD:
                 #     print(code + '(long neckline): not boomed in the morning need: '
@@ -437,8 +443,8 @@ class NeckLine:
                 #     with open(path + 'stock.log', 'a') as f:
                 #         f.write(code + '(long neckline): not boomed in the morning' + '\n')
                 #     continue
-                open_threshold = NORMAL_OPEN_HIGH_THRESHOLD
-            if rise_ratio < open_threshold:
+                rise_threshold = NORMAL_OPEN_HIGH_THRESHOLD
+            if rise_ratio < rise_threshold:
                 continue
 
             if len(df) > 5 and df.iloc[-5]['open'] > close:
@@ -508,6 +514,14 @@ class NeckLine:
             # boomed stock is over neckline
             for neckline in neckline_select:
                 if neckline_list[neckline[0]] * lower_bound <= close <= neckline_list[neckline[0]] * upper_bound:
+                    selected.append(code)
+                    break
+            hist_peak_point = hist_data['high'].values
+            for neckline in hist_peak_point:
+                if neckline * lower_bound <= close <= neckline * upper_bound:
+                    print(code + '(long neckline): select peak point yesterday')
+                    with open(path + 'stock.log', 'a') as f:
+                        f.write(code + '(long neckline): select peak point yesterday\n')
                     selected.append(code)
                     break
             # if in_morning:
@@ -807,7 +821,7 @@ if __name__ == '__main__':
     storage.update_realtime_storage()
     neckline = NeckLine(storage)
     start = time.time()
-    neckline.detect_neckline(['002115'], [])
+    neckline.detect_neckline(['300253'], [])
     end = time.time()
     print('total: ' + str(end - start))
 
