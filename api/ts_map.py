@@ -3,6 +3,7 @@
 @ Author:   pleiadesian
 @ Datetime: 2020-01-17 00:24
 """
+import os
 import tushare as ts
 import api.storage as st
 
@@ -13,7 +14,8 @@ ts_lower_mapping = {'600805':'sh600805', '600809':'sh600809', '002345':'sz002345
 
 if __name__ == '__main__':
     # construct code-type mapping
-    pro = ts.pro_api()
+    token = os.getenv('TOKEN')
+    pro = ts.pro_api(token)
     data = pro.daily(trade_date='20200116').values
     storage = st.Storage()
     storage.update_realtime_storage()
@@ -30,7 +32,6 @@ if __name__ == '__main__':
         except KeyError as e:
             print(code[0] + ' ')
             continue
-        # TODO: starts with '退市'
         if rt[0].startswith('*ST') or rt[0].startswith('ST') or rt[0].startswith('退市'):
             continue
         if code[0].endswith('SH'):

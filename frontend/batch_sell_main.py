@@ -45,6 +45,8 @@ class BatchSellMain(QMainWindow, bs.Ui_MainWindow):
         QMessageBox.question(self, "警告", "批量委托卖出完毕",
                              QMessageBox.Ok | QMessageBox.Cancel, QMessageBox.Ok)
 
+    # todo: start sell
+
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)

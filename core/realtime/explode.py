@@ -21,7 +21,9 @@ OPEN_LOWER_LIMIT = -0.05  # default -0.02 | -0.03
 AMOUNT_THRESHOLD = 100  # 1,000,000 volume of transaction
 SMALL_TURNOVER_THRESHOLD = 8
 TURNOVER_THRESHOLD = 8  # turnover rate 2.5%, default 0.6% | 2.5%
+AFTERNOON_TURNOVER_THRESHOLD = 6.7
 LARGE_TURNOVER_THRESHOLD = 4.5
+AFTERNOON_LARGE_TURNOVER_THRESHOLD = 3.4
 SMALL_YESTERDAY_TURNOVER_THRESHOLD = 8
 NORMAL_YESTERDAY_TURNOVER_THRESHOLD = 7.5
 LARGE_YESTERDAY_TURNOVER_THRESHOLD = 5
@@ -140,11 +142,17 @@ class TimeShareExplosion:
             turnover_threshold_yesterday = SMALL_YESTERDAY_TURNOVER_THRESHOLD
         elif free_share < LARGE_FREE_SHARE:
             absolute_large_volume = deal_turnover_rate > ABSOLUTE_LARGE_VOLUME_THRESHOLD
-            turnover_threshold = TURNOVER_THRESHOLD
+            if minutes_elapse < 120:
+                turnover_threshold = TURNOVER_THRESHOLD
+            else:
+                turnover_threshold = AFTERNOON_TURNOVER_THRESHOLD
             turnover_threshold_yesterday = NORMAL_YESTERDAY_TURNOVER_THRESHOLD
         elif free_share < SUPERLARGE_FREE_SHARE:
             absolute_large_volume = deal_turnover_rate > BIG_ABSOLUTE_LARGE_VOLUME_THRESHOLD
-            turnover_threshold = LARGE_TURNOVER_THRESHOLD
+            if minutes_elapse < 120:
+                turnover_threshold = LARGE_TURNOVER_THRESHOLD
+            else:
+                turnover_threshold = AFTERNOON_LARGE_TURNOVER_THRESHOLD
             turnover_threshold_yesterday = LARGE_YESTERDAY_TURNOVER_THRESHOLD
         else:
             absolute_large_volume = deal_turnover_rate > SUPERBIG_ABSOLUTE_LARGE_VOLUME_THRESHOLD
