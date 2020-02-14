@@ -23,6 +23,11 @@
       <height>41</height>
      </rect>
     </property>
+    <property name="font">
+     <font>
+      <pointsize>20</pointsize>
+     </font>
+    </property>
     <property name="text">
      <string/>
     </property>
@@ -144,6 +149,11 @@
       <height>31</height>
      </rect>
     </property>
+    <property name="font">
+     <font>
+      <pointsize>20</pointsize>
+     </font>
+    </property>
    </widget>
    <widget class="QLabel" name="label_5">
     <property name="geometry">
@@ -168,7 +178,7 @@
      <rect>
       <x>350</x>
       <y>100</y>
-      <width>331</width>
+      <width>431</width>
       <height>31</height>
      </rect>
     </property>
@@ -184,11 +194,16 @@
    <widget class="QLabel" name="label_price">
     <property name="geometry">
      <rect>
-      <x>420</x>
+      <x>430</x>
       <y>110</y>
-      <width>60</width>
+      <width>111</width>
       <height>16</height>
      </rect>
+    </property>
+    <property name="font">
+     <font>
+      <pointsize>20</pointsize>
+     </font>
     </property>
     <property name="text">
      <string/>
