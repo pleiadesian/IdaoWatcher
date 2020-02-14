@@ -78,7 +78,7 @@ class Ui_MainWindow(object):
         self.label_6.setFont(font)
         self.label_6.setObjectName("label_6")
         self.label_price = QtWidgets.QLabel(self.centralwidget)
-        self.label_price.setGeometry(QtCore.QRect(430, 110, 111, 16))
+        self.label_price.setGeometry(QtCore.QRect(440, 100, 111, 31))
         font = QtGui.QFont()
         font.setPointSize(20)
         self.label_price.setFont(font)
