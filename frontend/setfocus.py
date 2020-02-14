@@ -4,6 +4,8 @@ import win32gui, win32process, win32con, win32com.client
 import ctypes
 import pyautogui
 
+TYPE_INTERVAL = 0.05
+
 
 class setf():
     def __init__(self):
@@ -29,7 +31,13 @@ class setf():
             hwnd_front = self.dll.GetForegroundWindow()
             for hwnd in hwnds:
                 if hwnd == hwnd_front:
-                    if win32gui.GetWindowText(hwnd)[:2] == '闪电':
+                    title_text = win32gui.GetWindowText(hwnd)
+                    print('-----')
+                    print(title_text)
+                    print(len(title_text))
+                    if len(title_text) > 0:
+                        continue
+                    if title_text[:2] == '闪电':
                         self.dll.SetForegroundWindow(0)
                         self.dll.SetActiveWindow(0)
                     return
@@ -40,7 +48,6 @@ class setf():
             p = psutil.Process(pid)  # 实例化进程对象
             if p.name() == processName:  # 判断实例进程名与输入的进程名是否一致（判断进程是否存活）
                 for hwnd in self.get_hwnds_for_pid(pid):
-                    # TODO: HIGH RISK! DO NOT input code to '闪电买入' and '闪电卖出'
                     if win32gui.GetWindowText(hwnd)[:2] == '中信':
                         return pid  # 返回
         return 0
@@ -80,16 +87,16 @@ def sell_code(code, price, window_info):
     sf = window_info[0]
     sf.setfocus()
     pyautogui.press('backspace')
-    pyautogui.typewrite(message=code, interval=0.01)
+    pyautogui.typewrite(message=code, interval=TYPE_INTERVAL)
     pyautogui.press('enter')
-    pyautogui.typewrite(message='.-1', interval=0.01)
-    pyautogui.press('enter')
+    pyautogui.typewrite(message='.-1', interval=TYPE_INTERVAL)
+    pyautogui.press('enter', interval=TYPE_INTERVAL)
     pyautogui.press('up')
-    pyautogui.typewrite(message=price, interval=0.01)
-    pyautogui.press('enter')
-    pyautogui.press('enter')
-    pyautogui.press('enter')
-    pyautogui.press('enter')
+    pyautogui.typewrite(message=price, interval=TYPE_INTERVAL)
+    pyautogui.press('enter', interval=TYPE_INTERVAL)
+    pyautogui.press('enter', interval=TYPE_INTERVAL)
+    pyautogui.press('enter', interval=TYPE_INTERVAL)
+    pyautogui.press('enter', interval=TYPE_INTERVAL)
 
 
 if __name__ == '__main__':

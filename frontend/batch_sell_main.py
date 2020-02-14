@@ -28,14 +28,15 @@ class BatchSellMain(QMainWindow, bs.Ui_MainWindow):
         self.codes = []
 
     def confirm(self):
-        self.price = self.lineEdit_price.text()
+        price_text = self.lineEdit_price.text()
         code_text = self.lineEdit_stock.text()
         self.label_stock.setText(code_text)
-        self.label_price.setText(self.price)
+        self.label_price.setText(price_text)
+        self.price = price_text
         self.codes = code_text.split(' ')
 
     def batch_sell_start(self):
-        if self.price > 10 or self.price is None:
+        if float(self.price) > 10 or self.price is None:
             QMessageBox.question(self, "警告", "价格设置过低！",
                                  QMessageBox.Ok | QMessageBox.Cancel, QMessageBox.Ok)
             return
@@ -44,10 +45,10 @@ class BatchSellMain(QMainWindow, bs.Ui_MainWindow):
             QMessageBox.question(self, "警告", "检测到股票代码输入错误，请重新输入（注意股票代码之间必须有且仅有1个空格）",
                                  QMessageBox.Ok | QMessageBox.Cancel, QMessageBox.Ok)
             return
-        sell_ps = [p * (1 - self.price / 100) for p in a1_ps]
+        sell_ps = [str(round(p * (1 - float(self.price) / 100), 2)) for p in a1_ps]
         for code, sell_price in zip(self.codes, sell_ps):
             setfocus.sell_code(code, sell_price, self.window_info)
-        QMessageBox.question(self, "警告", "批量委托卖出完毕",
+        QMessageBox.question(self, "提示", "批量委托卖出完毕",
                              QMessageBox.Ok | QMessageBox.Cancel, QMessageBox.Ok)
 
 
