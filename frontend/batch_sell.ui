@@ -208,5 +208,42 @@
   <widget class="QStatusBar" name="statusbar"/>
  </widget>
  <resources/>
- <connections/>
+ <connections>
+  <connection>
+   <sender>pushButton_confirm</sender>
+   <signal>clicked()</signal>
+   <receiver>MainWindow</receiver>
+   <slot>confirm()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>716</x>
+     <y>106</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>717</x>
+     <y>138</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>pushButton_sell</sender>
+   <signal>clicked()</signal>
+   <receiver>MainWindow</receiver>
+   <slot>batch_sell_start()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>488</x>
+     <y>401</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>613</x>
+     <y>403</y>
+    </hint>
+   </hints>
+  </connection>
+ </connections>
+ <slots>
+  <slot>confirm()</slot>
+  <slot>batch_sell_start()</slot>
+ </slots>
 </ui>

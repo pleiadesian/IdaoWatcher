@@ -85,6 +85,8 @@ class Ui_MainWindow(object):
         MainWindow.setStatusBar(self.statusbar)
 
         self.retranslateUi(MainWindow)
+        self.pushButton_confirm.clicked.connect(MainWindow.confirm)
+        self.pushButton_sell.clicked.connect(MainWindow.batch_sell_start)
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
 
     def retranslateUi(self, MainWindow):

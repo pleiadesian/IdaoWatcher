@@ -67,21 +67,29 @@ def init_fs():
 
 def open_code(code, window_info, origin_window=None):
     sf = window_info[0]
-    screen_width = window_info[1]
-    screen_height = window_info[2]
     sf.setfocus()
-    # pyautogui.moveTo(screen_width / 2, screen_height / 2)
-    # pyautogui.click(x=None, y=None, clicks=1, interval=0.0, button='left', duration=0.0, tween=pyautogui.linear)
-    # code = '0'+code  # why huawei matebook need padding?
-    # print(code)
-    # pyautogui.typewrite(message='0')
     pyautogui.press('backspace')
     pyautogui.typewrite(message=code, interval=0.01)
     pyautogui.press('enter')
-    # pyautogui.typewrite(message=code, interval=0.01)
     if origin_window is not None:
         origin_window.raise_()
         origin_window.activateWindow()
+
+
+def sell_code(code, price, window_info):
+    sf = window_info[0]
+    sf.setfocus()
+    pyautogui.press('backspace')
+    pyautogui.typewrite(message=code, interval=0.01)
+    pyautogui.press('enter')
+    pyautogui.typewrite(message='.-1', interval=0.01)
+    pyautogui.press('enter')
+    pyautogui.press('up')
+    pyautogui.typewrite(message=price, interval=0.01)
+    pyautogui.press('enter')
+    pyautogui.press('enter')
+    pyautogui.press('enter')
+    pyautogui.press('enter')
 
 
 if __name__ == '__main__':
