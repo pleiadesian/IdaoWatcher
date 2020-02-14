@@ -19,8 +19,15 @@ OPEN_LOWER_LIMIT = -0.05  # default -0.02 | -0.03
 # RUSH_LOWER_LIMIT = -0.09  # default -0.03 | -0.05
 
 AMOUNT_THRESHOLD = 100  # 1,000,000 volume of transaction
-TURNOVER_THRESHOLD = 8  # turnover rate 2.5%, default 0.6% | 2.5%
 SMALL_TURNOVER_THRESHOLD = 8
+TURNOVER_THRESHOLD = 8  # turnover rate 2.5%, default 0.6% | 2.5%
+AFTERNOON_TURNOVER_THRESHOLD = 6.7
+LARGE_TURNOVER_THRESHOLD = 4.5
+AFTERNOON_LARGE_TURNOVER_THRESHOLD = 3.4
+SMALL_YESTERDAY_TURNOVER_THRESHOLD = 8
+NORMAL_YESTERDAY_TURNOVER_THRESHOLD = 7.5
+LARGE_YESTERDAY_TURNOVER_THRESHOLD = 5
+SUPERLARGE_YESTERDAY_TURNOVER_THRESHOLD = 4
 VOLUME_RATIO_THRESHOLD = 0.6
 
 EXPLODE_RISE_RATIO_THRESHOLD = 0.0158
@@ -32,8 +39,8 @@ RELATIVE_LARGE_VOLUME_THRESHOLD = 50  # default 58
 SUPERSMALL_ABSOLUTE_LARGE_VOLUME_THRESHOLD = 10.0
 SMALL_ABSOLUTE_LARGE_VOLUME_THRESHOLD = 2.6  # default 350% | 250%
 ABSOLUTE_LARGE_VOLUME_THRESHOLD = 0.95  # default 127%
-BIG_ABSOLUTE_LARGE_VOLUME_THRESHOLD = 0.67  # default 50% | 90%
-SUPERBIG_ABSOLUTE_LARGE_VOLUME_THRESHOLD = 0.64  # default 40%
+BIG_ABSOLUTE_LARGE_VOLUME_THRESHOLD = 0.6  # default 50% | 90% | 67%
+SUPERBIG_ABSOLUTE_LARGE_VOLUME_THRESHOLD = 0.6  # default 40% | 64%
 
 SUPERSMALL_FREE_SHARE = 5000
 SMALL_FREE_SHARE = 12000
@@ -125,35 +132,44 @@ class TimeShareExplosion:
         high_ratio = (high - pre_close) / pre_close
         low_ratio = (low - pre_close) / pre_close
 
-        strict_turnover = True
         if free_share < SUPERSMALL_FREE_SHARE:
             absolute_large_volume = deal_turnover_rate > SUPERSMALL_ABSOLUTE_LARGE_VOLUME_THRESHOLD
             turnover_threshold = SMALL_TURNOVER_THRESHOLD
+            turnover_threshold_yesterday = SMALL_YESTERDAY_TURNOVER_THRESHOLD
         elif free_share < SMALL_FREE_SHARE:
             absolute_large_volume = deal_turnover_rate > SMALL_ABSOLUTE_LARGE_VOLUME_THRESHOLD
             turnover_threshold = SMALL_TURNOVER_THRESHOLD
+            turnover_threshold_yesterday = SMALL_YESTERDAY_TURNOVER_THRESHOLD
         elif free_share < LARGE_FREE_SHARE:
             absolute_large_volume = deal_turnover_rate > ABSOLUTE_LARGE_VOLUME_THRESHOLD
-            turnover_threshold = SMALL_TURNOVER_THRESHOLD
+            if minutes_elapse < 120:
+                turnover_threshold = TURNOVER_THRESHOLD
+            else:
+                turnover_threshold = AFTERNOON_TURNOVER_THRESHOLD
+            turnover_threshold_yesterday = NORMAL_YESTERDAY_TURNOVER_THRESHOLD
         elif free_share < SUPERLARGE_FREE_SHARE:
             absolute_large_volume = deal_turnover_rate > BIG_ABSOLUTE_LARGE_VOLUME_THRESHOLD
-            turnover_threshold = TURNOVER_THRESHOLD
+            if minutes_elapse < 120:
+                turnover_threshold = LARGE_TURNOVER_THRESHOLD
+            else:
+                turnover_threshold = AFTERNOON_LARGE_TURNOVER_THRESHOLD
+            turnover_threshold_yesterday = LARGE_YESTERDAY_TURNOVER_THRESHOLD
         else:
             absolute_large_volume = deal_turnover_rate > SUPERBIG_ABSOLUTE_LARGE_VOLUME_THRESHOLD
-            turnover_threshold = TURNOVER_THRESHOLD
-            strict_turnover = False
+            turnover_threshold = LARGE_TURNOVER_THRESHOLD
+            turnover_threshold_yesterday = SUPERLARGE_YESTERDAY_TURNOVER_THRESHOLD
 
         # add strict yesterday turnover threshold in the morning
         if minutes_elapse <= 50:
-            if strict_turnover and turnover_rate_yesterday < SMALL_TURNOVER_THRESHOLD:
-                print(code + ' yesterday turnover rate is too low')
-                with open(path + 'stock.log', 'a') as f:
-                    f.write(code + ' yesterday turnover rate is too low' + "\n")
+            if turnover_rate_yesterday < turnover_threshold_yesterday:
+                # print(code + ' yesterday turnover rate is too low')
+                # with open(path + 'stock.log', 'a') as f:
+                #     f.write(code + ' yesterday turnover rate is too low' + "\n")
                 return False
             if pct_chg_yesterday > 9.75:
-                print(code + ' yesterday at limit')
-                with open(path + 'stock.log', 'a') as f:
-                    f.write(code + ' yesterday at limit' + "\n")
+                # print(code + ' yesterday at limit')
+                # with open(path + 'stock.log', 'a') as f:
+                #     f.write(code + ' yesterday at limit' + "\n")
                 return False
 
         rush_not_broken = OPEN_LOWER_LIMIT <= open_ratio <= OPEN_UPPER_LIMIT

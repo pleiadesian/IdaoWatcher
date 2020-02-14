@@ -17,9 +17,9 @@ PEAK_DELTA = 0.99
 
 SUPERSMALL_ABSOLUTE_OPEN_LARGE_VOLUME_THRESHOLD = 100  # default 10000%
 SMALL_ABSOLUTE_OPEN_LARGE_VOLUME_THRESHOLD = 39  # default 3900%
-NORMAL_ABSOLUTE_OPEN_LARGE_VOLUME_THRESHOLD = 11  # default 1100%
-BIG_ABSOLUTE_OPEN_LARGE_VOLUME_THRESHOLD = 7  # default 700%
-SUPERBIG_ABSOLUTE_OPEN_LARGE_VOLUME_THRESHOLD = 7  # default 700%
+NORMAL_ABSOLUTE_OPEN_LARGE_VOLUME_THRESHOLD = 10.6  # default 1100%
+BIG_ABSOLUTE_OPEN_LARGE_VOLUME_THRESHOLD = 3.3  # default 700%
+SUPERBIG_ABSOLUTE_OPEN_LARGE_VOLUME_THRESHOLD = 3.3  # default 700%
 
 SUPERSMALL_FREE_SHARE = 5000
 SMALL_FREE_SHARE = 12000
@@ -28,8 +28,6 @@ SUPERLARGE_FREE_SHARE = 200000
 
 NORMAL_OPEN_HIGH_THRESHOLD = 0.02
 LARGE_OPEN_HIGH_THRESHOLD = 0.005
-
-# TODO: opt to 3s
 
 
 def calc_peak(code):
@@ -96,15 +94,20 @@ def detect_high_open_explosion(storage, code):
     :return: if high-open explosion is detected on timeshare
     """
     basic_infos = storage.get_basicinfo_single(tm.ts_mapping[code])
+    hist_data = storage.get_histdata_single(tm.ts_mapping[code])[-5:]
     info = storage.get_realtime_storage_single(code)
 
     pre_close = float(info[2])
-    price = float(info[3])
+    price = float(info[21])
     volume = float(info[8]) / 100
     free_share = basic_infos.values[15]
+    pct_chg_yesterday = float(hist_data.values[-1][7])
+
+    if pct_chg_yesterday > 9.75:
+        return False
 
     open_ratio = (price - pre_close) / pre_close
-    open_turnover_rate = volume / free_share
+    open_turnover_rate = volume * 100 / free_share
 
     if free_share < SUPERSMALL_FREE_SHARE:
         absolute_large_volume = open_turnover_rate > SUPERSMALL_ABSOLUTE_OPEN_LARGE_VOLUME_THRESHOLD
