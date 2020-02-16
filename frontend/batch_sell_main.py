@@ -4,6 +4,7 @@
 @ Datetime: 2020-02-14 08:55
 """
 import sys
+import math
 import tushare as ts
 import frontend.batch_sell as bs
 import api.ts_map as tm
@@ -61,7 +62,7 @@ class BatchSellMain(QMainWindow, bs.Ui_MainWindow):
                                          QMessageBox.Ok | QMessageBox.Cancel, QMessageBox.Ok)
                     return
                 percent = 1 / float(percent_text)
-            sell_amount = int(((amount * percent) // 100 + 1) * 100)
+            sell_amount = math.ceil(amount * percent / 100) * 100
             amount_text = '持仓' + amount_text + '股 卖出' + str(sell_amount) + '股' + '(1/' + percent_text + '仓位）'
         if code_text in self.codes:
             QMessageBox.question(self, "警告", "该股票已加入卖出计划！",

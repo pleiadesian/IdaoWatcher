@@ -17,7 +17,7 @@
    <widget class="QLineEdit" name="lineEdit_stock">
     <property name="geometry">
      <rect>
-      <x>270</x>
+      <x>290</x>
       <y>0</y>
       <width>191</width>
       <height>41</height>
@@ -55,7 +55,7 @@
      <rect>
       <x>20</x>
       <y>5</y>
-      <width>371</width>
+      <width>271</width>
       <height>31</height>
      </rect>
     </property>
@@ -242,7 +242,7 @@
      </font>
     </property>
     <property name="text">
-     <string>卖出  1/    仓位</string>
+     <string>卖出1/   仓位</string>
     </property>
    </widget>
    <widget class="QLineEdit" name="lineEdit_percent">
@@ -260,6 +260,20 @@
      </font>
     </property>
    </widget>
+   <zorder>label</zorder>
+   <zorder>pushButton_confirm</zorder>
+   <zorder>label_2</zorder>
+   <zorder>label_stock</zorder>
+   <zorder>pushButton_sell</zorder>
+   <zorder>label_4</zorder>
+   <zorder>lineEdit_price</zorder>
+   <zorder>label_5</zorder>
+   <zorder>pushButton_delete</zorder>
+   <zorder>label_3</zorder>
+   <zorder>lineEdit_amount</zorder>
+   <zorder>label_6</zorder>
+   <zorder>lineEdit_percent</zorder>
+   <zorder>lineEdit_stock</zorder>
   </widget>
   <widget class="QMenuBar" name="menubar">
    <property name="geometry">
