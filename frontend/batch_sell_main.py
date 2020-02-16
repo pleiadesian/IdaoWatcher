@@ -89,9 +89,9 @@ class BatchSellMain(QMainWindow, bs.Ui_MainWindow):
         new_text = ''
         stocks = stock_text.split('\n')
         for stock in stocks:
-            if stock.startswith('code_text'):
+            if stock.startswith(code_text):
                 continue
-            new_text += stock
+            new_text += stock + '\n'
         self.label_stock.setText(new_text)
         self.codes.remove(code_text)
         del self.price[code_text]

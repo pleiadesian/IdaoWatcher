@@ -17,7 +17,7 @@
    <widget class="QLineEdit" name="lineEdit_stock">
     <property name="geometry">
      <rect>
-      <x>240</x>
+      <x>270</x>
       <y>0</y>
       <width>191</width>
       <height>41</height>
@@ -242,13 +242,13 @@
      </font>
     </property>
     <property name="text">
-     <string>卖出  1/          仓位</string>
+     <string>卖出  1/    仓位</string>
     </property>
    </widget>
    <widget class="QLineEdit" name="lineEdit_percent">
     <property name="geometry">
      <rect>
-      <x>530</x>
+      <x>540</x>
       <y>50</y>
       <width>51</width>
       <height>31</height>
