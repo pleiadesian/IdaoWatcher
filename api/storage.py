@@ -198,6 +198,10 @@ class Storage:
         self.peak_info = dict()
         self.basic_info = dict()
         self.hist_data = dict()
+        self.ts_mapping = None
+        self.detail_code_list = None
+        self.code_list = None
+        self.ts_lower_mapping = None
 
         # self.init_neckline_storage()
         path = os.getenv('PROJPATH')
@@ -314,7 +318,7 @@ class Storage:
         dict_list = p.starmap(process_plaintext, args)
 
         args_remain = []
-        for i in range(5, 8):
+        for i in range(5, tm.CODE_SEGMENT_NUM):
             args_remain.append((i, self.reg, self.reg_sym))
         dict_list_remain = p.starmap(process_plaintext, args_remain)
         dict_curr = {k:v for dic in dict_list for k,v in dic.items()}
@@ -398,8 +402,16 @@ class Storage:
 
         df_histdata = pd.concat(df_list)
         gb = df_histdata.set_index(['trade_date']).sort_index().groupby('ts_code')
+        rm_codes = []
         for ts_code in tm.ts_mapping.values():
-            self.hist_data[ts_code] = gb.get_group(ts_code)
+            try:
+                self.hist_data[ts_code] = gb.get_group(ts_code)
+            except KeyError as e:
+                rm_codes.append(ts_code)
+        for ts_code in rm_codes:
+            tm.detail_code_list.remove('sh' + ts_code[:6] if ts_code.endswith('SH') else 'sz' + ts_code[:6])
+            del tm.ts_mapping[ts_code[:6]]
+            del tm.ts_lower_mapping[ts_code[:6]]
 
     def init_neckline_storage(self):
         """
