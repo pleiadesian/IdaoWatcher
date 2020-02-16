@@ -32,9 +32,6 @@ class setf():
             for hwnd in hwnds:
                 if hwnd == hwnd_front:
                     title_text = win32gui.GetWindowText(hwnd)
-                    print('-----')
-                    print(title_text)
-                    print(len(title_text))
                     if len(title_text) > 0:
                         continue
                     if title_text[:2] == '闪电':
