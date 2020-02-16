@@ -242,7 +242,7 @@
      </font>
     </property>
     <property name="text">
-     <string>卖出1/   仓位</string>
+     <string>卖出1/    仓位</string>
     </property>
    </widget>
    <widget class="QLineEdit" name="lineEdit_percent">

@@ -4,7 +4,7 @@ import win32gui, win32process, win32con, win32com.client
 import ctypes
 import pyautogui
 
-TYPE_INTERVAL = 0.05
+TYPE_INTERVAL = 0.02
 
 
 class setf():

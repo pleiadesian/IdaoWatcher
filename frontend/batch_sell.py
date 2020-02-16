@@ -143,4 +143,4 @@ class Ui_MainWindow(object):
         self.label_5.setText(_translate("MainWindow", "%"))
         self.pushButton_delete.setText(_translate("MainWindow", "删除"))
         self.label_3.setText(_translate("MainWindow", "持仓        股"))
-        self.label_6.setText(_translate("MainWindow", "卖出1/   仓位"))
+        self.label_6.setText(_translate("MainWindow", "卖出1/    仓位"))
