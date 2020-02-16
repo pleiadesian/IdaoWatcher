@@ -56,6 +56,7 @@ class BatchSellMain(QMainWindow, bs.Ui_MainWindow):
                 return
             if percent_text == '':
                 percent = 1
+                percent_text = '1'
             else:
                 if float(percent_text) < 1:
                     QMessageBox.question(self, "警告", "卖出比例填写错误！",
