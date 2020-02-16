@@ -12,8 +12,8 @@ class setf:
         self.gamename = 'TdxW.exe'
         self.shell = win32com.client.Dispatch("WScript.Shell")
         self.dll = ctypes.CDLL("user32.dll")
-        self.pid = self.get_pid_for_pname(self.gamename)
         self.zcz = zcz
+        self.pid = self.get_pid_for_pname(self.gamename)
 
     def setfocus(self):
         while True:
@@ -33,7 +33,8 @@ class setf:
             for hwnd in hwnds:
                 if hwnd == hwnd_front:
                     title_text = win32gui.GetWindowText(hwnd)
-                    if len(title_text) > 0:
+                    print(title_text)
+                    if self.zcz != '通达' and len(title_text) > 0:
                         continue
                     if title_text[:2] == '闪电':
                         self.dll.SetForegroundWindow(0)
@@ -80,7 +81,7 @@ def change_fs(zcz):
 def open_code(code, window_info, origin_window=None):
     sf = window_info[0]
     sf.setfocus()
-    pyautogui.press('backspace')
+    pyautogui.press('=')
     pyautogui.typewrite(message=code, interval=0.01)
     pyautogui.press('enter')
     if origin_window is not None:
@@ -91,7 +92,7 @@ def open_code(code, window_info, origin_window=None):
 def sell_code(code, price, amount, window_info):
     sf = window_info[0]
     sf.setfocus()
-    pyautogui.press('backspace')
+    pyautogui.press('=')
     pyautogui.typewrite(message=code, interval=TYPE_INTERVAL)
     pyautogui.press('enter')
     pyautogui.typewrite(message='.-1', interval=TYPE_INTERVAL)
