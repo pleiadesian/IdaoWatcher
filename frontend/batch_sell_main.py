@@ -63,6 +63,10 @@ class BatchSellMain(QMainWindow, bs.Ui_MainWindow):
                 percent = 1 / float(percent_text)
             sell_amount = int(((amount * percent) // 100 + 1) * 100)
             amount_text = '持仓' + amount_text + '股 卖出' + str(sell_amount) + '股' + '(1/' + percent_text + '仓位）'
+        if code_text in self.codes:
+            QMessageBox.question(self, "警告", "该股票已加入卖出计划！",
+                                 QMessageBox.Ok | QMessageBox.Cancel, QMessageBox.Ok)
+            return
         if code_text not in tm.name_mapping:
             QMessageBox.question(self, "警告", "检测到股票代码输入错误，请重新输入（注意股票代码之间必须有且仅有1个空格）",
                                  QMessageBox.Ok | QMessageBox.Cancel, QMessageBox.Ok)
@@ -74,6 +78,25 @@ class BatchSellMain(QMainWindow, bs.Ui_MainWindow):
         self.price[code_text] = price_text
         if sell_amount is not None:
             self.amount[code_text] = str(sell_amount)
+
+    def delete(self):
+        code_text = self.lineEdit_stock.text()
+        stock_text = self.label_stock.text()
+        if code_text not in self.codes:
+            QMessageBox.question(self, "警告", "该股票代码未加入卖出计划",
+                                 QMessageBox.Ok | QMessageBox.Cancel, QMessageBox.Ok)
+            return
+        new_text = ''
+        stocks = stock_text.split('\n')
+        for stock in stocks:
+            if stock.startswith('code_text'):
+                continue
+            new_text += stock
+        self.label_stock.setText(new_text)
+        self.codes.remove(code_text)
+        del self.price[code_text]
+        if code_text in self.amount:
+            del self.amount[code_text]
 
     def batch_sell_start(self):
         a1_ps = get_new_a1p(self.codes)

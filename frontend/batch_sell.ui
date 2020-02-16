@@ -17,8 +17,8 @@
    <widget class="QLineEdit" name="lineEdit_stock">
     <property name="geometry">
      <rect>
-      <x>10</x>
-      <y>50</y>
+      <x>240</x>
+      <y>0</y>
       <width>191</width>
       <height>41</height>
      </rect>
@@ -128,8 +128,8 @@
    <widget class="QLabel" name="label_4">
     <property name="geometry">
      <rect>
-      <x>250</x>
-      <y>0</y>
+      <x>30</x>
+      <y>50</y>
       <width>81</width>
       <height>31</height>
      </rect>
@@ -146,8 +146,8 @@
    <widget class="QLineEdit" name="lineEdit_price">
     <property name="geometry">
      <rect>
-      <x>330</x>
-      <y>0</y>
+      <x>110</x>
+      <y>50</y>
       <width>71</width>
       <height>31</height>
      </rect>
@@ -161,8 +161,8 @@
    <widget class="QLabel" name="label_5">
     <property name="geometry">
      <rect>
-      <x>410</x>
-      <y>0</y>
+      <x>190</x>
+      <y>50</y>
       <width>61</width>
       <height>31</height>
      </rect>
@@ -180,7 +180,7 @@
     <property name="geometry">
      <rect>
       <x>650</x>
-      <y>40</y>
+      <y>50</y>
       <width>151</width>
       <height>51</height>
      </rect>
@@ -209,7 +209,7 @@
      </font>
     </property>
     <property name="text">
-     <string>持仓                          股</string>
+     <string>持仓        股</string>
     </property>
    </widget>
    <widget class="QLineEdit" name="lineEdit_amount">
@@ -231,9 +231,9 @@
     <property name="geometry">
      <rect>
       <x>460</x>
-      <y>60</y>
+      <y>50</y>
       <width>191</width>
-      <height>31</height>
+      <height>41</height>
      </rect>
     </property>
     <property name="font">
@@ -242,14 +242,14 @@
      </font>
     </property>
     <property name="text">
-     <string>卖出  1/              仓位</string>
+     <string>卖出  1/          仓位</string>
     </property>
    </widget>
    <widget class="QLineEdit" name="lineEdit_percent">
     <property name="geometry">
      <rect>
       <x>530</x>
-      <y>60</y>
+      <y>50</y>
       <width>51</width>
       <height>31</height>
      </rect>
@@ -282,8 +282,8 @@
    <slot>confirm()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>716</x>
-     <y>106</y>
+     <x>746</x>
+     <y>72</y>
     </hint>
     <hint type="destinationlabel">
      <x>717</x>
@@ -298,8 +298,8 @@
    <slot>batch_sell_start()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>488</x>
-     <y>401</y>
+     <x>478</x>
+     <y>823</y>
     </hint>
     <hint type="destinationlabel">
      <x>613</x>
@@ -307,9 +307,26 @@
     </hint>
    </hints>
   </connection>
+  <connection>
+   <sender>pushButton_delete</sender>
+   <signal>clicked()</signal>
+   <receiver>MainWindow</receiver>
+   <slot>delete()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>719</x>
+     <y>102</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>717</x>
+     <y>137</y>
+    </hint>
+   </hints>
+  </connection>
  </connections>
  <slots>
   <slot>confirm()</slot>
   <slot>batch_sell_start()</slot>
+  <slot>delete()</slot>
  </slots>
 </ui>
