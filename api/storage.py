@@ -232,6 +232,7 @@ class Storage:
                 pickle.dump(self.basic_info, f)
             with open(path + 'histdata.dat', 'wb') as f:
                 pickle.dump(self.hist_data, f)
+        self.init_ts_map()
 
     def get_realtime_chart(self, code_list):
         """
@@ -274,20 +275,6 @@ class Storage:
         :return: basic information for code
         """
         assert self.basic_info is not None
-        # hit stock that suspended trading yesterday, load it
-        if ts_code not in self.basic_info:
-            delta = 1
-            suspended = True
-            while suspended:
-                df_basicinfo = self.pro.daily_basic(ts_code=ts_code,
-                                                    trade_date=(datetime.datetime.now() -
-                                                                datetime.timedelta(days=delta)).strftime('%Y%m%d'))
-                if len(df_basicinfo) == 0:
-                    delta += 1
-                    continue
-                temp_series = df_basicinfo.loc[0]
-                self.basic_info[ts_code] = temp_series
-                return temp_series
         return self.basic_info[ts_code]
 
     def get_histdata_single(self, ts_code):
@@ -412,6 +399,33 @@ class Storage:
             tm.detail_code_list.remove('sh' + ts_code[:6] if ts_code.endswith('SH') else 'sz' + ts_code[:6])
             del tm.ts_mapping[ts_code[:6]]
             del tm.ts_lower_mapping[ts_code[:6]]
+            del tm.name_mapping[ts_code[:6]]
+
+    def init_ts_map(self):
+        # hit stock that suspended trading yesterday, load it
+        df_date = self.pro.trade_cal(exchange='SSE', end_date=datetime.datetime.now().strftime('%Y%m%d'), is_open=1)
+        rm_codes = []
+        for ts_code in tm.ts_mapping.values():
+            if ts_code not in self.basic_info:
+                delta = 1
+                while True:
+                    df_basicinfo = self.pro.daily_basic(ts_code=ts_code,
+                                                        trade_date=df_date['cal_date'].values[-2-delta])
+                    if len(df_basicinfo) == 0:
+                        delta += 1
+                        if delta > 5:
+                            # suspended for a long time, delete it
+                            rm_codes.append(ts_code)
+                            break
+                        continue
+                    temp_series = df_basicinfo.loc[0]
+                    self.basic_info[ts_code] = temp_series
+                    break
+        for ts_code in rm_codes:
+            tm.detail_code_list.remove('sh' + ts_code[:6] if ts_code.endswith('SH') else 'sz' + ts_code[:6])
+            del tm.ts_mapping[ts_code[:6]]
+            del tm.ts_lower_mapping[ts_code[:6]]
+            del tm.name_mapping[ts_code[:6]]
 
     def init_neckline_storage(self):
         """

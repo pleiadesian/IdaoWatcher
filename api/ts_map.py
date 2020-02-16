@@ -13,6 +13,7 @@ code_list = []
 detail_code_list = []
 ts_mapping = dict()
 ts_lower_mapping = dict()
+name_mapping = dict()
 
 token = os.getenv('TOKEN')
 pro = ts.pro_api(token)
@@ -85,6 +86,10 @@ else:
                              zip(data['symbol'].values, data['ts_code'].values, data['name'].values) if not
                              (name.startswith('*ST') or name.startswith('ST') or name.startswith('退市') or
                               code.startswith('688'))])
+    name_mapping = dict([(symbol, name) for symbol, code, name in
+                         zip(data['symbol'].values, data['ts_code'].values, data['name'].values) if not
+                         (name.startswith('*ST') or name.startswith('ST') or name.startswith('退市') or
+                          code.startswith('688'))])
     code_list = [''] * CODE_SEGMENT_NUM
     i = 0
     num = int(len(detail_code_list) / len(code_list))
