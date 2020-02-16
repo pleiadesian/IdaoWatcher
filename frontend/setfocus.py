@@ -83,7 +83,7 @@ def open_code(code, window_info, origin_window=None):
         origin_window.activateWindow()
 
 
-def sell_code(code, price, window_info):
+def sell_code(code, price, amount, window_info):
     sf = window_info[0]
     sf.setfocus()
     pyautogui.press('backspace')
@@ -94,6 +94,8 @@ def sell_code(code, price, window_info):
     pyautogui.press('up')
     pyautogui.typewrite(message=price, interval=TYPE_INTERVAL)
     pyautogui.press('enter', interval=TYPE_INTERVAL)
+    if amount is not None:
+        pyautogui.typewrite(message=amount, interval=TYPE_INTERVAL)
     pyautogui.press('enter', interval=TYPE_INTERVAL)
     pyautogui.press('enter', interval=TYPE_INTERVAL)
     pyautogui.press('enter', interval=TYPE_INTERVAL)

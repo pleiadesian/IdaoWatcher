@@ -6,6 +6,7 @@
 import sys
 import tushare as ts
 import frontend.batch_sell as bs
+import api.ts_map as tm
 from frontend import setfocus
 from PyQt5.QtWidgets import QApplication, QMainWindow, QMessageBox, QWidget
 
@@ -24,8 +25,9 @@ class BatchSellMain(QMainWindow, bs.Ui_MainWindow):
         super(BatchSellMain, self).__init__(parent)
         self.setupUi(self)
         self.window_info = setfocus.init_fs()
-        self.price = None
         self.codes = []
+        self.price = dict()
+        self.amount = dict()
 
     def confirm(self):
         price_text = self.lineEdit_price.text()
@@ -44,6 +46,7 @@ class BatchSellMain(QMainWindow, bs.Ui_MainWindow):
             return
         if amount_text == '':
             amount_text = '全仓卖出'
+            sell_amount = None
         else:
             amount = int(amount_text)
             if amount <= 0 or amount % 100 != 0:
@@ -59,30 +62,32 @@ class BatchSellMain(QMainWindow, bs.Ui_MainWindow):
                     return
                 percent = 1 / float(percent_text)
             sell_amount = int(((amount * percent) // 100 + 1) * 100)
-
-        # self.label_stock.setText(self.label_stock.text() + )
-
-
-
-
-        self.label_stock.setText(code_text)
-        self.label_price.setText(price_text)
-        self.price = price_text
-        self.codes = code_text.split(' ')
-
-    def batch_sell_start(self):
-        if float(self.price) > 10 or self.price is None:
-            QMessageBox.question(self, "警告", "价格设置过低！",
+            amount_text = '持仓' + amount_text + '股 卖出' + str(sell_amount) + '股' + '(1/' + percent_text + '仓位）'
+        if code_text not in tm.name_mapping:
+            QMessageBox.question(self, "警告", "检测到股票代码输入错误，请重新输入（注意股票代码之间必须有且仅有1个空格）",
                                  QMessageBox.Ok | QMessageBox.Cancel, QMessageBox.Ok)
             return
+
+        new_line = code_text + ' ' + tm.name_mapping[code_text] + ' 低' + price_text + '%   ' + amount_text + '\n'
+        self.label_stock.setText(self.label_stock.text() + new_line)
+        self.codes.append(code_text)
+        self.price[code_text] = price_text
+        if sell_amount is not None:
+            self.amount[code_text] = str(sell_amount)
+
+    def batch_sell_start(self):
         a1_ps = get_new_a1p(self.codes)
         if len(a1_ps) != len(self.codes) or len(self.codes) == 0:
             QMessageBox.question(self, "警告", "检测到股票代码输入错误，请重新输入（注意股票代码之间必须有且仅有1个空格）",
                                  QMessageBox.Ok | QMessageBox.Cancel, QMessageBox.Ok)
             return
-        sell_ps = [str(round(p * (1 - float(self.price) / 100), 2)) for p in a1_ps]
-        for code, sell_price in zip(self.codes, sell_ps):
-            setfocus.sell_code(code, sell_price, self.window_info)
+        for code, ask_price in zip(self.codes, a1_ps):
+            sell_price = str(round(ask_price * (1 - float(self.price[code]) / 100), 2))
+            if code in self.amount:
+                amt = self.amount[code]
+            else:
+                amt = None
+            setfocus.sell_code(code, sell_price, amt, self.window_info)
         QMessageBox.question(self, "提示", "批量委托卖出完毕",
                              QMessageBox.Ok | QMessageBox.Cancel, QMessageBox.Ok)
 
