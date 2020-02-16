@@ -191,6 +191,15 @@ class Ui_Dialog(object):
         font.setPointSize(20)
         self.label_2.setFont(font)
         self.label_2.setObjectName("label_2")
+        self.radioButton_ct = QtWidgets.QRadioButton(Dialog)
+        self.radioButton_ct.setGeometry(QtCore.QRect(350, 780, 121, 20))
+        self.radioButton_ct.setObjectName("radioButton_ct")
+        self.radioButton_tdx = QtWidgets.QRadioButton(Dialog)
+        self.radioButton_tdx.setGeometry(QtCore.QRect(350, 810, 121, 20))
+        self.radioButton_tdx.setObjectName("radioButton_tdx")
+        self.radioButton_zx = QtWidgets.QRadioButton(Dialog)
+        self.radioButton_zx.setGeometry(QtCore.QRect(350, 750, 100, 20))
+        self.radioButton_zx.setObjectName("radioButton_zx")
 
         self.retranslateUi(Dialog)
         self.pushButton.clicked.connect(Dialog.replay)
@@ -205,6 +214,9 @@ class Ui_Dialog(object):
         self.pushButton_20.clicked.connect(Dialog.bid3)
         self.pushButton_18.clicked.connect(Dialog.bid4)
         self.pushButton_21.clicked.connect(Dialog.bid5)
+        self.radioButton_zx.clicked.connect(Dialog.select_zx)
+        self.radioButton_ct.clicked.connect(Dialog.select_ct)
+        self.radioButton_tdx.clicked.connect(Dialog.select_tdx)
         QtCore.QMetaObject.connectSlotsByName(Dialog)
 
     def retranslateUi(self, Dialog):
@@ -236,3 +248,6 @@ class Ui_Dialog(object):
         self.pushButton_21.setText(_translate("Dialog", "买五"))
         self.pushButton_22.setText(_translate("Dialog", "买一"))
         self.label_2.setText(_translate("Dialog", "闪电卖出"))
+        self.radioButton_ct.setText(_translate("Dialog", "财通"))
+        self.radioButton_tdx.setText(_translate("Dialog", "通达信金融终端"))
+        self.radioButton_zx.setText(_translate("Dialog", "中信"))

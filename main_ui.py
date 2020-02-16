@@ -117,6 +117,18 @@ class MainUi(QMainWindow, frontend.Ui_Dialog):
                 button.move(BUTTON_NONE_X, button.y())
         # print('after check:' + str(self.code_list))
 
+    def select_zx(self):
+        if self.radioButton_zx.isChecked():
+            self.window_info = setfocus.change_fs('中信')
+
+    def select_ct(self):
+        if self.radioButton_zx.isChecked():
+            self.window_info = setfocus.change_fs('财通')
+
+    def select_tdx(self):
+        if self.radioButton_zx.isChecked():
+            self.window_info = setfocus.change_fs('通达')
+
     def ask5(self):
         setfocus.open_code('.+5', self.window_info)
 

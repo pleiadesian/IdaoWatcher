@@ -7,12 +7,13 @@ import pyautogui
 TYPE_INTERVAL = 0.02
 
 
-class setf():
-    def __init__(self):
+class setf:
+    def __init__(self, zcz='中信'):
         self.gamename = 'TdxW.exe'
         self.shell = win32com.client.Dispatch("WScript.Shell")
         self.dll = ctypes.CDLL("user32.dll")
         self.pid = self.get_pid_for_pname(self.gamename)
+        self.zcz = zcz
 
     def setfocus(self):
         while True:
@@ -45,7 +46,7 @@ class setf():
             p = psutil.Process(pid)  # 实例化进程对象
             if p.name() == processName:  # 判断实例进程名与输入的进程名是否一致（判断进程是否存活）
                 for hwnd in self.get_hwnds_for_pid(pid):
-                    if win32gui.GetWindowText(hwnd)[:2] == '中信':
+                    if win32gui.GetWindowText(hwnd)[:2] == self.zcz:
                         return pid  # 返回
         return 0
 
@@ -65,6 +66,13 @@ class setf():
 def init_fs():
     screen_width, screen_height = pyautogui.size()
     sf = setf()
+    window_info = [sf, screen_width, screen_height]
+    return window_info
+
+
+def change_fs(zcz):
+    screen_width, screen_height = pyautogui.size()
+    sf = setf(zcz)
     window_info = [sf, screen_width, screen_height]
     return window_info
 
