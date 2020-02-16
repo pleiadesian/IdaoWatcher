@@ -30,6 +30,41 @@ class BatchSellMain(QMainWindow, bs.Ui_MainWindow):
     def confirm(self):
         price_text = self.lineEdit_price.text()
         code_text = self.lineEdit_stock.text()
+        amount_text = self.lineEdit_amount.text()
+        percent_text = self.lineEdit_percent.text()
+
+        if price_text == '':
+            QMessageBox.question(self, "警告", "卖出价格未设置！",
+                                 QMessageBox.Ok | QMessageBox.Cancel, QMessageBox.Ok)
+            return
+        price = float(price_text)
+        if price > 10.0:
+            QMessageBox.question(self, "警告", "价格设置过低！",
+                                 QMessageBox.Ok | QMessageBox.Cancel, QMessageBox.Ok)
+            return
+        if amount_text == '':
+            amount_text = '全仓卖出'
+        else:
+            amount = int(amount_text)
+            if amount <= 0 or amount % 100 != 0:
+                QMessageBox.question(self, "警告", "持仓数填写错误！",
+                                     QMessageBox.Ok | QMessageBox.Cancel, QMessageBox.Ok)
+                return
+            if percent_text == '':
+                percent = 1
+            else:
+                if float(percent_text) < 1:
+                    QMessageBox.question(self, "警告", "卖出比例填写错误！",
+                                         QMessageBox.Ok | QMessageBox.Cancel, QMessageBox.Ok)
+                    return
+                percent = 1 / float(percent_text)
+            sell_amount = int(((amount * percent) // 100 + 1) * 100)
+
+        # self.label_stock.setText(self.label_stock.text() + )
+
+
+
+
         self.label_stock.setText(code_text)
         self.label_price.setText(price_text)
         self.price = price_text
