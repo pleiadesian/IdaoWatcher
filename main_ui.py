@@ -122,11 +122,11 @@ class MainUi(QMainWindow, frontend.Ui_Dialog):
             self.window_info = setfocus.change_fs('中信')
 
     def select_ct(self):
-        if self.radioButton_zx.isChecked():
+        if self.radioButton_ct.isChecked():
             self.window_info = setfocus.change_fs('财通')
 
     def select_tdx(self):
-        if self.radioButton_zx.isChecked():
+        if self.radioButton_tdx.isChecked():
             self.window_info = setfocus.change_fs('通达')
 
     def ask5(self):

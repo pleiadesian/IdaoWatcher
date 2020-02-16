@@ -117,7 +117,7 @@ def mainloop(codes):
         main.storage.update_realtime_storage()
         start = time.time()  # update too fast?
         codes[:] = []
-        for code in main.matching():
+        for code in main.mock_matching():
             codes.append(code)
         if len(codes) > 0:
             print(str(datetime.datetime.now()) + '     ' + ' '.join(codes) + " 出现分时攻击")
