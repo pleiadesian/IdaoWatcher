@@ -169,9 +169,9 @@ class NeckLine:
                 continue
 
             if close < df.iloc[-1]['open']:
-                print(code + "(morning neckline): if falling")
+                print(code + "(general neckline): if falling")
                 with open(path + 'stock.log', 'a') as f:
-                    f.write(code + "(morning neckline): is falling" + "\n")
+                    f.write(code + "(general neckline): is falling" + "\n")
                 continue
 
             if free_share >= LARGE_FREE_SHARE:
@@ -202,7 +202,8 @@ class NeckLine:
                             f.write(code + "(general neckline): too low and not boomed" + "\n")
                         continue
 
-            if len(df) > 5 and df.iloc[-5]['open'] > close:
+            highest_recent = max(df.iloc[-5:])
+            if len(df) > 5 and highest_recent > close: # and df.iloc[-5]['open'] > close:
                 print(code + "(general neckline): is falling")
                 with open(path + 'stock.log', 'a') as f:
                     f.write(code + "(general neckline): is falling" + "\n")
@@ -335,10 +336,11 @@ class NeckLine:
                     f.write(code + "(morning neckline): at limit" + "\n")
                 continue
 
-            if len(df) > 5 and df.iloc[-5]['open'] > close:
-                print(code + "(general neckline): is falling")
+            highest_recent = max(df.iloc[-5:])
+            if len(df) > 5 and highest_recent > close: # and df.iloc[-5]['open'] > close:
+                print(code + "(morning neckline): is falling")
                 with open(path + 'stock.log', 'a') as f:
-                    f.write(code + "(general neckline): is falling" + "\n")
+                    f.write(code + "(morning neckline): is falling" + "\n")
                 continue
 
             # morning neckline is effective on high-opened stock
@@ -456,9 +458,9 @@ class NeckLine:
                 continue
 
             if close < df.iloc[-1]['open']:
-                print(code + "(morning neckline): if falling")
+                print(code + "(long neckline): if falling")
                 with open(path + 'stock.log', 'a') as f:
-                    f.write(code + "(morning neckline): is falling" + "\n")
+                    f.write(code + "(long neckline): is falling" + "\n")
                 continue
 
             if free_share >= LARGE_FREE_SHARE:
@@ -473,18 +475,19 @@ class NeckLine:
                 rise_threshold = NORMAL_OPEN_HIGH_THRESHOLD
                 if free_share < SMALL_FREE_SHARE:
                     if code not in boomed and close < df.iloc[-1]['open'] * BOOMED_THRESHOLD:
-                        print(code + "(general neckline): too low and not boomed need: "
+                        print(code + "(long neckline): too low and not boomed need: "
                               + str(df.iloc[-1]['open'] * BOOMED_THRESHOLD) + ' close: ' + str(close))
                         with open(path + 'stock.log', 'a') as f:
-                            f.write(code + "(general neckline): too low and not boomed" + "\n")
+                            f.write(code + "(long neckline): too low and not boomed" + "\n")
                         continue
             if rise_ratio < rise_threshold:
                 continue
 
-            if len(df) > 5 and df.iloc[-5]['open'] > close:
-                print(code + "(general neckline): is falling")
+            highest_recent = max(df.iloc[-5:])
+            if len(df) > 5 and highest_recent > close: # and df.iloc[-5]['open'] > close:
+                print(code + "(long neckline): is falling")
                 with open(path + 'stock.log', 'a') as f:
-                    f.write(code + "(general neckline): is falling" + "\n")
+                    f.write(code + "(long neckline): is falling" + "\n")
                 continue
 
             neckline_list = [open_price * (1 + ratio * 0.1 / NECKLINE_STEP) for ratio in
@@ -593,9 +596,16 @@ class NeckLine:
                 continue
 
             if close < df.iloc[-1]['open']:
-                print(code + "(morning neckline): if falling")
+                print(code + "(recent neckline): if falling")
                 with open(path + 'stock.log', 'a') as f:
-                    f.write(code + "(morning neckline): is falling" + "\n")
+                    f.write(code + "(recent neckline): is falling" + "\n")
+                continue
+
+            highest_recent = max(df.iloc[-5:])
+            if len(df) > 5 and highest_recent > close: # and df.iloc[-5]['open'] > close:
+                print(code + "(recent neckline): is falling")
+                with open(path + 'stock.log', 'a') as f:
+                    f.write(code + "(recent neckline): is falling" + "\n")
                 continue
 
             if must_be_high:
@@ -718,9 +728,16 @@ class NeckLine:
             free_share = basic_infos['free_share']
 
             if close < df.iloc[-1]['open']:
-                print(code + "(morning neckline): if falling")
+                print(code + "(high neckline): if falling")
                 with open(path + 'stock.log', 'a') as f:
-                    f.write(code + "(morning neckline): is falling" + "\n")
+                    f.write(code + "(high neckline): is falling" + "\n")
+                continue
+
+            highest_recent = max(df.iloc[-5:])
+            if len(df) > 5 and highest_recent > close: # and df.iloc[-5]['open'] > close:
+                print(code + "(high neckline): is falling")
+                with open(path + 'stock.log', 'a') as f:
+                    f.write(code + "(high neckline): is falling" + "\n")
                 continue
 
             if free_share < SMALL_FREE_SHARE and code not in boomed and close < df.iloc[-1]['open'] * BOOMED_THRESHOLD:
