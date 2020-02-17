@@ -90,18 +90,19 @@ class MainUi(QMainWindow, frontend.Ui_Dialog):
 
     def checkall(self):
         new_codes = list(set(codes) - set(self.code_list))
-        # TODO: get code in code_list except ''
         displaying_codes = [code for code in self.code_list if code != '']
-        display_codes = new_codes + displaying_codes + self.spilled_codes
-        display_codes = list(set(display_codes))
-        print(str(displaying_codes) + str(new_codes) + str(self.spilled_codes) + str(display_codes) + str(self.code_list))
+        old_codes = [code for code in displaying_codes + self.spilled_codes if code not in new_codes]
+        display_codes = new_codes + old_codes
+        # display_codes = list(set(display_codes))
+        # print(str(displaying_codes) + str(new_codes) + str(self.spilled_codes) + str(display_codes) + str(self.code_list))
         if len(display_codes) > 12:
             self.spilled_codes = display_codes[12:]
             display_codes = display_codes[:12]
         else:
             self.spilled_codes = []
         i = 0
-        display_codes = list(set(display_codes) - set(self.recent_codes))
+        display_codes = [code for code in display_codes if code not in self.recent_codes]
+        # display_codes = list(set(display_codes) - set(self.recent_codes))
         # display_codes.sort()
         for button, code in zip(self.button_list, display_codes):
             button.setText(code)
