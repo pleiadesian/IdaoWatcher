@@ -77,7 +77,7 @@ class TimeShareExplosion:
         volume = float(info[8]) / 100  # calculation by Lot
         volume_ma5 = sum(hist_data['vol']) / len(hist_data)
         volume_ma5_deal = sum(hist_data['vol']) / (len(hist_data) * 240 * 20)
-        volume_yesterday = max([float(hist[8]) for hist in hist_data.values])
+        volume_yesterday = max([float(hist[8]) for hist in hist_data[-3:].values])
         pct_chg_yesterday = float(hist_data.values[-1][7])
         today_open = float(info[1])
         pre_close = float(info[2])
