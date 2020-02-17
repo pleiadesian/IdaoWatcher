@@ -92,13 +92,13 @@ class MainUi(QMainWindow, frontend.Ui_Dialog):
         new_codes = list(set(codes) - set(self.code_list))
         displaying_codes = [code for code in self.code_list if code != '']
         old_codes = [code for code in displaying_codes + self.spilled_codes if code not in new_codes]
-        print("----------------------------")
-        print("displaying codes:" + str(displaying_codes))
-        print("spilled codes:" + str(self.spilled_codes))
-        print("old_codes:" + str(old_codes))
-        print("new_codes:" + str(new_codes))
+        # print("----------------------------")
+        # print("displaying codes:" + str(displaying_codes))
+        # print("spilled codes:" + str(self.spilled_codes))
+        # print("old_codes:" + str(old_codes))
+        # print("new_codes:" + str(new_codes))
         display_codes = new_codes + old_codes
-        print("display_codes:" + str(display_codes))
+        # print("display_codes:" + str(display_codes))
         # display_codes = list(set(display_codes))
         # print(str(displaying_codes) + str(new_codes) + str(self.spilled_codes) + str(display_codes) + str(self.code_list))
         if len(display_codes) > 12:
@@ -107,10 +107,10 @@ class MainUi(QMainWindow, frontend.Ui_Dialog):
         else:
             self.spilled_codes = []
         i = 0
-        print("spilled codes:" +str(self.spilled_codes))
-        print("recent codes:" + str(self.recent_codes))
+        # print("spilled codes:" +str(self.spilled_codes))
+        # print("recent codes:" + str(self.recent_codes))
         display_codes = [code for code in display_codes if code not in self.recent_codes]
-        print("final display codes:" + str(display_codes))
+        # print("final display codes:" + str(display_codes))
         # display_codes = list(set(display_codes) - set(self.recent_codes))
         # display_codes.sort()
         for button, code in zip(self.button_list, display_codes):
@@ -126,8 +126,8 @@ class MainUi(QMainWindow, frontend.Ui_Dialog):
             if alert_codes < 0:
                 button.setText('None')
                 button.move(BUTTON_NONE_X, button.y())
-        print("code_list:" + str(self.code_list))
-        print("----------------------------------")
+        # print("code_list:" + str(self.code_list))
+        # print("----------------------------------")
         # print('after check:' + str(self.code_list))
 
     def select_zx(self):
