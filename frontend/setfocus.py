@@ -4,7 +4,8 @@ import win32gui, win32process, win32con, win32com.client
 import ctypes
 import pyautogui
 
-TYPE_INTERVAL = 0.02
+SLEEP_INTERVAL = 0.3
+TYPE_INTERVAL = 0.05
 
 
 class setf:
@@ -95,15 +96,17 @@ def sell_code(code, price, amount, window_info):
     pyautogui.typewrite(message=code, interval=TYPE_INTERVAL)
     pyautogui.press('enter')
     pyautogui.typewrite(message='.-1', interval=TYPE_INTERVAL)
-    pyautogui.press('enter', interval=TYPE_INTERVAL)
+    pyautogui.press('enter')
+    pyautogui.sleep(SLEEP_INTERVAL)
     pyautogui.press('up')
+    # pyautogui.press('backspace', interval=1)
     pyautogui.typewrite(message=price, interval=TYPE_INTERVAL)
-    pyautogui.press('enter', interval=TYPE_INTERVAL)
+    pyautogui.press('enter')
     if amount is not None:
         pyautogui.typewrite(message=amount, interval=TYPE_INTERVAL)
-    pyautogui.press('enter', interval=TYPE_INTERVAL)
-    pyautogui.press('enter', interval=TYPE_INTERVAL)
-    pyautogui.press('enter', interval=TYPE_INTERVAL)
+    pyautogui.press('enter')
+    pyautogui.press('enter')
+    pyautogui.press('enter')
 
 
 if __name__ == '__main__':
