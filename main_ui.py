@@ -14,8 +14,8 @@ from multiprocessing import Value, Manager
 from PyQt5.QtWidgets import QApplication, QMainWindow, QMessageBox, QWidget
 from PyQt5.QtCore import QTimer, Qt
 
-INTERVAL = 1000
-INTERVAL_CLEAR = 5000
+INTERVAL = 300
+INTERVAL_CLEAR = 300
 INTERVAL_RECENT = 60000
 BUTTON_X = 60
 BUTTON_NONE_X = -200
@@ -34,7 +34,6 @@ class MainUi(QMainWindow, frontend.Ui_Dialog):
         self.recent_codes = []
         self.clear_signals = []
         self.replay_code = '000001'
-        # TODO: replay button
         for button in self.button_list:
             button.move(BUTTON_NONE_X, button.y())
         self.window_info = setfocus.init_fs()
