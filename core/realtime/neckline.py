@@ -202,7 +202,7 @@ class NeckLine:
                             f.write(code + "(general neckline): too low and not boomed" + "\n")
                         continue
 
-            highest_recent = max(df.iloc[-5:])
+            highest_recent = max(df.iloc[-5:]['high'])
             if len(df) > 5 and highest_recent > close: # and df.iloc[-5]['open'] > close:
                 print(code + "(general neckline): is falling")
                 with open(path + 'stock.log', 'a') as f:
@@ -336,7 +336,7 @@ class NeckLine:
                     f.write(code + "(morning neckline): at limit" + "\n")
                 continue
 
-            highest_recent = max(df.iloc[-5:])
+            highest_recent = max(df.iloc[-5:]['high'])
             if len(df) > 5 and highest_recent > close: # and df.iloc[-5]['open'] > close:
                 print(code + "(morning neckline): is falling")
                 with open(path + 'stock.log', 'a') as f:
@@ -483,7 +483,7 @@ class NeckLine:
             if rise_ratio < rise_threshold:
                 continue
 
-            highest_recent = max(df.iloc[-5:])
+            highest_recent = max(df.iloc[-5:]['high'])
             if len(df) > 5 and highest_recent > close: # and df.iloc[-5]['open'] > close:
                 print(code + "(long neckline): is falling")
                 with open(path + 'stock.log', 'a') as f:
@@ -601,8 +601,8 @@ class NeckLine:
                     f.write(code + "(recent neckline): is falling" + "\n")
                 continue
 
-            highest_recent = max(df.iloc[-5:])
-            if len(df) > 5 and highest_recent > close: # and df.iloc[-5]['open'] > close:
+            highest_recent5 = max(df.iloc[-5:]['high'])
+            if len(df) > 5 and highest_recent5 > close: # and df.iloc[-5]['open'] > close:
                 print(code + "(recent neckline): is falling")
                 with open(path + 'stock.log', 'a') as f:
                     f.write(code + "(recent neckline): is falling" + "\n")
@@ -733,8 +733,8 @@ class NeckLine:
                     f.write(code + "(high neckline): is falling" + "\n")
                 continue
 
-            highest_recent = max(df.iloc[-5:])
-            if len(df) > 5 and highest_recent > close: # and df.iloc[-5]['open'] > close:
+            highest_recent5 = max(df.iloc[-5:]['high'])
+            if len(df) > 5 and highest_recent5 > close: # and df.iloc[-5]['open'] > close:
                 print(code + "(high neckline): is falling")
                 with open(path + 'stock.log', 'a') as f:
                     f.write(code + "(high neckline): is falling" + "\n")
