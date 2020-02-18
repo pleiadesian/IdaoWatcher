@@ -14,8 +14,8 @@ import api.ts_map as tm
 # TODO: print more info in log for debug
 
 DEBUG = 1
-TRUNCATE_TIME = 106
-TRUNCATE = 0
+TRUNCATE_TIME = 7
+TRUNCATE = 1
 
 NECKLINE_UPPER_BOUND = 1.005
 NECKLINE_LOWER_BOUND = 0.99
@@ -31,9 +31,10 @@ SHORT_GENERAL_NECKLINE_LENGTH_PERCENT = 0.5
 NECKLINE_GOOD_LENGTH_THRESHOLD = 90
 LONG_NECKLINE_LENGTH_THRESHOLD = 70
 SEPARATED_NECKLINE_MIN_GAP = 45
+SEPARATED_RECENT_NECKLINE_MIN_GAP = 12
 OUTLINER_THRESHOLD = 0.40  # default 0.55 | 0.65
 RECENT_OUTLINER_THRESHOLD = 0.45
-RECENT_GOOD_OUTLINER_THRESHOLD = 0.05
+RECENT_GOOD_OUTLINER_THRESHOLD = 0.07  # default 0.05
 
 BOOM_LOWER_BOUND = 0.99  # default 98% | 99%
 BOOM_UPPER_BOUND = 1.015  # default 103%
@@ -53,7 +54,7 @@ MINUTE_ABSOLUTE_VOLUME_THRESHOLD = 1.12  # default 112%
 
 HIGH_PRICE_PERCENT = 1.090  # default 9.5% rise ratio
 
-RUSH_HIGH_THRESHOLD = 1.03
+RUSH_HIGH_THRESHOLD = 1.04  # default 3%
 
 BOOMED_THRESHOLD = 1.005
 
@@ -652,7 +653,7 @@ class NeckLine:
                                                days[1:]],
                                               [datetime.datetime.strptime(k, '%Y-%m-%d %H:%M:%S') for k in
                                                days[:-1]])])
-                    day_delta = day_delta[(day_delta <= SEPARATED_NECKLINE_MIN_GAP) & (day_delta > 1)]
+                    day_delta = day_delta[(day_delta <= SEPARATED_RECENT_NECKLINE_MIN_GAP) & (day_delta > 1)]
                     day_delta = day_delta - 1
                     outliners = sum(day_delta)
                     # not too much outliners
@@ -892,7 +893,7 @@ if __name__ == '__main__':
     storage.update_realtime_storage()
     neckline = NeckLine(storage)
     start = time.time()
-    neckline.detect_neckline(['002436'], [])
+    neckline.detect_neckline(['002291'], [])
     end = time.time()
     print('total: ' + str(end - start))
 
