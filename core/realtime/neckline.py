@@ -15,7 +15,7 @@ import api.ts_map as tm
 
 DEBUG = 1
 TRUNCATE_TIME = 7
-TRUNCATE = 1
+TRUNCATE = 0
 
 NECKLINE_UPPER_BOUND = 1.005
 NECKLINE_LOWER_BOUND = 0.99
@@ -484,7 +484,7 @@ class NeckLine:
             if rise_ratio < rise_threshold:
                 continue
 
-            highest_recent = max(df.iloc[-5:]['high'])
+            highest_recent = max(df.iloc[-40:]['high'])
             if len(df) > 5 and highest_recent > close: # and df.iloc[-5]['open'] > close:
                 print(code + "(long neckline): is falling")
                 with open(path + 'stock.log', 'a') as f:
