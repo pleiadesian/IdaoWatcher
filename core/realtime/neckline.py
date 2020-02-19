@@ -14,7 +14,7 @@ import api.ts_map as tm
 # TODO: print more info in log for debug
 
 DEBUG = 1
-TRUNCATE_TIME = 7
+TRUNCATE_TIME = 39
 TRUNCATE = 0
 
 NECKLINE_UPPER_BOUND = 1.005
@@ -337,12 +337,20 @@ class NeckLine:
                     f.write(code + "(morning neckline): at limit" + "\n")
                 continue
 
-            highest_recent = max(df.iloc[-5:]['high'])
-            if len(df) > 5 and highest_recent > close: # and df.iloc[-5]['open'] > close:
-                print(code + "(morning neckline): is falling")
-                with open(path + 'stock.log', 'a') as f:
-                    f.write(code + "(morning neckline): is falling" + "\n")
-                continue
+            if len(df) > 5:
+                highest_recent5 = max(df.iloc[-5:]['high'])
+                if highest_recent5 > close: # and df.iloc[-5]['open'] > close:
+                    print(code + "(morning neckline): is falling")
+                    with open(path + 'stock.log', 'a') as f:
+                        f.write(code + "(morning neckline): is falling" + "\n")
+                    continue
+            else:
+                highest_recent5 = max(df['high'])
+                if highest_recent5 > close:  # and df.iloc[-5]['open'] > close:
+                    print(code + "(morning neckline): is falling")
+                    with open(path + 'stock.log', 'a') as f:
+                        f.write(code + "(morning neckline): is falling" + "\n")
+                    continue
 
             # morning neckline is effective on high-opened stock
             if free_share >= LARGE_FREE_SHARE:
@@ -893,7 +901,7 @@ if __name__ == '__main__':
     storage.update_realtime_storage()
     neckline = NeckLine(storage)
     start = time.time()
-    neckline.detect_neckline(['002291'], [])
+    neckline.detect_neckline(['600168'], [])
     end = time.time()
     print('total: ' + str(end - start))
 
