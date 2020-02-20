@@ -4,7 +4,7 @@ import win32gui, win32process, win32con, win32com.client
 import ctypes
 import pyautogui
 
-SLEEP_INTERVAL = 0.8
+SLEEP_INTERVAL = 1
 TYPE_INTERVAL = 0.05
 
 

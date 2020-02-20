@@ -133,21 +133,44 @@ class TimeShareExplosion:
         low_ratio = (low - pre_close) / pre_close
 
         if free_share < SUPERSMALL_FREE_SHARE:
+            self.deal_volume[code] = (volume, time)
+            self.deal_price[code] = price
+            self.deal_bid[code] = (bid, bid_price)
+            self.deal_ask[code] = (ask, ask_price)
+            return False
             absolute_large_volume = deal_turnover_rate > SUPERSMALL_ABSOLUTE_LARGE_VOLUME_THRESHOLD
             turnover_threshold = SMALL_TURNOVER_THRESHOLD
             turnover_threshold_yesterday = SMALL_YESTERDAY_TURNOVER_THRESHOLD
         elif free_share < SMALL_FREE_SHARE:
+            self.deal_volume[code] = (volume, time)
+            self.deal_price[code] = price
+            self.deal_bid[code] = (bid, bid_price)
+            self.deal_ask[code] = (ask, ask_price)
+            return False
             absolute_large_volume = deal_turnover_rate > SMALL_ABSOLUTE_LARGE_VOLUME_THRESHOLD
             turnover_threshold = SMALL_TURNOVER_THRESHOLD
             turnover_threshold_yesterday = SMALL_YESTERDAY_TURNOVER_THRESHOLD
         elif free_share < LARGE_FREE_SHARE:
-            absolute_large_volume = deal_turnover_rate > ABSOLUTE_LARGE_VOLUME_THRESHOLD
+            if turnover_rate < 8:
+                self.deal_volume[code] = (volume, time)
+                self.deal_price[code] = price
+                self.deal_bid[code] = (bid, bid_price)
+                self.deal_ask[code] = (ask, ask_price)
+                return False
+            absolute_large_volume = deal_turnover_rate > ABSOLUTE_LARGE_VOLUME_THRESHOLD * 2
+            # absolute_large_volume = deal_turnover_rate > ABSOLUTE_LARGE_VOLUME_THRESHOLD
             if minutes_elapse < 180:
                 turnover_threshold = TURNOVER_THRESHOLD
             else:
                 turnover_threshold = AFTERNOON_TURNOVER_THRESHOLD
             turnover_threshold_yesterday = NORMAL_YESTERDAY_TURNOVER_THRESHOLD
         elif free_share < SUPERLARGE_FREE_SHARE:
+            if turnover_rate < 8:
+                self.deal_volume[code] = (volume, time)
+                self.deal_price[code] = price
+                self.deal_bid[code] = (bid, bid_price)
+                self.deal_ask[code] = (ask, ask_price)
+                return False
             absolute_large_volume = deal_turnover_rate > BIG_ABSOLUTE_LARGE_VOLUME_THRESHOLD
             if minutes_elapse < 180:
                 turnover_threshold = LARGE_TURNOVER_THRESHOLD
@@ -155,6 +178,12 @@ class TimeShareExplosion:
                 turnover_threshold = AFTERNOON_LARGE_TURNOVER_THRESHOLD
             turnover_threshold_yesterday = LARGE_YESTERDAY_TURNOVER_THRESHOLD
         else:
+            if turnover_rate < 8:
+                self.deal_volume[code] = (volume, time)
+                self.deal_price[code] = price
+                self.deal_bid[code] = (bid, bid_price)
+                self.deal_ask[code] = (ask, ask_price)
+                return False
             absolute_large_volume = deal_turnover_rate > SUPERBIG_ABSOLUTE_LARGE_VOLUME_THRESHOLD
             turnover_threshold = LARGE_TURNOVER_THRESHOLD
             turnover_threshold_yesterday = SUPERLARGE_YESTERDAY_TURNOVER_THRESHOLD
