@@ -61,7 +61,12 @@ class MainUi(QMainWindow, frontend.Ui_Dialog):
         self.timer_recent.start(INTERVAL_RECENT)
 
     def strong(self):
-        self.pushButton_strong.text()
+        if self.pushButton_strong.text() == '强市模式':
+            self.pushButton_strong.setText('取消')
+            strong.value = 1
+        else:
+            self.pushButton_strong.setText('强市模式')
+            strong.value = 0
 
     def reset(self):
         self.code_list = [''] * 12
