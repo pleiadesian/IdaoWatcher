@@ -65,7 +65,7 @@ class TimeShareExplosion:
             self.deal_bid[code] = (0.0, 0.0)
             self.deal_ask[code] = (0.0, 0.0)
 
-    def detect_timeshare_explode(self, storage, code):
+    def detect_timeshare_explode(self, storage, code, strong):
         """
         :param storage: local storage
         :param code: stock code
@@ -134,7 +134,7 @@ class TimeShareExplosion:
         low_ratio = (low - pre_close) / pre_close
 
         if free_share < SUPERSMALL_FREE_SHARE:
-            if STRONG == 1:
+            if strong.value == 1:
                 self.deal_volume[code] = (volume, time)
                 self.deal_price[code] = price
                 self.deal_bid[code] = (bid, bid_price)
@@ -144,7 +144,7 @@ class TimeShareExplosion:
             turnover_threshold = SMALL_TURNOVER_THRESHOLD
             turnover_threshold_yesterday = SMALL_YESTERDAY_TURNOVER_THRESHOLD
         elif free_share < SMALL_FREE_SHARE:
-            if STRONG == 1:
+            if strong.value == 1:
                 self.deal_volume[code] = (volume, time)
                 self.deal_price[code] = price
                 self.deal_bid[code] = (bid, bid_price)
@@ -154,14 +154,14 @@ class TimeShareExplosion:
             turnover_threshold = SMALL_TURNOVER_THRESHOLD
             turnover_threshold_yesterday = SMALL_YESTERDAY_TURNOVER_THRESHOLD
         elif free_share < LARGE_FREE_SHARE:
-            if STRONG == 1:
+            if strong.value == 1:
                 if turnover_rate < 8:
                     self.deal_volume[code] = (volume, time)
                     self.deal_price[code] = price
                     self.deal_bid[code] = (bid, bid_price)
                     self.deal_ask[code] = (ask, ask_price)
                     return False
-            if STRONG == 1:
+            if strong.value == 1:
                 absolute_large_volume = deal_turnover_rate > ABSOLUTE_LARGE_VOLUME_THRESHOLD * 2
             else:
                 absolute_large_volume = deal_turnover_rate > ABSOLUTE_LARGE_VOLUME_THRESHOLD
@@ -171,14 +171,14 @@ class TimeShareExplosion:
                 turnover_threshold = AFTERNOON_TURNOVER_THRESHOLD
             turnover_threshold_yesterday = NORMAL_YESTERDAY_TURNOVER_THRESHOLD
         elif free_share < SUPERLARGE_FREE_SHARE:
-            if STRONG == 1:
+            if strong.value == 1:
                 if turnover_rate < 12:
                     self.deal_volume[code] = (volume, time)
                     self.deal_price[code] = price
                     self.deal_bid[code] = (bid, bid_price)
                     self.deal_ask[code] = (ask, ask_price)
                     return False
-            if STRONG == 1:
+            if strong.value == 1:
                 absolute_large_volume = deal_turnover_rate > BIG_ABSOLUTE_LARGE_VOLUME_THRESHOLD * 2
             else:
                 absolute_large_volume = deal_turnover_rate > BIG_ABSOLUTE_LARGE_VOLUME_THRESHOLD
@@ -188,7 +188,7 @@ class TimeShareExplosion:
                 turnover_threshold = AFTERNOON_LARGE_TURNOVER_THRESHOLD
             turnover_threshold_yesterday = LARGE_YESTERDAY_TURNOVER_THRESHOLD
         else:
-            if STRONG == 1:
+            if strong.value == 1:
                 if turnover_rate < 8:
                     self.deal_volume[code] = (volume, time)
                     self.deal_price[code] = price
@@ -245,7 +245,7 @@ class TimeShareExplosion:
         if exploded:
             print(code + ' ' + str(price))
             with open(path + 'stock.log', 'a') as f:
-                f.write(code + ' ' + str(price) + "\n")
+                f.write(str(strong.value) + ' ' + code + ' ' + str(price) + "\n")
 
         # in case of booming
         if minutes_elapse <= 60:

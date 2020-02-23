@@ -26,7 +26,7 @@ class Main:
         self.time_share_explosion = ex.TimeShareExplosion()
         self.call_auction_complete = False
 
-    def matching(self):
+    def matching(self, strong):
         """
         matching in an interval
         :return: matched codes
@@ -46,7 +46,7 @@ class Main:
             boomed = []
             final_matched = []
             for code in tm.ts_mapping:
-                ret = self.time_share_explosion.detect_timeshare_explode(self.storage, code)
+                ret = self.time_share_explosion.detect_timeshare_explode(self.storage, code, strong)
                 if ret:
                     if ret > 1:
                         boomed.append(code)
@@ -100,7 +100,7 @@ class Main:
         return orders
 
 
-def mainloop(codes):
+def mainloop(codes, strong):
     """
     start main loop
     """
@@ -117,7 +117,7 @@ def mainloop(codes):
         main.storage.update_realtime_storage()
         start = time.time()  # update too fast?
         codes[:] = []
-        for code in main.matching():
+        for code in main.matching(strong):
             codes.append(code)
         if len(codes) > 0:
             print(str(datetime.datetime.now()) + '     ' + ' '.join(codes) + " 出现分时攻击")
