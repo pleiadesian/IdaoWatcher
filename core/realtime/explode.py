@@ -40,7 +40,9 @@ RELATIVE_LARGE_VOLUME_THRESHOLD = 50  # default 58
 SUPERSMALL_ABSOLUTE_LARGE_VOLUME_THRESHOLD = 10.0
 SMALL_ABSOLUTE_LARGE_VOLUME_THRESHOLD = 2.6  # default 350% | 250%
 ABSOLUTE_LARGE_VOLUME_THRESHOLD = 0.95  # default 127%
+STRONG_ABSOLUTE_LARGE_VOLUME_THRESHOLD = 1.8
 BIG_ABSOLUTE_LARGE_VOLUME_THRESHOLD = 0.6  # default 50% | 90% | 67%
+STRONG_BIG_ABSOLUTE_LARGE_VOLUME_THRESHOLD = 1.5
 SUPERBIG_ABSOLUTE_LARGE_VOLUME_THRESHOLD = 0.6  # default 40% | 64%
 
 SUPERSMALL_FREE_SHARE = 5000
@@ -155,14 +157,14 @@ class TimeShareExplosion:
             turnover_threshold_yesterday = SMALL_YESTERDAY_TURNOVER_THRESHOLD
         elif free_share < LARGE_FREE_SHARE:
             if strong.value == 1:
-                if turnover_rate < 8:
+                if turnover_rate < 12:
                     self.deal_volume[code] = (volume, time)
                     self.deal_price[code] = price
                     self.deal_bid[code] = (bid, bid_price)
                     self.deal_ask[code] = (ask, ask_price)
                     return False
             if strong.value == 1:
-                absolute_large_volume = deal_turnover_rate > ABSOLUTE_LARGE_VOLUME_THRESHOLD * 2
+                absolute_large_volume = deal_turnover_rate > STRONG_ABSOLUTE_LARGE_VOLUME_THRESHOLD
             else:
                 absolute_large_volume = deal_turnover_rate > ABSOLUTE_LARGE_VOLUME_THRESHOLD
             if minutes_elapse < 180:
@@ -172,14 +174,14 @@ class TimeShareExplosion:
             turnover_threshold_yesterday = NORMAL_YESTERDAY_TURNOVER_THRESHOLD
         elif free_share < SUPERLARGE_FREE_SHARE:
             if strong.value == 1:
-                if turnover_rate < 12:
+                if turnover_rate < 8:
                     self.deal_volume[code] = (volume, time)
                     self.deal_price[code] = price
                     self.deal_bid[code] = (bid, bid_price)
                     self.deal_ask[code] = (ask, ask_price)
                     return False
             if strong.value == 1:
-                absolute_large_volume = deal_turnover_rate > BIG_ABSOLUTE_LARGE_VOLUME_THRESHOLD * 2
+                absolute_large_volume = deal_turnover_rate > STRONG_BIG_ABSOLUTE_LARGE_VOLUME_THRESHOLD
             else:
                 absolute_large_volume = deal_turnover_rate > BIG_ABSOLUTE_LARGE_VOLUME_THRESHOLD
             if minutes_elapse < 180:
@@ -273,15 +275,15 @@ if __name__ == '__main__':
     storage = st.Storage()
     storage.update_realtime_storage()
     time_share_explotion = TimeShareExplosion()
-    time_share_explotion.detect_timeshare_explode(storage, '603019')
+    time_share_explotion.detect_timeshare_explode(storage, '603019', 0)
     storage.update_realtime_storage()
-    ret = time_share_explotion.detect_timeshare_explode(storage, '603019')
+    ret = time_share_explotion.detect_timeshare_explode(storage, '603019', 0)
     # cold run
     for code in tm.ts_mapping:
-        time_share_explotion.detect_timeshare_explode(storage, code)
+        time_share_explotion.detect_timeshare_explode(storage, code, 0)
     start = time.time()
     for code in tm.ts_mapping:
-        time_share_explotion.detect_timeshare_explode(storage, code)
+        time_share_explotion.detect_timeshare_explode(storage, code, 0)
     end = time.time()
     print(end - start)
     print(ret)
