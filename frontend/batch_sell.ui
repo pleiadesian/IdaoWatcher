@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>800</width>
-    <height>892</height>
+    <height>917</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -72,7 +72,7 @@
     <property name="geometry">
      <rect>
       <x>20</x>
-      <y>90</y>
+      <y>140</y>
       <width>311</width>
       <height>61</height>
      </rect>
@@ -90,9 +90,9 @@
     <property name="geometry">
      <rect>
       <x>20</x>
-      <y>140</y>
+      <y>200</y>
       <width>731</width>
-      <height>591</height>
+      <height>561</height>
      </rect>
     </property>
     <property name="font">
@@ -110,8 +110,8 @@
    <widget class="QPushButton" name="pushButton_sell">
     <property name="geometry">
      <rect>
-      <x>280</x>
-      <y>740</y>
+      <x>130</x>
+      <y>770</y>
       <width>251</width>
       <height>91</height>
      </rect>
@@ -260,6 +260,57 @@
      </font>
     </property>
    </widget>
+   <widget class="QPushButton" name="pushButton_watch_sell">
+    <property name="geometry">
+     <rect>
+      <x>440</x>
+      <y>770</y>
+      <width>251</width>
+      <height>91</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <pointsize>30</pointsize>
+     </font>
+    </property>
+    <property name="text">
+     <string>监控卖出</string>
+    </property>
+   </widget>
+   <widget class="QLabel" name="label_7">
+    <property name="geometry">
+     <rect>
+      <x>30</x>
+      <y>110</y>
+      <width>311</width>
+      <height>31</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <pointsize>20</pointsize>
+     </font>
+    </property>
+    <property name="text">
+     <string>（监控用）止损卖出价：</string>
+    </property>
+   </widget>
+   <widget class="QLineEdit" name="lineEdit_watch_price">
+    <property name="geometry">
+     <rect>
+      <x>270</x>
+      <y>110</y>
+      <width>91</width>
+      <height>31</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <pointsize>20</pointsize>
+     </font>
+    </property>
+   </widget>
    <zorder>label</zorder>
    <zorder>pushButton_confirm</zorder>
    <zorder>label_2</zorder>
@@ -274,6 +325,9 @@
    <zorder>label_6</zorder>
    <zorder>lineEdit_percent</zorder>
    <zorder>lineEdit_stock</zorder>
+   <zorder>pushButton_watch_sell</zorder>
+   <zorder>label_7</zorder>
+   <zorder>lineEdit_watch_price</zorder>
   </widget>
   <widget class="QMenuBar" name="menubar">
    <property name="geometry">
@@ -312,8 +366,8 @@
    <slot>batch_sell_start()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>478</x>
-     <y>823</y>
+     <x>328</x>
+     <y>845</y>
     </hint>
     <hint type="destinationlabel">
      <x>613</x>
@@ -337,10 +391,27 @@
     </hint>
    </hints>
   </connection>
+  <connection>
+   <sender>pushButton_watch_sell</sender>
+   <signal>clicked()</signal>
+   <receiver>MainWindow</receiver>
+   <slot>watch_sell_start()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>605</x>
+     <y>803</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>739</x>
+     <y>779</y>
+    </hint>
+   </hints>
+  </connection>
  </connections>
  <slots>
   <slot>confirm()</slot>
   <slot>batch_sell_start()</slot>
   <slot>delete()</slot>
+  <slot>watch_sell_start()</slot>
  </slots>
 </ui>
