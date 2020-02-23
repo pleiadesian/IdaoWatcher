@@ -64,7 +64,7 @@ class TimeShareExplosion:
             self.deal_bid[code] = (0.0, 0.0)
             self.deal_ask[code] = (0.0, 0.0)
 
-    def detect_timeshare_explode(self, storage, code):
+    def detect_timeshare_explode(self, storage, code, strong):
         """
         :param storage: local storage
         :param code: stock code
