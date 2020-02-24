@@ -14,7 +14,7 @@ import api.ts_map as tm
 # TODO: print more info in log for debug
 
 DEBUG = 1
-TRUNCATE_TIME = 39
+TRUNCATE_TIME = 55
 TRUNCATE = 0
 
 NECKLINE_UPPER_BOUND = 1.005
@@ -594,6 +594,7 @@ class NeckLine:
             close = self.curr_price[code]
             if TRUNCATE == 1:
                 close = df.iloc[-1]['high']
+                close = 14.6
             boom_close = df.iloc[-1]['open']
             open_price = self.pre_close[code]
             limit = round(open_price * 1.1, 2)
@@ -901,7 +902,7 @@ if __name__ == '__main__':
     storage.update_realtime_storage()
     neckline = NeckLine(storage)
     start = time.time()
-    neckline.detect_neckline(['600168'], [])
+    neckline.detect_neckline(['002906'], [])
     end = time.time()
     print('total: ' + str(end - start))
 
