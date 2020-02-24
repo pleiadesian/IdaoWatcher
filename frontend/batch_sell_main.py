@@ -44,9 +44,10 @@ class BatchSellMain(QMainWindow, bs.Ui_MainWindow):
         code_text = self.lineEdit_stock.text()
         amount_text = self.lineEdit_amount.text()
         percent_text = self.lineEdit_percent.text()
-        watch_text = self.lineEdit_watch_price.text()
+        watch_text_low = self.lineEdit_watch_price_low.text()
+        watch_text_high = self.lineEdit_watch_price_high.text()
 
-        if watch_text == '':
+        if watch_text_low == '':
             if price_text == '':
                 QMessageBox.question(self, "警告", "卖出价格未设置！",
                                      QMessageBox.Ok | QMessageBox.Cancel, QMessageBox.Ok)
@@ -92,11 +93,13 @@ class BatchSellMain(QMainWindow, bs.Ui_MainWindow):
             if sell_amount is not None:
                 self.amount[code_text] = str(sell_amount)
         else:
-            price = float(watch_text)
-            new_line = code_text + ' ' + tm.name_mapping[code_text] + ' 监控卖出 价格：' + watch_text
+            price_low = float(watch_text_low)
+            price_high = float(watch_text_high)
+            new_line = code_text + ' ' + tm.name_mapping[code_text] + ' 监控卖出 止损：' + watch_text_low + ' 止盈：' + \
+                watch_text_high
             self.label_stock.setText(self.label_stock.text() + new_line)
             self.codes.append(code_text)
-            self.watch[code_text] = price
+            self.watch[code_text] = (price_low, price_high)
 
     def delete(self):
         code_text = self.lineEdit_stock.text()
@@ -127,8 +130,13 @@ class BatchSellMain(QMainWindow, bs.Ui_MainWindow):
                 self.watching = False
                 return
             for code, ask_price in zip(self.codes, a1_ps):
-                sell_price = self.watch[code]
-                if sell_price > ask_price:
+                sell_price_low = self.watch[code][0]
+                sell_price_high = self.watch[code][1]
+                if sell_price_low > ask_price:
+                    setfocus.sell_code(code, ask_price, None, self.window_info)
+                    self.codes.remove(code)
+                    del self.watch[code]
+                elif sell_price_high < ask_price:
                     setfocus.sell_code(code, ask_price, None, self.window_info)
                     self.codes.remove(code)
                     del self.watch[code]

@@ -281,7 +281,7 @@
    <widget class="QLabel" name="label_7">
     <property name="geometry">
      <rect>
-      <x>30</x>
+      <x>10</x>
       <y>110</y>
       <width>311</width>
       <height>31</height>
@@ -296,10 +296,43 @@
      <string>（监控用）止损卖出价：</string>
     </property>
    </widget>
-   <widget class="QLineEdit" name="lineEdit_watch_price">
+   <widget class="QLineEdit" name="lineEdit_watch_price_low">
     <property name="geometry">
      <rect>
-      <x>270</x>
+      <x>280</x>
+      <y>110</y>
+      <width>91</width>
+      <height>31</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <pointsize>20</pointsize>
+     </font>
+    </property>
+   </widget>
+   <widget class="QLabel" name="label_8">
+    <property name="geometry">
+     <rect>
+      <x>400</x>
+      <y>110</y>
+      <width>311</width>
+      <height>31</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <pointsize>20</pointsize>
+     </font>
+    </property>
+    <property name="text">
+     <string>（监控用）止盈卖出价：</string>
+    </property>
+   </widget>
+   <widget class="QLineEdit" name="lineEdit_watch_price_high">
+    <property name="geometry">
+     <rect>
+      <x>680</x>
       <y>110</y>
       <width>91</width>
       <height>31</height>
@@ -327,7 +360,9 @@
    <zorder>lineEdit_stock</zorder>
    <zorder>pushButton_watch_sell</zorder>
    <zorder>label_7</zorder>
-   <zorder>lineEdit_watch_price</zorder>
+   <zorder>lineEdit_watch_price_low</zorder>
+   <zorder>label_8</zorder>
+   <zorder>lineEdit_watch_price_high</zorder>
   </widget>
   <widget class="QMenuBar" name="menubar">
    <property name="geometry">
@@ -402,8 +437,8 @@
      <y>803</y>
     </hint>
     <hint type="destinationlabel">
-     <x>739</x>
-     <y>779</y>
+     <x>684</x>
+     <y>814</y>
     </hint>
    </hints>
   </connection>
