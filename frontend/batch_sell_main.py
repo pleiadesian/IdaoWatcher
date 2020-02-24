@@ -133,16 +133,16 @@ class BatchSellMain(QMainWindow, bs.Ui_MainWindow):
                 sell_price_low = self.watch[code][0]
                 sell_price_high = self.watch[code][1]
                 if sell_price_low > ask_price:
-                    setfocus.sell_code(code, ask_price, None, self.window_info)
+                    setfocus.sell_code(code, str(ask_price), None, self.window_info)
                     self.codes.remove(code)
                     del self.watch[code]
                 elif sell_price_high < ask_price:
-                    setfocus.sell_code(code, ask_price, None, self.window_info)
+                    setfocus.sell_code(code, str(ask_price), None, self.window_info)
                     self.codes.remove(code)
                     del self.watch[code]
 
     def watch_sell_start(self):
-        if self.pushButton_watch_sell.text == '监控卖出':
+        if self.pushButton_watch_sell.text() == '监控卖出':
             self.pushButton_watch_sell.setText('取消')
             self.watching = True
         else:
