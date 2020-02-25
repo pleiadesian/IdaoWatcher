@@ -62,21 +62,21 @@ def process_plaintext(index, reg, reg_sym):
     # text = text.decode('GBK')
     data = reg.findall(text)
     syms = reg_sym.findall(text)
-    # data_list = []
-    # syms_list = []
+    data_list = []
+    syms_list = []
     for index, row in enumerate(data):
         if len(row) > 1:
-            # data_list.append([astr for astr in row.split(',')[:33]])
-            # syms_list.append(syms[index])
+            data_list.append([astr for astr in row.split(',')[:33]])
+            syms_list.append(syms[index])
             realtime_info[syms[index]] = [astr for astr in row.split(',')[:33]]
-    # assert syms_list
-    # df = pd.DataFrame(data_list, columns=DATA_COLS)
-    # df = df.drop('s', axis=1)
-    # df['code'] = syms_list
-    # ls = [cls for cls in df.columns if '_v' in cls]  # bid and ask volume should / 100
-    # for txt in ls:
-    #     df[txt] = df[txt].map(lambda x: x[:-2])
-    return realtime_info
+    assert syms_list
+    df = pd.DataFrame(data_list, columns=DATA_COLS)
+    df = df.drop('s', axis=1)
+    df['code'] = syms_list
+    ls = [cls for cls in df.columns if '_v' in cls]  # bid and ask volume should / 100
+    for txt in ls:
+        df[txt] = df[txt].map(lambda x: x[:-2])
+    return realtime_info, df
 
 
 def process_json(codes):
@@ -192,12 +192,14 @@ class Storage:
     def __init__(self):
         self.pro = ts.pro_api(token)
         self.realtime_quotes = None
+        self.realtime_quotes_opt = None
         self.stock_daily = None
         self.reg = re.compile(r'\="(.*?)\";')
         self.reg_sym = re.compile(r'(?:sh|sz)(.*?)\=')
         self.peak_info = dict()
         self.basic_info = dict()
         self.hist_data = dict()
+        self.basic_info_opt = None
         self.ts_mapping = None
         self.detail_code_list = None
         self.code_list = None
@@ -233,6 +235,7 @@ class Storage:
             with open(path + 'histdata.dat', 'wb') as f:
                 pickle.dump(self.hist_data, f)
         self.init_ts_map()
+        self.init_opt()
 
     def get_realtime_chart(self, code_list):
         """
@@ -302,15 +305,23 @@ class Storage:
                 time.sleep(3)
                 not_create = True
 
-        dict_list = p.starmap(process_plaintext, args)
+        ret = p.starmap(process_plaintext, args)
+
+        dict_list = [k[0] for k in ret]
+        df = [k[1] for k in ret]
 
         args_remain = []
         for i in range(5, tm.CODE_SEGMENT_NUM):
             args_remain.append((i, self.reg, self.reg_sym))
-        dict_list_remain = p.starmap(process_plaintext, args_remain)
+        ret_remain = p.starmap(process_plaintext, args_remain)
+
+        dict_list_remain = [k[0] for k in ret_remain]
+        df_remain = [k[1] for k in ret_remain]
+
         dict_curr = {k:v for dic in dict_list for k,v in dic.items()}
         dict_curr_remain = {k:v for dic in dict_list_remain for k,v in dic.items()}
         self.realtime_quotes = {**dict_curr, **dict_curr_remain}
+        self.realtime_quotes_opt = pd.concat(df + df_remain)
 
     def update_realtime_storage_backtest(self, moment):
         # TODO: fetch from Wind api
@@ -355,6 +366,10 @@ class Storage:
         gb = df_histdata.set_index(['trade_date']).sort_index().groupby('ts_code')
         for ts_code in tm.ts_mapping.values():
             self.hist_data[ts_code] = gb.get_group(ts_code)
+
+    def init_opt(self):
+        self.basic_info_opt = pd.DataFrame(self.basic_info.values())
+        # TODO: add volume-related data into basic_info_opt
 
     def init_basicinfo(self):
         """

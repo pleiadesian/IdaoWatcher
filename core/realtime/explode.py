@@ -67,10 +67,16 @@ class TimeShareExplosion:
             self.deal_bid[code] = (0.0, 0.0)
             self.deal_ask[code] = (0.0, 0.0)
 
+    def detect_timeshare_explode_opt(self, storage, strong):
+        basic_info = storage.basic_info_opt
+        realtime_info = storage.realtime_quotes_opt
+        # TODO: complete vectorization
+
     def detect_timeshare_explode(self, storage, code, strong):
         """
         :param storage: local storage
         :param code: stock code
+        :param strong: strong mode or not
         :return: if explosion detected on timeshare
         """
         basic_infos = storage.get_basicinfo_single(tm.ts_mapping[code])
@@ -204,18 +210,11 @@ class TimeShareExplosion:
         # add strict yesterday turnover threshold in the morning
         if minutes_elapse <= 50:
             if turnover_rate_yesterday < turnover_threshold_yesterday:
-                # print(code + ' yesterday turnover rate is too low')
-                # with open(path + 'stock.log', 'a') as f:
-                #     f.write(code + ' yesterday turnover rate is too low' + "\n")
                 return False
             if pct_chg_yesterday > 9.75:
-                # print(code + ' yesterday at limit')
-                # with open(path + 'stock.log', 'a') as f:
-                #     f.write(code + ' yesterday at limit' + "\n")
                 return False
 
         rush_not_broken = OPEN_LOWER_LIMIT <= open_ratio <= OPEN_UPPER_LIMIT
-        # rush_not_broken &= low_ratio >= RUSH_LOWER_LIMIT
 
         active_stock = turnover_rate >= turnover_threshold and volume_ratio > VOLUME_RATIO_THRESHOLD
         relative_large_volume = deal_volume_ratio > RELATIVE_LARGE_VOLUME_THRESHOLD
@@ -224,30 +223,18 @@ class TimeShareExplosion:
         exploded &= active_stock
 
         exploded &= rush_not_broken
-        # exploded &= rise_ratio >= EXPLODE_RISE_RATIO_THRESHOLD
         exploded &= curr_deal_accer >= ACCER_THRESHOLD or \
                     curr_deal_accer_percent >= LARGE_ACCER_THRESHOLD or \
                     (-0.01 < curr_deal_accer < 0.01 and
                      bid_price >= self.deal_bid[code][1] and
                      (bid_price > self.deal_bid[code][1] or
                       curr_deal_positive_ask >= 0.5 * (volume - self.deal_volume[code][0])))
-                     # and
-                     # ask_price >= self.deal_ask[code][1] and
-                     # (ask_price > self.deal_ask[code][1] or
-                     #  curr_deal_positive_bid <= 0.5 * (volume - self.deal_volume[code][0])))
         exploded &= (relative_large_volume or absolute_large_volume)
-        # if code == '000955':
-        #     print(str(time) + ' '+str(curr_deal_volume))
 
         self.deal_volume[code] = (volume, time)
         self.deal_price[code] = price
         self.deal_bid[code] = (bid, bid_price)
         self.deal_ask[code] = (ask, ask_price)
-
-        if exploded:
-            print(code + ' ' + str(price))
-            with open(path + 'stock.log', 'a') as f:
-                f.write(str(strong.value) + ' ' + code + ' ' + str(price) + "\n")
 
         # in case of booming
         if minutes_elapse <= 60:
@@ -263,9 +250,6 @@ class TimeShareExplosion:
 
         # in case of low-price transaction
         if exploded and rise_ratio < LOW_PRICE_BOUND and curr_deal_accer_percent < LARGE_ACCER_THRESHOLD:
-            print(code + ' explode too low')
-            with open(path + 'stock.log', 'a') as f:
-                f.write(code + ' explode too low' + "\n")
             return False
 
         return exploded
@@ -284,6 +268,10 @@ if __name__ == '__main__':
     start = time.time()
     for code in tm.ts_mapping:
         time_share_explotion.detect_timeshare_explode(storage, code, 0)
+    end = time.time()
+    print(end - start)
+    start = time.time()
+    time_share_explotion.detect_timeshare_explode_opt(storage, 0)
     end = time.time()
     print(end - start)
     print(ret)
