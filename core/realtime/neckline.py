@@ -11,8 +11,6 @@ import numpy as np
 import api.storage as st
 import api.ts_map as tm
 
-# TODO: print more info in log for debug
-
 DEBUG = 1
 TRUNCATE_TIME = 55
 TRUNCATE = 0

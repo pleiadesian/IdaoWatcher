@@ -12,7 +12,6 @@ import api.ts_map as tm
 import api.storage as st
 
 DEBUG = 0
-STRONG = 1
 
 OPEN_UPPER_LIMIT = 0.1  # default 0.03
 OPEN_LOWER_LIMIT = -0.05  # default -0.02 | -0.03
@@ -27,7 +26,7 @@ LARGE_TURNOVER_THRESHOLD = 5.1  # default 500%
 AFTERNOON_LARGE_TURNOVER_THRESHOLD = 3.4
 SMALL_YESTERDAY_TURNOVER_THRESHOLD = 8
 NORMAL_YESTERDAY_TURNOVER_THRESHOLD = 7.5
-LARGE_YESTERDAY_TURNOVER_THRESHOLD = 5.2  # default 5%
+LARGE_YESTERDAY_TURNOVER_THRESHOLD = 4.3  # default 5% | 5.2%
 SUPERLARGE_YESTERDAY_TURNOVER_THRESHOLD = 4
 VOLUME_RATIO_THRESHOLD = 0.6
 
@@ -39,6 +38,7 @@ MORNING_ACCER_THRESHOLD = 0.005
 RELATIVE_LARGE_VOLUME_THRESHOLD = 50  # default 58
 SUPERSMALL_ABSOLUTE_LARGE_VOLUME_THRESHOLD = 10.0
 SMALL_ABSOLUTE_LARGE_VOLUME_THRESHOLD = 2.6  # default 350% | 250%
+STRONG_SMALL_LARGE_VOLUME_THRESHOLD = 3.5
 ABSOLUTE_LARGE_VOLUME_THRESHOLD = 0.95  # default 127%
 STRONG_ABSOLUTE_LARGE_VOLUME_THRESHOLD = 1.8
 BIG_ABSOLUTE_LARGE_VOLUME_THRESHOLD = 0.6  # default 50% | 90% | 67%
@@ -147,12 +147,16 @@ class TimeShareExplosion:
             turnover_threshold_yesterday = SMALL_YESTERDAY_TURNOVER_THRESHOLD
         elif free_share < SMALL_FREE_SHARE:
             if strong.value == 1:
-                self.deal_volume[code] = (volume, time)
-                self.deal_price[code] = price
-                self.deal_bid[code] = (bid, bid_price)
-                self.deal_ask[code] = (ask, ask_price)
-                return False
-            absolute_large_volume = deal_turnover_rate > SMALL_ABSOLUTE_LARGE_VOLUME_THRESHOLD
+                if turnover_rate < 20:
+                    self.deal_volume[code] = (volume, time)
+                    self.deal_price[code] = price
+                    self.deal_bid[code] = (bid, bid_price)
+                    self.deal_ask[code] = (ask, ask_price)
+                    return False
+            if strong.value == 1:
+                absolute_large_volume = deal_turnover_rate > STRONG_SMALL_LARGE_VOLUME_THRESHOLD
+            else:
+                absolute_large_volume = deal_turnover_rate > SMALL_ABSOLUTE_LARGE_VOLUME_THRESHOLD
             turnover_threshold = SMALL_TURNOVER_THRESHOLD
             turnover_threshold_yesterday = SMALL_YESTERDAY_TURNOVER_THRESHOLD
         elif free_share < LARGE_FREE_SHARE:
@@ -272,18 +276,21 @@ class TimeShareExplosion:
 
 
 if __name__ == '__main__':
+    class Strong:
+        value = 0
+    strong = Strong()
     storage = st.Storage()
     storage.update_realtime_storage()
     time_share_explotion = TimeShareExplosion()
-    time_share_explotion.detect_timeshare_explode(storage, '603019', 0)
+    time_share_explotion.detect_timeshare_explode(storage, '000061', strong)
     storage.update_realtime_storage()
-    ret = time_share_explotion.detect_timeshare_explode(storage, '603019', 0)
+    ret = time_share_explotion.detect_timeshare_explode(storage, '000061', strong)
     # cold run
     for code in tm.ts_mapping:
-        time_share_explotion.detect_timeshare_explode(storage, code, 0)
+        time_share_explotion.detect_timeshare_explode(storage, code, strong)
     start = time.time()
     for code in tm.ts_mapping:
-        time_share_explotion.detect_timeshare_explode(storage, code, 0)
+        time_share_explotion.detect_timeshare_explode(storage, code, strong)
     end = time.time()
     print(end - start)
     print(ret)
