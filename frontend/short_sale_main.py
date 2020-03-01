@@ -36,6 +36,7 @@ class ShortSaleMain(QMainWindow, ss.Ui_MainWindow):
             with open(self.target, 'rb') as f:
                 unpickler = pickle.Unpickler(f)
                 self.codes = unpickler.load()
+        self.display()
 
     def save(self):
         with open(self.target, 'wb') as f:
@@ -82,6 +83,10 @@ class ShortSaleMain(QMainWindow, ss.Ui_MainWindow):
             QMessageBox.question(self, "警告", "检测到股票代码输入错误，请重新输入（注意股票代码之间必须有且仅有1个空格）",
                                  QMessageBox.Ok | QMessageBox.Cancel, QMessageBox.Ok)
             return
+        if amount_text == '':
+            QMessageBox.question(self, "警告", "检测到数量输入错误，请重新输入（注意股票代码之间必须有且仅有1个空格）",
+                                 QMessageBox.Ok | QMessageBox.Cancel, QMessageBox.Ok)
+            return
         price = float(info['price'])
         amount = float(amount_text)
         stock_amount = amount // price // 100 * 100
@@ -89,16 +94,24 @@ class ShortSaleMain(QMainWindow, ss.Ui_MainWindow):
         trade = Trade()
         trade.amount = stock_amount
         trade.loan_time = curr_time
+        # stock has been traded, modify the key of old trade
+        if code_text in self.codes:
+            trade_date = str(self.codes[code_text].loan_time)
+            if trade_date[:10] == datetime.datetime.now().strftime("%Y-%m-%d"):
+                QMessageBox.question(self, "警告", "当日已融券！",
+                                     QMessageBox.Ok | QMessageBox.Cancel, QMessageBox.Ok)
+                return
+            self.codes[code_text + ' ' + trade_date] = self.codes[code_text]
         self.codes[code_text] = trade
         self.display()
 
     def closeout(self):
         code_text = self.lineEdit_code.text()
-        if code_text not in self.codes:
+        if code_text not in self.codes or self.codes[code_text].closed is True:
             QMessageBox.question(self, "警告", "无持仓",
                                  QMessageBox.Ok | QMessageBox.Cancel, QMessageBox.Ok)
             return
-        if self.codes[code_text].sell_price is None or self.codes[code_text].sell_price is None:
+        if self.codes[code_text].sell_price is None or self.codes[code_text].buy_price is None:
             QMessageBox.question(self, "警告", "还未进行交易",
                                  QMessageBox.Ok | QMessageBox.Cancel, QMessageBox.Ok)
             return
@@ -112,7 +125,7 @@ class ShortSaleMain(QMainWindow, ss.Ui_MainWindow):
             QMessageBox.question(self, "警告", "检测到股票代码输入错误，请重新输入（注意股票代码之间必须有且仅有1个空格）",
                                  QMessageBox.Ok | QMessageBox.Cancel, QMessageBox.Ok)
             return
-        if code_text not in self.codes:
+        if code_text not in self.codes or self.codes[code_text].closed is True:
             QMessageBox.question(self, "警告", "无持仓",
                                  QMessageBox.Ok | QMessageBox.Cancel, QMessageBox.Ok)
             return
@@ -132,7 +145,7 @@ class ShortSaleMain(QMainWindow, ss.Ui_MainWindow):
             QMessageBox.question(self, "警告", "检测到股票代码输入错误，请重新输入（注意股票代码之间必须有且仅有1个空格）",
                                  QMessageBox.Ok | QMessageBox.Cancel, QMessageBox.Ok)
             return
-        if code_text not in self.codes:
+        if code_text not in self.codes or self.codes[code_text].closed is True:
             QMessageBox.question(self, "警告", "无持仓",
                                  QMessageBox.Ok | QMessageBox.Cancel, QMessageBox.Ok)
             return
