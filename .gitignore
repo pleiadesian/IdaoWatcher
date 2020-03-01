@@ -2,6 +2,7 @@
 *.log
 *.dll
 *.sln
+*.xls
 *.spec
 *.vcxproj*
 .vs/
