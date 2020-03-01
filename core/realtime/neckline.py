@@ -54,7 +54,7 @@ HIGH_PRICE_PERCENT = 1.090  # default 9.5% rise ratio
 
 RUSH_HIGH_THRESHOLD = 1.04  # default 3%
 
-BOOMED_THRESHOLD = 1.005
+BOOMED_THRESHOLD = 1.003  # default 1.005
 
 path = os.getenv('PROJPATH')
 
@@ -485,7 +485,8 @@ class NeckLine:
                         print(code + "(long neckline): too low and not boomed need: "
                               + str(df.iloc[-1]['open'] * BOOMED_THRESHOLD) + ' close: ' + str(close))
                         with open(path + 'stock.log', 'a') as f:
-                            f.write(code + "(long neckline): too low and not boomed" + "\n")
+                            f.write(code + "(long neckline): too low and not boomed need: "
+                                    + str(df.iloc[-1]['open'] * BOOMED_THRESHOLD) + ' close: ' + str(close) + "\n")
                         continue
             if rise_ratio < rise_threshold:
                 continue
