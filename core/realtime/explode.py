@@ -18,7 +18,7 @@ OPEN_LOWER_LIMIT = -0.05  # default -0.02 | -0.03
 
 # RUSH_LOWER_LIMIT = -0.09  # default -0.03 | -0.05
 
-AMOUNT_THRESHOLD = 100  # 1,000,000 volume of transaction
+AMOUNT_THRESHOLD = 5000  # TODO: check it. Too aggressive now.
 SMALL_TURNOVER_THRESHOLD = 8
 TURNOVER_THRESHOLD = 8  # turnover rate 2.5%, default 0.6% | 2.5%
 AFTERNOON_TURNOVER_THRESHOLD = 6.7
@@ -28,14 +28,14 @@ SMALL_YESTERDAY_TURNOVER_THRESHOLD = 8
 NORMAL_YESTERDAY_TURNOVER_THRESHOLD = 7.5
 LARGE_YESTERDAY_TURNOVER_THRESHOLD = 4.3  # default 5% | 5.2%
 SUPERLARGE_YESTERDAY_TURNOVER_THRESHOLD = 4
-VOLUME_RATIO_THRESHOLD = 0.6
+VOLUME_RATIO_THRESHOLD = 0.9  # TODO: check it. Too aggressive now.
 
 EXPLODE_RISE_RATIO_THRESHOLD = 0.0158
 ACCER_THRESHOLD = 0.01  # ￥0.01
 LARGE_ACCER_THRESHOLD = 0.01  # %2
 MORNING_ACCER_THRESHOLD = 0.005
 
-RELATIVE_LARGE_VOLUME_THRESHOLD = 50  # default 58
+RELATIVE_LARGE_VOLUME_THRESHOLD = 240  # TODO: complete it.
 SUPERSMALL_ABSOLUTE_LARGE_VOLUME_THRESHOLD = 10.0
 SMALL_ABSOLUTE_LARGE_VOLUME_THRESHOLD = 2.6  # default 350% | 250%
 STRONG_SMALL_LARGE_VOLUME_THRESHOLD = 3.5
@@ -207,25 +207,19 @@ class TimeShareExplosion:
 
         # add strict yesterday turnover threshold in the morning
         if minutes_elapse <= 50:
-            if turnover_rate_yesterday < turnover_threshold_yesterday:
-                # print(code + ' yesterday turnover rate is too low')
-                # with open(path + 'stock.log', 'a') as f:
-                #     f.write(code + ' yesterday turnover rate is too low' + "\n")
+            relative_large_volume = deal_volume_ratio > RELATIVE_LARGE_VOLUME_THRESHOLD
+            if turnover_rate_yesterday < turnover_threshold_yesterday and not relative_large_volume:
                 return False
             if pct_chg_yesterday > 9.75:
-                # print(code + ' yesterday at limit')
-                # with open(path + 'stock.log', 'a') as f:
-                #     f.write(code + ' yesterday at limit' + "\n")
                 return False
 
         rush_not_broken = OPEN_LOWER_LIMIT <= open_ratio <= OPEN_UPPER_LIMIT
         # rush_not_broken &= low_ratio >= RUSH_LOWER_LIMIT
 
-        active_stock = turnover_rate >= turnover_threshold and volume_ratio > VOLUME_RATIO_THRESHOLD
-        relative_large_volume = deal_volume_ratio > RELATIVE_LARGE_VOLUME_THRESHOLD
+        active_stock = turnover_rate >= turnover_threshold and volume_ratio > VOLUME_RATIO_THRESHOLD and \
+             amount * 240 / minutes_elapse / 10000 > AMOUNT_THRESHOLD
 
-        exploded = amount / 10000 > AMOUNT_THRESHOLD
-        exploded &= active_stock
+        exploded = active_stock
 
         exploded &= rush_not_broken
         # exploded &= rise_ratio >= EXPLODE_RISE_RATIO_THRESHOLD
@@ -235,11 +229,7 @@ class TimeShareExplosion:
                      bid_price >= self.deal_bid[code][1] and
                      (bid_price > self.deal_bid[code][1] or
                       curr_deal_positive_ask >= 0.5 * (volume - self.deal_volume[code][0])))
-                     # and
-                     # ask_price >= self.deal_ask[code][1] and
-                     # (ask_price > self.deal_ask[code][1] or
-                     #  curr_deal_positive_bid <= 0.5 * (volume - self.deal_volume[code][0])))
-        exploded &= (relative_large_volume or absolute_large_volume)
+        exploded &= absolute_large_volume
         # if code == '000955':
         #     print(str(time) + ' '+str(curr_deal_volume))
 
@@ -276,15 +266,16 @@ class TimeShareExplosion:
 
 
 if __name__ == '__main__':
+    code = '603238'
     class Strong:
         value = 0
     strong = Strong()
     storage = st.Storage()
     storage.update_realtime_storage()
     time_share_explotion = TimeShareExplosion()
-    time_share_explotion.detect_timeshare_explode(storage, '000061', strong)
+    time_share_explotion.detect_timeshare_explode(storage, code, strong)
     storage.update_realtime_storage()
-    ret = time_share_explotion.detect_timeshare_explode(storage, '000061', strong)
+    ret = time_share_explotion.detect_timeshare_explode(storage, code, strong)
     # cold run
     for code in tm.ts_mapping:
         time_share_explotion.detect_timeshare_explode(storage, code, strong)
