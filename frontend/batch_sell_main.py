@@ -3,11 +3,15 @@
 @ Author:   pleiadesian
 @ Datetime: 2020-02-14 08:55
 """
+import os
 import sys
 import math
 import tushare as ts
+import smtplib
 import frontend.batch_sell as bs
 import api.ts_map as tm
+from email.mime.text import MIMEText
+from email.header import Header
 from frontend import setfocus
 from PyQt5.QtWidgets import QApplication, QMainWindow, QMessageBox, QWidget
 from PyQt5.QtCore import QTimer
@@ -165,9 +169,34 @@ class BatchSellMain(QMainWindow, bs.Ui_MainWindow):
         QMessageBox.question(self, "提示", "批量委托卖出完毕",
                              QMessageBox.Ok | QMessageBox.Cancel, QMessageBox.Ok)
 
+    def send_email(self):
+        sender = '574402791@qq.com'
+        password = os.getenv('MAIL_PASSWORD')
+        receivers = 'wzl574402791@outlook.com'
+        smtp_server = 'smtp.qq.com'
+
+        # 三个参数：第一个为文本内容，第二个 plain 设置文本格式，第三个 utf-8 设置编码
+        message = MIMEText('股价预警', 'plain', 'utf-8')
+        message['From'] = Header(sender)
+        message['To'] = Header(receivers)
+        message['Subject'] = Header('股价预警', 'utf-8')
+
+        while True:
+            try:
+                server = smtplib.SMTP_SSL()
+                server.connect(smtp_server, 465)
+
+                server.login(sender, password)
+                server.sendmail(sender, receivers, message.as_string())
+                break
+            except smtplib.SMTPException:
+                continue
+
 
 if __name__ == '__main__':
-    app = QApplication(sys.argv)
     batch_sell_main = BatchSellMain()
-    batch_sell_main.show()
-    app.exec_()
+    batch_sell_main.send_email()
+    # app = QApplication(sys.argv)
+    # batch_sell_main = BatchSellMain()
+    # batch_sell_main.show()
+    # app.exec_()
