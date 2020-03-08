@@ -140,10 +140,9 @@ class BatchSellMain(QMainWindow, bs.Ui_MainWindow):
                     setfocus.sell_code(code, str(ask_price), None, self.window_info)
                     self.codes.remove(code)
                     del self.watch[code]
+                    self.send_email(code + '已自动卖出')
                 elif sell_price_high < ask_price:
-                    setfocus.sell_code(code, str(ask_price), None, self.window_info)
-                    self.codes.remove(code)
-                    del self.watch[code]
+                    self.send_email(code + '已突破预期价格')
 
     def watch_sell_start(self):
         if self.pushButton_watch_sell.text() == '监控卖出':
@@ -170,14 +169,14 @@ class BatchSellMain(QMainWindow, bs.Ui_MainWindow):
                              QMessageBox.Ok | QMessageBox.Cancel, QMessageBox.Ok)
 
     @staticmethod
-    def send_email():
+    def send_email(text):
         sender = '574402791@qq.com'
         password = os.getenv('MAIL_PASSWORD')
         receivers = 'wzl574402791@outlook.com'
         smtp_server = 'smtp.qq.com'
 
         # 三个参数：第一个为文本内容，第二个 plain 设置文本格式，第三个 utf-8 设置编码
-        message = MIMEText('股价预警', 'plain', 'utf-8')
+        message = MIMEText(text, 'plain', 'utf-8')
         message['From'] = Header(sender)
         message['To'] = Header(receivers)
         message['Subject'] = Header('股价预警', 'utf-8')
@@ -195,8 +194,7 @@ class BatchSellMain(QMainWindow, bs.Ui_MainWindow):
 
 
 if __name__ == '__main__':
-    BatchSellMain.send_email()
-    # app = QApplication(sys.argv)
-    # batch_sell_main = BatchSellMain()
-    # batch_sell_main.show()
-    # app.exec_()
+    app = QApplication(sys.argv)
+    batch_sell_main = BatchSellMain()
+    batch_sell_main.show()
+    app.exec_()
