@@ -169,7 +169,8 @@ class BatchSellMain(QMainWindow, bs.Ui_MainWindow):
         QMessageBox.question(self, "提示", "批量委托卖出完毕",
                              QMessageBox.Ok | QMessageBox.Cancel, QMessageBox.Ok)
 
-    def send_email(self):
+    @staticmethod
+    def send_email():
         sender = '574402791@qq.com'
         password = os.getenv('MAIL_PASSWORD')
         receivers = 'wzl574402791@outlook.com'
@@ -183,8 +184,8 @@ class BatchSellMain(QMainWindow, bs.Ui_MainWindow):
 
         while True:
             try:
-                server = smtplib.SMTP_SSL()
-                server.connect(smtp_server, 465)
+                server = smtplib.SMTP_SSL(host=smtp_server)
+                server.connect(host=smtp_server, port=465)
 
                 server.login(sender, password)
                 server.sendmail(sender, receivers, message.as_string())
@@ -194,8 +195,7 @@ class BatchSellMain(QMainWindow, bs.Ui_MainWindow):
 
 
 if __name__ == '__main__':
-    batch_sell_main = BatchSellMain()
-    batch_sell_main.send_email()
+    BatchSellMain.send_email()
     # app = QApplication(sys.argv)
     # batch_sell_main = BatchSellMain()
     # batch_sell_main.show()
