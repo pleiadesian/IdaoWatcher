@@ -110,7 +110,7 @@
    <widget class="QPushButton" name="pushButton_sell">
     <property name="geometry">
      <rect>
-      <x>130</x>
+      <x>60</x>
       <y>770</y>
       <width>251</width>
       <height>91</height>
@@ -260,13 +260,13 @@
      </font>
     </property>
    </widget>
-   <widget class="QPushButton" name="pushButton_watch_sell">
+   <widget class="QPushButton" name="pushButton_watch_sell_green">
     <property name="geometry">
      <rect>
-      <x>440</x>
-      <y>770</y>
+      <x>360</x>
+      <y>810</y>
       <width>251</width>
-      <height>91</height>
+      <height>60</height>
      </rect>
     </property>
     <property name="font">
@@ -275,7 +275,7 @@
      </font>
     </property>
     <property name="text">
-     <string>监控卖出</string>
+     <string>绿盘监控卖出</string>
     </property>
    </widget>
    <widget class="QLabel" name="label_7">
@@ -344,6 +344,63 @@
      </font>
     </property>
    </widget>
+   <widget class="QRadioButton" name="radioButton_tdx">
+    <property name="geometry">
+     <rect>
+      <x>670</x>
+      <y>770</y>
+      <width>100</width>
+      <height>20</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>通达信</string>
+    </property>
+   </widget>
+   <widget class="QRadioButton" name="radioButton_zx">
+    <property name="geometry">
+     <rect>
+      <x>670</x>
+      <y>800</y>
+      <width>100</width>
+      <height>20</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>中信</string>
+    </property>
+   </widget>
+   <widget class="QRadioButton" name="radioButton_ct">
+    <property name="geometry">
+     <rect>
+      <x>670</x>
+      <y>830</y>
+      <width>100</width>
+      <height>20</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>财通</string>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="pushButton_watch_sell_red">
+    <property name="geometry">
+     <rect>
+      <x>360</x>
+      <y>760</y>
+      <width>251</width>
+      <height>60</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <pointsize>30</pointsize>
+     </font>
+    </property>
+    <property name="text">
+     <string>红盘监控卖出</string>
+    </property>
+   </widget>
    <zorder>label</zorder>
    <zorder>pushButton_confirm</zorder>
    <zorder>label_2</zorder>
@@ -358,11 +415,15 @@
    <zorder>label_6</zorder>
    <zorder>lineEdit_percent</zorder>
    <zorder>lineEdit_stock</zorder>
-   <zorder>pushButton_watch_sell</zorder>
+   <zorder>pushButton_watch_sell_green</zorder>
    <zorder>label_7</zorder>
    <zorder>lineEdit_watch_price_low</zorder>
    <zorder>label_8</zorder>
    <zorder>lineEdit_watch_price_high</zorder>
+   <zorder>radioButton_tdx</zorder>
+   <zorder>radioButton_zx</zorder>
+   <zorder>radioButton_ct</zorder>
+   <zorder>pushButton_watch_sell_red</zorder>
   </widget>
   <widget class="QMenuBar" name="menubar">
    <property name="geometry">
@@ -401,8 +462,8 @@
    <slot>batch_sell_start()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>328</x>
-     <y>845</y>
+     <x>258</x>
+     <y>867</y>
     </hint>
     <hint type="destinationlabel">
      <x>613</x>
@@ -427,18 +488,82 @@
    </hints>
   </connection>
   <connection>
-   <sender>pushButton_watch_sell</sender>
+   <sender>radioButton_tdx</sender>
    <signal>clicked()</signal>
    <receiver>MainWindow</receiver>
-   <slot>watch_sell_start()</slot>
+   <slot>select_tdx()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>605</x>
-     <y>803</y>
+     <x>701</x>
+     <y>800</y>
     </hint>
     <hint type="destinationlabel">
-     <x>684</x>
-     <y>814</y>
+     <x>777</x>
+     <y>777</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>radioButton_zx</sender>
+   <signal>clicked()</signal>
+   <receiver>MainWindow</receiver>
+   <slot>select_zx()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>730</x>
+     <y>834</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>790</x>
+     <y>831</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>radioButton_ct</sender>
+   <signal>clicked()</signal>
+   <receiver>MainWindow</receiver>
+   <slot>select_ct()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>711</x>
+     <y>862</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>781</x>
+     <y>875</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>pushButton_watch_sell_red</sender>
+   <signal>clicked()</signal>
+   <receiver>MainWindow</receiver>
+   <slot>watch_sell_start_red()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>487</x>
+     <y>802</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>644</x>
+     <y>843</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>pushButton_watch_sell_green</sender>
+   <signal>clicked()</signal>
+   <receiver>MainWindow</receiver>
+   <slot>watch_sell_start_green()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>557</x>
+     <y>871</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>629</x>
+     <y>871</y>
     </hint>
    </hints>
   </connection>
@@ -447,6 +572,10 @@
   <slot>confirm()</slot>
   <slot>batch_sell_start()</slot>
   <slot>delete()</slot>
-  <slot>watch_sell_start()</slot>
+  <slot>watch_sell_start_green()</slot>
+  <slot>select_tdx()</slot>
+  <slot>select_zx()</slot>
+  <slot>select_ct()</slot>
+  <slot>watch_sell_start_red()</slot>
  </slots>
 </ui>

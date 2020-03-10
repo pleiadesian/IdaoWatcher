@@ -8,6 +8,7 @@ import sys
 import math
 import tushare as ts
 import smtplib
+import datetime
 import frontend.batch_sell as bs
 import api.ts_map as tm
 from email.mime.text import MIMEText
@@ -17,6 +18,8 @@ from PyQt5.QtWidgets import QApplication, QMainWindow, QMessageBox, QWidget
 from PyQt5.QtCore import QTimer
 
 INTERVAL = 3000
+WATCHING_GREEN = 0
+WATCHING_RED = 1
 
 
 def get_new_a1p(codes):
@@ -38,6 +41,8 @@ class BatchSellMain(QMainWindow, bs.Ui_MainWindow):
         self.amount = dict()
         self.watch = dict()
         self.watching = False
+        self.watching_mode = WATCHING_GREEN
+        self.call_auction_complete = False
 
         self.timer = QTimer(self)
         self.timer.timeout.connect(self.check_watch)
@@ -126,30 +131,64 @@ class BatchSellMain(QMainWindow, bs.Ui_MainWindow):
 
     def check_watch(self):
         if self.watching:
-            a1_ps = get_new_a1p(self.codes)
-            if len(a1_ps) != len(self.codes) or len(self.codes) == 0:
-                QMessageBox.question(self, "警告", "检测到股票代码输入错误，请重新输入（注意股票代码之间必须有且仅有1个空格）",
-                                     QMessageBox.Ok | QMessageBox.Cancel, QMessageBox.Ok)
-                self.pushButton_watch_sell.setText('监控卖出')
-                self.watching = False
-                return
-            for code, ask_price in zip(self.codes, a1_ps):
-                sell_price_low = self.watch[code][0]
-                sell_price_high = self.watch[code][1]
-                if sell_price_low > ask_price:
-                    setfocus.sell_code(code, str(ask_price), None, self.window_info)
-                    self.codes.remove(code)
-                    del self.watch[code]
-                    self.send_email(code + '已自动卖出')
-                elif sell_price_high < ask_price:
-                    self.send_email(code + '已突破预期价格')
+            if self.watching_mode == WATCHING_GREEN:
+                a1_ps = get_new_a1p(self.codes)
+                if len(a1_ps) != len(self.codes) or len(self.codes) == 0:
+                    QMessageBox.question(self, "警告", "检测到股票代码输入错误，请重新输入（注意股票代码之间必须有且仅有1个空格）",
+                                         QMessageBox.Ok | QMessageBox.Cancel, QMessageBox.Ok)
+                    self.pushButton_watch_sell.setText('监控卖出')
+                    self.watching = False
+                    return
+                for code, ask_price in zip(self.codes, a1_ps):
+                    sell_price_low = self.watch[code][0]
+                    sell_price_high = self.watch[code][1]
+                    if sell_price_low > ask_price:
+                        setfocus.sell_code(code, str(ask_price), None, self.window_info)
+                        self.codes.remove(code)
+                        del self.watch[code]
+                        self.send_email(code + '已自动卖出')
+                    elif sell_price_high < ask_price:
+                        self.send_email(code + '已突破预期价格')
+            else:
+                if '09:24:00' < datetime.datetime.now().strftime('%H:%M:%S') < '09:25:00':
+                    a1_ps = get_new_a1p(self.codes)
+                    if len(a1_ps) != len(self.codes) or len(self.codes) == 0:
+                        assert False
+                    for code, ask_price in zip(self.codes, a1_ps):
+                        sell_price = str(round(ask_price * (1 - float(self.price[code]) / 100), 2))
+                        if code in self.amount:
+                            amt = self.amount[code]
+                        else:
+                            amt = None
+                        setfocus.sell_code(code, sell_price, amt, self.window_info)
+                    self.codes = []
+                    self.watch.clear()
+                    self.send_email('红盘集合竞价卖出完毕')
 
-    def watch_sell_start(self):
-        if self.pushButton_watch_sell.text() == '监控卖出':
-            self.pushButton_watch_sell.setText('取消')
+    def watch_sell_start_green(self):
+        if self.pushButton_watch_sell_green.text() == '绿盘监控卖出':
+            self.pushButton_watch_sell_green.setText('取消')
+            self.pushButton_sell.setEnabled(False)
+            self.pushButton_watch_sell_red.setEnabled(False)
+            self.watching_mode = WATCHING_GREEN
             self.watching = True
         else:
-            self.pushButton_watch_sell.setText('监控卖出')
+            self.pushButton_watch_sell_green.setText('绿盘监控卖出')
+            self.pushButton_sell.setEnabled(True)
+            self.pushButton_watch_sell_red.setEnabled(True)
+            self.watching = False
+
+    def watch_sell_start_red(self):
+        if self.pushButton_watch_sell_red.text() == '红盘监控卖出':
+            self.pushButton_watch_sell_red.setText('取消')
+            self.pushButton_sell.setEnabled(False)
+            self.pushButton_watch_sell_green.setEnabled(False)
+            self.watching_mode = WATCHING_RED
+            self.watching = True
+        else:
+            self.pushButton_watch_sell_red.setText('红盘监控卖出')
+            self.pushButton_sell.setEnabled(True)
+            self.pushButton_watch_sell_green.setEnabled(True)
             self.watching = False
 
     def batch_sell_start(self):
@@ -191,6 +230,18 @@ class BatchSellMain(QMainWindow, bs.Ui_MainWindow):
                 break
             except smtplib.SMTPException:
                 continue
+
+    def select_zx(self):
+        if self.radioButton_zx.isChecked():
+            self.window_info = setfocus.change_fs('中信')
+
+    def select_ct(self):
+        if self.radioButton_ct.isChecked():
+            self.window_info = setfocus.change_fs('财通')
+
+    def select_tdx(self):
+        if self.radioButton_tdx.isChecked():
+            self.window_info = setfocus.change_fs('通达')
 
 
 if __name__ == '__main__':
