@@ -4,25 +4,42 @@ import win32gui, win32process, win32con, win32com.client
 import ctypes
 import pyautogui
 
+SLEEP_INTERVAL = 1
+TYPE_INTERVAL = 0.05
 
-class setf():
-    def __init__(self):
+
+class setf:
+    def __init__(self, zcz='中信'):
         self.gamename = 'TdxW.exe'
         self.shell = win32com.client.Dispatch("WScript.Shell")
         self.dll = ctypes.CDLL("user32.dll")
+        self.zcz = zcz
         self.pid = self.get_pid_for_pname(self.gamename)
 
     def setfocus(self):
-        if self.pid:
-            for hwnd in self.get_hwnds_for_pid(self.pid):
-                self.shell.SendKeys('%')
-                self.dll.LockSetForegroundWindow(2)
-                if self.dll.IsIconic(hwnd):
-                    win32gui.SendMessage(hwnd, win32con.WM_SYSCOMMAND, win32con.SC_RESTORE, 0)
-                self.dll.SetWindowPos(hwnd, win32con.HWND_TOPMOST, 0, 0, 0, 0,
-                                      win32con.SWP_NOSIZE | win32con.SWP_NOMOVE)
-                self.dll.SetForegroundWindow(hwnd)
-                self.dll.SetActiveWindow(hwnd)
+        while True:
+            hwnds = []
+            if self.pid:
+                for hwnd in self.get_hwnds_for_pid(self.pid):
+                    self.shell.SendKeys('%')
+                    self.dll.LockSetForegroundWindow(2)
+                    if self.dll.IsIconic(hwnd):
+                        win32gui.SendMessage(hwnd, win32con.WM_SYSCOMMAND, win32con.SC_RESTORE, 0)
+                    self.dll.SetWindowPos(hwnd, win32con.HWND_TOPMOST, 0, 0, 0, 0,
+                                          win32con.SWP_NOSIZE | win32con.SWP_NOMOVE)
+                    self.dll.SetForegroundWindow(hwnd)
+                    self.dll.SetActiveWindow(hwnd)
+                    hwnds.append(hwnd)
+            hwnd_front = self.dll.GetForegroundWindow()
+            for hwnd in hwnds:
+                if hwnd == hwnd_front:
+                    title_text = win32gui.GetWindowText(hwnd)
+                    if self.zcz != '通达' and len(title_text) > 0:
+                        continue
+                    if title_text[:2] == '闪电':
+                        self.dll.SetForegroundWindow(0)
+                        self.dll.SetActiveWindow(0)
+                    return
 
     def get_pid_for_pname(self, processName):
         pids = psutil.pids()  # 获取主机所有的PID
@@ -30,12 +47,8 @@ class setf():
             p = psutil.Process(pid)  # 实例化进程对象
             if p.name() == processName:  # 判断实例进程名与输入的进程名是否一致（判断进程是否存活）
                 for hwnd in self.get_hwnds_for_pid(pid):
-                    a = win32gui.GetWindowText(hwnd)
-                    # TODO: HIGH RISK! DO NOT input code to '闪电买入' and '闪电卖出'
-                    if win32gui.GetWindowText(hwnd)[:2] == '中信':
+                    if win32gui.GetWindowText(hwnd)[:2] == self.zcz:
                         return pid  # 返回
-                        # print(win32gui.GetWindowText(hwnd))
-                    # print(win32gui.GetWindowText(hwnd))
         return 0
 
     def get_hwnds_for_pid(self, pid):
@@ -58,19 +71,42 @@ def init_fs():
     return window_info
 
 
+def change_fs(zcz):
+    screen_width, screen_height = pyautogui.size()
+    sf = setf(zcz)
+    window_info = [sf, screen_width, screen_height]
+    return window_info
+
+
 def open_code(code, window_info, origin_window=None):
     sf = window_info[0]
-    screen_width = window_info[1]
-    screen_height = window_info[2]
     sf.setfocus()
-    # pyautogui.moveTo(screen_width / 2, screen_height / 2)
-    # pyautogui.click(x=None, y=None, clicks=1, interval=0.0, button='left', duration=0.0, tween=pyautogui.linear)
-    code = '0'+code  # why huawei matebook need padding?
+    pyautogui.press('=')
     pyautogui.typewrite(message=code, interval=0.01)
     pyautogui.press('enter')
     if origin_window is not None:
         origin_window.raise_()
         origin_window.activateWindow()
+
+
+def sell_code(code, price, amount, window_info):
+    sf = window_info[0]
+    sf.setfocus()
+    pyautogui.press('=')
+    pyautogui.typewrite(message=code, interval=TYPE_INTERVAL)
+    pyautogui.press('enter')
+    pyautogui.typewrite(message='.-1', interval=TYPE_INTERVAL)
+    pyautogui.press('enter')
+    pyautogui.sleep(SLEEP_INTERVAL)
+    pyautogui.press('up')
+    # pyautogui.press('backspace', interval=1)
+    pyautogui.typewrite(message=price, interval=TYPE_INTERVAL)
+    pyautogui.press('enter')
+    if amount is not None:
+        pyautogui.typewrite(message=amount, interval=TYPE_INTERVAL)
+    pyautogui.press('enter')
+    pyautogui.press('enter')
+    pyautogui.press('enter')
 
 
 if __name__ == '__main__':

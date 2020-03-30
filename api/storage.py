@@ -19,14 +19,12 @@ import api.ts_map as tm
 
 
 DEBUG = 1
-RELOAD = 0
 
 DATA_COLS = ['name', 'open', 'pre_close', 'price', 'high', 'low', 'bid', 'ask', 'volume', 'amount', 'b1_v', 'b1_p',
              'b2_v', 'b2_p', 'b3_v', 'b3_p', 'b4_v', 'b4_p', 'b5_v', 'b5_p', 'a1_v', 'a1_p', 'a2_v', 'a2_p', 'a3_v',
              'a3_p', 'a4_v', 'a4_p', 'a5_v', 'a5_p', 'date', 'time', 's']
 
 token = os.getenv('TOKEN')
-# token = os.environ
 ts.set_token(token)
 pro = ts.pro_api(token)
 
@@ -81,30 +79,7 @@ def process_plaintext(index, reg, reg_sym):
     return realtime_info
 
 
-# def process_peak(df):
-#     """
-#     find the peak in the time share chart
-#     :param df: time share data frame
-#     :return: peak, peak time
-#     """
-#     if DEBUG == 1:
-#         start = time.time()
-#     df_sorted = df.sort_values(by=['high'])
-#     df_high = df[df.high == df_sorted.high[-1]]
-#     df_selected = df_high.sort_index()
-#
-#     if DEBUG == 1:
-#         end = time.time()
-#         print(end - start)
-#     peak = df_selected['high'].values[0]
-#     peak_time = df_selected.index.values[0][-8:]
-#     rounddown_peak_time = (datetime.datetime.strptime(peak_time, "%H:%M:%S") - datetime.timedelta(minutes=5))\
-#         .strftime("%H:%M:%S")
-#     return peak, rounddown_peak_time
-
-
 def process_json(codes):
-    i = 0
     df_date = pro.trade_cal(exchange='SSE', start_date=datetime.datetime.now().strftime('%Y') + '0101', is_open=1)
     pretrade_df = df_date[df_date.cal_date < datetime.datetime.now().strftime('%Y%m%d')]
     if len(pretrade_df) == 0:
@@ -115,16 +90,10 @@ def process_json(codes):
     pretrade_date = pretrade_df['cal_date'].values[-1]
     pretrade_date = pretrade_date[:4] + '-' + pretrade_date[4:6] + '-' + pretrade_date[6:]
 
-    peak_info = dict()
-    # cols = ['date', 'open', 'high', 'close', 'low', 'volume', 'price_change', 'p_change', 'ma5', 'ma10', 'ma20',
-    #         'v_ma5', 'v_ma10', 'v_ma20', 'turnover']  # only for K-5
     cols = ['date', 'open', 'high', 'close', 'low', 'volume', 'price_change', 'p_change',
             'ma5', 'ma10', 'ma20', 'v_ma5', 'v_ma10', 'v_ma20']  # only for daily
     df_curr = pd.DataFrame(columns=cols)
     for code in codes:
-        # if DEBUG == 1:
-        #     start_time = time.time()
-        # url = '%sapi.finance.%s/akmin?scode=%s&type=%s' % ('http://', 'ifeng.com', code, '5')
         url = '%sapi.finance.%s/%s/?code=%s&type=last' % ('http://', 'ifeng.com', 'akdaily', code)
         not_get = True
         resp = None
@@ -138,8 +107,6 @@ def process_json(codes):
             except requests.exceptions.RequestException as e:
                 time.sleep(1)
                 not_get = True
-        # if DEBUG == 1:
-        #     mid_time = time.time()
         text = resp.text
         js = json.loads(text)
         df = pd.DataFrame(js['record'], columns=cols)
@@ -154,19 +121,6 @@ def process_json(codes):
         for col in cols[1:]:
             df[col] = df[col].astype(float)
         df_curr = pd.concat([df_curr, df])
-        # curr_date = df['date'].values[-1][0:10]    # only for K-5
-        # df = df.drop('turnover', axis=1)  # only for K-5
-        # df = df.set_index('date')
-        # df = df.sort_index(ascending=False)
-        # # TODO: calc the peak
-        # peak, peak_time = process_peak(df)
-        # peak_info[code[2:]] = (peak, peak_time)
-        # if DEBUG == 1:
-        #     end_time = time.time()
-        #     print("mid" + str(mid_time - start_time))
-        #     print("final" + str(end_time - mid_time))
-        #     i += 1
-        #     print(str(i) + ' finished')
     return df_curr
 
 
@@ -194,8 +148,6 @@ def process_json_realtime(code):
         df[col] = df[col].astype(float)
     df.insert(0, 'code', code[2:])
     df['code'] = code[2:]
-    # df = df.set_index('day')
-    # df = df.sort_index(ascending=False)
     return df
 
 
@@ -231,7 +183,7 @@ def process_histdata(date):
         try:
             df = pro.daily(ts_code='', start_date=date, end_date=date)
             return df
-        except requests.exceptions.RequestException as e:
+        except requests.exceptions.RequestException or json.decoder.JSONDecodeError as e:
             time.sleep(1)
             not_get = True
 
@@ -244,15 +196,21 @@ class Storage:
         self.reg = re.compile(r'\="(.*?)\";')
         self.reg_sym = re.compile(r'(?:sh|sz)(.*?)\=')
         self.peak_info = dict()
-        # self.basic_info = None
-        # self.hist_data = None
         self.basic_info = dict()
         self.hist_data = dict()
+        self.ts_mapping = None
+        self.detail_code_list = None
+        self.code_list = None
+        self.ts_lower_mapping = None
 
         # self.init_neckline_storage()
-        if DEBUG == 1:
-            target_bi = 'basicinfo.dat'
-            target_hd = 'histdata.dat'
+        path = os.getenv('PROJPATH')
+        load_from_disk = True
+        target_bi = path + 'basicinfo.dat'
+        target_hd = path + 'histdata.dat'
+        if not os.path.isfile(target_bi) or not os.path.isfile(target_hd):
+            load_from_disk = False
+        if load_from_disk:
             if os.path.getsize(target_bi) > 0 and os.path.getsize(target_hd) > 0:
                 with open(target_bi, "rb") as f:
                     unpickler = pickle.Unpickler(f)
@@ -260,55 +218,21 @@ class Storage:
                 with open(target_hd, "rb") as f:
                     unpickler = pickle.Unpickler(f)
                     self.hist_data = unpickler.load()
-        else:
+            load_trade_date = self.basic_info['000001.SZ']['trade_date']
+            df_date = self.pro.trade_cal(exchange='SSE', end_date=datetime.datetime.now().strftime('%Y%m%d'), is_open=1)
+            pre_trade_date = df_date.iloc[-2]['cal_date']
+            if pre_trade_date != load_trade_date:
+                load_from_disk = False
+                self.basic_info = dict()
+                self.hist_data = dict()
+        if not load_from_disk:
             self.init_basicinfo()
             self.init_histdata()
-            if RELOAD == 1:
-                with open('basicinfo.dat', 'wb') as f:
-                    pickle.dump(self.basic_info, f)
-                with open('histdata.dat', 'wb') as f:
-                    pickle.dump(self.hist_data, f)
-
-    def update_realtime_storage(self):
-        """
-        scratch realtime data and store it locally
-        """
-        # if DEBUG == 1:
-        #     start_time = time.time()
-        args = []
-        for i in range(0, 5):
-            args.append((i, self.reg, self.reg_sym))
-        not_create = True
-        while not_create:
-            try:
-                p = ThreadPool()
-                not_create = False
-            except RuntimeError as e:
-                time.sleep(3)
-                not_create = True
-
-        # df_list = p.starmap(process_plaintext, args)
-        dict_list = p.starmap(process_plaintext, args)
-
-        args_remain = []
-        for i in range(5, 8):
-            args_remain.append((i, self.reg, self.reg_sym))
-        # df_list_remain = p.starmap(process_plaintext, args_remain)
-        dict_list_remain = p.starmap(process_plaintext, args_remain)
-        # df_curr = pd.concat(df_list + df_list_remain)
-        # df_curr = df_curr.set_index('code')
-        dict_curr = {k:v for dic in dict_list for k,v in dic.items()}
-        dict_curr_remain = {k:v for dic in dict_list_remain for k,v in dic.items()}
-        # self.realtime_quotes = df_curr
-        self.realtime_quotes = {**dict_curr, **dict_curr_remain}
-        # if DEBUG == 1:
-        #     end_time = time.time()
-        #     print("update_realtime_storage: "+str(end_time - start_time))
-
-    def update_daily_storage(self):
-        """
-        scratch daily data and store it locally
-        """
+            with open(path + 'basicinfo.dat', 'wb') as f:
+                pickle.dump(self.basic_info, f)
+            with open(path + 'histdata.dat', 'wb') as f:
+                pickle.dump(self.hist_data, f)
+        self.init_ts_map()
 
     def get_realtime_chart(self, code_list):
         """
@@ -351,26 +275,6 @@ class Storage:
         :return: basic information for code
         """
         assert self.basic_info is not None
-        # hit stock that suspended trading yesterday, load it
-        # if ts_code not in self.basic_info.index:
-        # TODO: prefetch data of suspended stock
-        if ts_code not in self.basic_info:
-            delta = 1
-            suspended = True
-            while suspended:
-                df_basicinfo = self.pro.daily_basic(ts_code=ts_code,
-                                                    trade_date=(datetime.datetime.now() -
-                                                                datetime.timedelta(days=delta)).strftime('%Y%m%d'))
-                if len(df_basicinfo) == 0:
-                    delta += 1
-                    continue
-                # df_suspended = df_basicinfo.set_index('ts_code')
-                # self.basic_info = pd.concat([self.basic_info, df_suspended])
-                temp_series = df_basicinfo.loc[0]
-                self.basic_info[ts_code] = temp_series
-                return temp_series
-                # suspended = False
-        # return self.basic_info.loc[ts_code]
         return self.basic_info[ts_code]
 
     def get_histdata_single(self, ts_code):
@@ -382,25 +286,87 @@ class Storage:
         # return self.hist_data.loc[ts_code]
         return self.hist_data[ts_code]
 
+    def update_realtime_storage(self):
+        """
+        scratch realtime data and store it locally
+        """
+        args = []
+        for i in range(0, 5):
+            args.append((i, self.reg, self.reg_sym))
+        not_create = True
+        while not_create:
+            try:
+                p = ThreadPool()
+                not_create = False
+            except RuntimeError as e:
+                time.sleep(3)
+                not_create = True
+
+        dict_list = p.starmap(process_plaintext, args)
+
+        args_remain = []
+        for i in range(5, tm.CODE_SEGMENT_NUM):
+            args_remain.append((i, self.reg, self.reg_sym))
+        dict_list_remain = p.starmap(process_plaintext, args_remain)
+        dict_curr = {k:v for dic in dict_list for k,v in dic.items()}
+        dict_curr_remain = {k:v for dic in dict_list_remain for k,v in dic.items()}
+        self.realtime_quotes = {**dict_curr, **dict_curr_remain}
+
+    def update_realtime_storage_backtest(self, moment):
+        # TODO: fetch from Wind api
+        pass
+
+    def update_basicinfo_backtest(self, date):
+        """
+        used in backtest
+        :param date: backtest date (%Y%m%d)
+        """
+        self.basic_info = dict()
+        # get daily basic information
+        df_date = self.pro.trade_cal(exchange='SSE', end_date=date, is_open=1)
+        pretrade_date = df_date['cal_date'].values[-2]
+        not_get = True
+        while not_get:
+            try:
+                df_basicinfo = self.pro.daily_basic(ts_code='', trade_date=pretrade_date)
+                for index, row in df_basicinfo.iterrows():
+                    self.basic_info[row['ts_code']] = row
+                not_get = False
+            except requests.exceptions.RequestException as e:
+                time.sleep(1)
+                not_get = True
+
+    def update_histdata_backtest(self, date):
+        """
+        used in backtest
+        :param date: backtest date (%Y%m%d)
+        """
+        self.hist_data = dict()
+        days = 365
+        df_date = self.pro.trade_cal(exchange='SSE', end_date=date, is_open=1)
+        df_pretrade = df_date[:-1]
+        df_pre5 = df_pretrade[-days:]
+        pretrade_date = df_pre5['cal_date'].values
+
+        p = ThreadPool()
+        df_list = p.map(process_histdata, pretrade_date)
+
+        df_histdata = pd.concat(df_list)
+        gb = df_histdata.set_index(['trade_date']).sort_index().groupby('ts_code')
+        for ts_code in tm.ts_mapping.values():
+            self.hist_data[ts_code] = gb.get_group(ts_code)
+
     def init_basicinfo(self):
         """
         initialize stock basic info
         """
         # get daily basic information
-        df_date = self.pro.trade_cal(exchange='SSE', start_date=datetime.datetime.now().strftime('%Y')+'0101', is_open=1)
-        pretrade_df = df_date[df_date.cal_date < datetime.datetime.now().strftime('%Y%m%d')]
-        if len(pretrade_df) == 0:
-            # consider the trade date after New Year's day
-            df_date = self.pro.trade_cal(exchange='SSE', start_date='20200101',
-                                         is_open=1)
-            pretrade_df = df_date[df_date.cal_date < datetime.datetime.now().strftime('%Y%m%d')]
-        pretrade_date = pretrade_df['cal_date'].values[-1]
-        # TODO: reconstruct timeout handling to a function
+        df_date = self.pro.trade_cal(exchange='SSE', end_date=datetime.datetime.now().strftime('%Y%m%d'), is_open=1)
+        pretrade_date = df_date['cal_date'].values[-2]
         not_get = True
         while not_get:
             try:
                 df_basicinfo = self.pro.daily_basic(ts_code='', trade_date=pretrade_date)
-                # self.basic_info = df_basicinfo.set_index('ts_code')
                 for index, row in df_basicinfo.iterrows():
                     self.basic_info[row['ts_code']] = row
                 not_get = False
@@ -410,61 +376,56 @@ class Storage:
 
     def init_histdata(self):
         """
-        initialize data in 15 days
+        initialize data in certain days
         """
         days = 365
-        df_date = self.pro.trade_cal(exchange='SSE', is_open=1)
-        df_pretrade = df_date[df_date.cal_date < datetime.datetime.now().strftime('%Y%m%d')]
-        # if len(df_pretrade) == 0:
-        #     # consider the trade date after New Year's day
-        #     df_date = self.pro.trade_cal(exchange='SSE', start_date='20200101',
-        #                                  is_open=1)
-        #     df_pretrade = df_date[df_date.cal_date < datetime.datetime.now().strftime('%Y%m%d')]
+        df_date = self.pro.trade_cal(exchange='SSE', end_date=datetime.datetime.now().strftime('%Y%m%d'), is_open=1)
+        df_pretrade = df_date[:-1]
         df_pre5 = df_pretrade[-days:]
         pretrade_date = df_pre5['cal_date'].values
 
         p = ThreadPool()
         df_list = p.map(process_histdata, pretrade_date)
 
-        # df_list = list()
-        # for i in range(0, days):
-        #     print(i)
-        #     not_get = True
-        #     while not_get:
-        #         try:
-        #             df = self.pro.daily(ts_code='', start_date=pretrade_date[i], end_date=pretrade_date[i])
-        #
-        #             df_list.append(df)
-        #             not_get = False
-        #         except requests.exceptions.RequestException as e:
-        #             time.sleep(1)
-        #             not_get = True
-
         df_histdata = pd.concat(df_list)
         gb = df_histdata.set_index(['trade_date']).sort_index().groupby('ts_code')
+        rm_codes = []
         for ts_code in tm.ts_mapping.values():
-            self.hist_data[ts_code] = gb.get_group(ts_code)
-            # self.hist_data[ts_code] = df_histdata[df_histdata['ts_code'] == ts_code].sort_values(by=['trade_date'])
-        # for index, row in df_histdata.iterrows():
-        #     if row['ts_code'] not in self.hist_data:
-        #         # self.hist_data[row['ts_code']] = pd.DataFrame().append(row, ignore_index=True)
-        #         self.hist_data[row['ts_code']] = [row]
-        #     else:
-        #         # self.hist_data[row['ts_code']].append(row, ignore_index=True)
-        #         self.hist_data[row['ts_code']].append(row)
-        # self.hist_data = df_histdata.set_index('ts_code')
+            try:
+                self.hist_data[ts_code] = gb.get_group(ts_code)
+            except KeyError as e:
+                rm_codes.append(ts_code)
+        for ts_code in rm_codes:
+            tm.detail_code_list.remove('sh' + ts_code[:6] if ts_code.endswith('SH') else 'sz' + ts_code[:6])
+            del tm.ts_mapping[ts_code[:6]]
+            del tm.ts_lower_mapping[ts_code[:6]]
+            del tm.name_mapping[ts_code[:6]]
 
-        # args = []
-        # step = int(len(tm.detail_code_list) / 6)
-        # for i in range(0, 6):
-        #     if step * (i+1) > len(tm.detail_code_list):
-        #         args.append(tm.detail_code_list[step * i:])
-        #     else:
-        #         args.append(tm.detail_code_list[step * i:step * (i+1)])
-        # p = ThreadPool()
-        # hist_datas = p.map(process_json, args)
-        # df_histdata = pd.concat(hist_datas)
-        # self.hist_data = df_histdata.set_index('code')
+    def init_ts_map(self):
+        # hit stock that suspended trading yesterday, load it
+        df_date = self.pro.trade_cal(exchange='SSE', end_date=datetime.datetime.now().strftime('%Y%m%d'), is_open=1)
+        rm_codes = []
+        for ts_code in tm.ts_mapping.values():
+            if ts_code not in self.basic_info:
+                delta = 1
+                while True:
+                    df_basicinfo = self.pro.daily_basic(ts_code=ts_code,
+                                                        trade_date=df_date['cal_date'].values[-2-delta])
+                    if len(df_basicinfo) == 0:
+                        delta += 1
+                        if delta > 5:
+                            # suspended for a long time, delete it
+                            rm_codes.append(ts_code)
+                            break
+                        continue
+                    temp_series = df_basicinfo.loc[0]
+                    self.basic_info[ts_code] = temp_series
+                    break
+        for ts_code in rm_codes:
+            tm.detail_code_list.remove('sh' + ts_code[:6] if ts_code.endswith('SH') else 'sz' + ts_code[:6])
+            del tm.ts_mapping[ts_code[:6]]
+            del tm.ts_lower_mapping[ts_code[:6]]
+            del tm.name_mapping[ts_code[:6]]
 
     def init_neckline_storage(self):
         """
@@ -481,13 +442,6 @@ class Storage:
         p = ThreadPool()
         peak_infos = p.map(process_json, args)
         self.peak_info = {k:v for dic in peak_infos for k,v in dic.items()}
-
-        # pro_bar need ￥1000 -_-
-        # curr_date = self.get_realtime_storage_single('000001')[30]
-        # curr_date = ''.join(curr_date.split('-'))
-        # for ts_code in tm.ts_mapping.values():
-        #     df = ts.pro_bar(ts_code='000001.SH,399365.SZ', freq='1min', start_date=curr_date)
-        #     print(df)
 
 
 if __name__ == '__main__':
