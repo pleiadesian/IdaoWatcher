@@ -99,7 +99,6 @@ class Main:
                 moment = datetime.datetime.strptime('13:00:00', '%H:%M:%S')
         return orders
 
-
 def mainloop(codes, strong):
     """
     start main loop
